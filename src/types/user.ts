@@ -2,12 +2,15 @@ import { CustomFile } from 'src/components/upload';
 
 // ----------------------------------------------------------------------
 
+export type IUserList = {
+  _id: string;
+  status: string;
+  username: string;
+};
 export type IUserTableFilterValue = string | string[];
 
 export type IUserTableFilters = {
-  name: string;
-  role: string[];
-  status: string;
+  username: string;
 };
 
 // ----------------------------------------------------------------------
