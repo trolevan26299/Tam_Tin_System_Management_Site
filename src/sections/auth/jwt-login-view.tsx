@@ -1,21 +1,18 @@
 'use client';
 
-import * as Yup from 'yup';
-import { useForm } from 'react-hook-form';
-import { useState } from 'react';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import * as Yup from 'yup';
 // @mui
 import LoadingButton from '@mui/lab/LoadingButton';
-import Link from '@mui/material/Link';
 import Alert from '@mui/material/Alert';
-import Stack from '@mui/material/Stack';
 import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import InputAdornment from '@mui/material/InputAdornment';
+import Stack from '@mui/material/Stack';
+import Typography from '@mui/material/Typography';
 // routes
-import { paths } from 'src/routes/paths';
-import { RouterLink } from 'src/routes/components';
-import { useSearchParams, useRouter } from 'src/routes/hooks';
+import { useRouter, useSearchParams } from 'src/routes/hooks';
 // config
 import { PATH_AFTER_LOGIN } from 'src/config-global';
 // hooks
@@ -23,12 +20,12 @@ import { useBoolean } from 'src/hooks/use-boolean';
 // auth
 import { useAuthContext } from 'src/auth/hooks';
 // components
-import Iconify from 'src/components/iconify';
 import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import Iconify from 'src/components/iconify';
 
 // ----------------------------------------------------------------------
 
-export default function AmplifyLoginView() {
+export default function JwtLoginView() {
   const { login } = useAuthContext();
 
   const router = useRouter();
@@ -42,12 +39,12 @@ export default function AmplifyLoginView() {
   const password = useBoolean();
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().required('Email is required').email('Email must be a valid email address'),
-    password: Yup.string().required('Password is required'),
+    username: Yup.string().required('Vui lòng nhập tên đăng nhập !'),
+    password: Yup.string().required('Vui lòng nhập mật khẩu !'),
   });
 
   const defaultValues = {
-    email: '',
+    username: '',
     password: '',
   };
 
@@ -64,39 +61,31 @@ export default function AmplifyLoginView() {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      await login?.(data.email, data.password);
+      await login?.(data.username, data.password);
 
       router.push(returnTo || PATH_AFTER_LOGIN);
     } catch (error) {
       console.error(error);
       reset();
-      setErrorMsg(typeof error === 'string' ? error : error.message);
+      setErrorMsg(typeof error === 'string' ? error : error.error || error.message);
     }
   });
 
   const renderHead = (
     <Stack spacing={2} sx={{ mb: 5 }}>
-      <Typography variant="h4">Sign in to Minimal</Typography>
-
-      <Stack direction="row" spacing={0.5}>
-        <Typography variant="body2">New user?</Typography>
-
-        <Link component={RouterLink} href={paths.auth.amplify.register} variant="subtitle2">
-          Create an account
-        </Link>
-      </Stack>
+      <Typography variant="h4">Đăng nhập Tâm Tín</Typography>
     </Stack>
   );
 
   const renderForm = (
-    <Stack spacing={3}>
+    <Stack spacing={2.5}>
       {!!errorMsg && <Alert severity="error">{errorMsg}</Alert>}
 
-      <RHFTextField name="email" label="Email address" />
+      <RHFTextField name="username" label="Tên đăng nhập" />
 
       <RHFTextField
         name="password"
-        label="Password"
+        label="Mật khẩu"
         type={password.value ? 'text' : 'password'}
         InputProps={{
           endAdornment: (
@@ -109,17 +98,6 @@ export default function AmplifyLoginView() {
         }}
       />
 
-      <Link
-        component={RouterLink}
-        href={paths.auth.amplify.forgotPassword}
-        variant="body2"
-        color="inherit"
-        underline="always"
-        sx={{ alignSelf: 'flex-end' }}
-      >
-        Forgot password?
-      </Link>
-
       <LoadingButton
         fullWidth
         color="inherit"
@@ -128,7 +106,7 @@ export default function AmplifyLoginView() {
         variant="contained"
         loading={isSubmitting}
       >
-        Login
+        Đăng nhập
       </LoadingButton>
     </Stack>
   );
@@ -136,7 +114,6 @@ export default function AmplifyLoginView() {
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       {renderHead}
-
       {renderForm}
     </FormProvider>
   );

@@ -199,14 +199,6 @@ export function useNavData() {
             icon: ICONS.folder,
           },
 
-          // MAIL
-          {
-            title: t('mail'),
-            path: paths.dashboard.mail,
-            icon: ICONS.mail,
-            info: <Label color="error">+32</Label>,
-          },
-
           // CHAT
           {
             title: t('chat'),

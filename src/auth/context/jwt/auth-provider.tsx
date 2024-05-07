@@ -8,18 +8,9 @@ import { AuthContext } from './auth-context';
 import { isValidToken, setSession } from './utils';
 import { ActionMapType, AuthStateType, AuthUserType } from '../../types';
 
-// ----------------------------------------------------------------------
-
-// NOTE:
-// We only build demo at basic level.
-// Customer will need to do some extra handling yourself if you want to extend the logic and other features...
-
-// ----------------------------------------------------------------------
-
 enum Types {
   INITIAL = 'INITIAL',
   LOGIN = 'LOGIN',
-  REGISTER = 'REGISTER',
   LOGOUT = 'LOGOUT',
 }
 
@@ -28,9 +19,6 @@ type Payload = {
     user: AuthUserType;
   };
   [Types.LOGIN]: {
-    user: AuthUserType;
-  };
-  [Types.REGISTER]: {
     user: AuthUserType;
   };
   [Types.LOGOUT]: undefined;
@@ -58,12 +46,7 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
       user: action.payload.user,
     };
   }
-  if (action.type === Types.REGISTER) {
-    return {
-      ...state,
-      user: action.payload.user,
-    };
-  }
+
   if (action.type === Types.LOGOUT) {
     return {
       ...state,
@@ -75,7 +58,7 @@ const reducer = (state: AuthStateType, action: ActionsType) => {
 
 // ----------------------------------------------------------------------
 
-const STORAGE_KEY = 'accessToken';
+const STORAGE_KEY = 'access_token';
 
 type Props = {
   children: React.ReactNode;
@@ -86,10 +69,10 @@ export function AuthProvider({ children }: Props) {
 
   const initialize = useCallback(async () => {
     try {
-      const accessToken = sessionStorage.getItem(STORAGE_KEY);
+      const access_token = sessionStorage.getItem(STORAGE_KEY);
 
-      if (accessToken && isValidToken(accessToken)) {
-        setSession(accessToken);
+      if (access_token && isValidToken(access_token)) {
+        setSession(access_token);
 
         const res = await axios.get(endpoints.auth.me);
 
@@ -100,7 +83,7 @@ export function AuthProvider({ children }: Props) {
           payload: {
             user: {
               ...user,
-              accessToken,
+              access_token,
             },
           },
         });
@@ -128,57 +111,28 @@ export function AuthProvider({ children }: Props) {
   }, [initialize]);
 
   // LOGIN
-  const login = useCallback(async (email: string, password: string) => {
-    const data = {
-      email,
+  const login = useCallback(async (username: string, password: string) => {
+    const dataBody = {
+      username,
       password,
     };
 
-    const res = await axios.post(endpoints.auth.login, data);
+    const res = await axios.post(endpoints.auth.login, dataBody);
 
-    const { accessToken, user } = res.data;
+    const { access_token, data } = res.data;
 
-    setSession(accessToken);
+    setSession(access_token);
 
     dispatch({
       type: Types.LOGIN,
       payload: {
         user: {
-          ...user,
-          accessToken,
+          ...data,
+          access_token,
         },
       },
     });
   }, []);
-
-  // REGISTER
-  const register = useCallback(
-    async (email: string, password: string, firstName: string, lastName: string) => {
-      const data = {
-        email,
-        password,
-        firstName,
-        lastName,
-      };
-
-      const res = await axios.post(endpoints.auth.register, data);
-
-      const { accessToken, user } = res.data;
-
-      sessionStorage.setItem(STORAGE_KEY, accessToken);
-
-      dispatch({
-        type: Types.REGISTER,
-        payload: {
-          user: {
-            ...user,
-            accessToken,
-          },
-        },
-      });
-    },
-    []
-  );
 
   // LOGOUT
   const logout = useCallback(async () => {
@@ -203,10 +157,9 @@ export function AuthProvider({ children }: Props) {
       unauthenticated: status === 'unauthenticated',
       //
       login,
-      register,
       logout,
     }),
-    [login, logout, register, state.user, status]
+    [login, logout, state.user, status]
   );
 
   return <AuthContext.Provider value={memoizedValue}>{children}</AuthContext.Provider>;
