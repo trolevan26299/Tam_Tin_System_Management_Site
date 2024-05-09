@@ -38,6 +38,7 @@ import UserTableRow from '../user-table-row';
 const TABLE_HEAD = [
   { id: 'username', label: 'Username' },
   { id: 'status', label: 'Trạng thái', width: 180 },
+  { id: 'action', label: 'Sự kiện', width: 80 },
 ];
 
 const filtersData: IUserTableFilters = {
@@ -112,7 +113,8 @@ export default function UserListView() {
         action={
           <Button
             component={RouterLink}
-            href={paths.dashboard.user.new}
+            // href={paths.dashboard.user.new}
+            href=""
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
           >
