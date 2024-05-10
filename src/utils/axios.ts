@@ -35,6 +35,7 @@ export const endpoints = {
   },
   user: {
     list: '/api/account/list',
+    // details: '/api/account/'
   },
   mail: {
     list: '/api/mail/list',
