@@ -32,11 +32,11 @@ import {
 // types
 import { IUserList, IUserTableFilters } from 'src/types/user';
 //
-import { getUsers } from 'src/api/user';
+import { getUserById, getUsers } from 'src/api/user';
 import { Box, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import UserTableRow from '../user-table-row';
-import UserInfo from '../user-info';
+import UserInfo, { userInfo } from '../user-info';
 
 const TABLE_HEAD = [
   { id: 'username', label: 'Username' },
@@ -65,7 +65,7 @@ export default function UserListView() {
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-  const [selectedItem, setSelectedItem] = useState<string>('');
+  const [selectedItem, setSelectedItem] = useState<userInfo | undefined>(undefined);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -94,8 +94,10 @@ export default function UserListView() {
     [dataInPage?.length, table, tableData]
   );
 
-  const handleEditRow = (id: string) => {
-    //
+  const handleEditRow = async (id: string) => {
+    const detail = await getUserById(id);
+    setSelectedItem(detail?.data);
+    setOpenDialog(true);
   };
 
   const getUserList = async () => {
@@ -125,7 +127,10 @@ export default function UserListView() {
             <Button
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() => setOpenDialog(true)}
+              onClick={() => {
+                setOpenDialog(true);
+                setSelectedItem(undefined);
+              }}
             >
               Create User
             </Button>
@@ -203,17 +208,17 @@ export default function UserListView() {
           },
         }}
       >
-        <DialogTitle sx={{ pb: 2 }}>Create User</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!selectedItem ? 'Create User' : 'Update User'}</DialogTitle>
 
         <DialogContent>
           <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
-            <UserInfo />
+            <UserInfo currentProduct={selectedItem} />
           </Box>
         </DialogContent>
 
         <DialogActions>
           <Button variant="contained">Save</Button>
-          <Button variant="outlined" color="inherit">
+          <Button variant="outlined" color="inherit" onClick={handleCloseDialog}>
             Cancel
           </Button>
         </DialogActions>

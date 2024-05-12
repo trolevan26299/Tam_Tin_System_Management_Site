@@ -9,3 +9,13 @@ export async function getUsers() {
     return console.error(error);
   }
 }
+
+export async function getUserById(id: string) {
+  try {
+    const url = endpoints.user.details(id);
+    const res = await axiosInstance.get(url);
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
