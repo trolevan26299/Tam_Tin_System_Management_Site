@@ -1,10 +1,24 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import { MenuItem } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  InputAdornment,
+  MenuItem,
+} from '@mui/material';
+import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Unstable_Grid2';
+import { useTheme } from '@mui/material/styles';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
+import Iconify from 'src/components/iconify';
+import { useBoolean } from 'src/hooks/use-boolean';
 import * as Yup from 'yup';
 
 export type userInfo = {
@@ -23,12 +37,22 @@ const optionStatus: option[] = [
   { label: 'suspend', value: 'suspend' },
 ];
 
-export default function UserInfo({ currentProduct }: { currentProduct?: userInfo }) {
+export default function UserInfo({
+  currentProduct,
+  open,
+  onClose,
+}: {
+  currentProduct?: userInfo;
+  open: boolean;
+  onClose: () => void;
+}) {
+  const theme = useTheme();
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
     password: Yup.string().required('Password is required'),
     status: Yup.string(),
   });
+  const password = useBoolean();
 
   const defaultValues = {
     username: '',
@@ -43,7 +67,6 @@ export default function UserInfo({ currentProduct }: { currentProduct?: userInfo
 
   const {
     reset,
-    watch,
     setValue,
     handleSubmit,
     formState: { isSubmitting },
@@ -66,24 +89,111 @@ export default function UserInfo({ currentProduct }: { currentProduct?: userInfo
   }, [currentProduct]);
 
   return (
-    <FormProvider methods={methods} onSubmit={onSubmit}>
-      <Grid container spacing={3}>
-        <Grid xs={12}>
-          <RHFTextField name="username" label="User Name" />
-        </Grid>
-        <Grid xs={12}>
-          <RHFTextField name="password" label="Password" />
-        </Grid>
-        <Grid xs={12}>
-          <RHFSelect name="status" label="Status">
-            {optionStatus?.map((item: option, index) => (
-              <MenuItem value={item?.value} key={index}>
-                {item?.label}
-              </MenuItem>
-            ))}
-          </RHFSelect>
-        </Grid>
-      </Grid>
-    </FormProvider>
+    <Dialog
+      fullWidth
+      maxWidth="sm"
+      open={open}
+      onClose={onClose}
+      transitionDuration={{
+        enter: theme.transitions.duration.shortest,
+        exit: 0,
+      }}
+      PaperProps={{
+        sx: {
+          mt: 15,
+          overflow: 'unset',
+        },
+      }}
+    >
+      <FormProvider methods={methods} onSubmit={onSubmit}>
+        <DialogTitle sx={{ pb: 2 }}>{!currentProduct ? 'Create User' : 'Update User'}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
+            <Grid container spacing={3}>
+              <Grid xs={12}>
+                <RHFTextField name="username" label="User Name" />
+              </Grid>
+              {currentProduct ? (
+                <>
+                  <Grid xs={12}>
+                    <RHFTextField
+                      name="oldPassword"
+                      label="Old Password"
+                      type={password.value ? 'text' : 'password'}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={password.onToggle} edge="end">
+                              <Iconify
+                                icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                              />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid xs={12}>
+                    <RHFTextField
+                      name="password"
+                      label="Password"
+                      type={password.value ? 'text' : 'password'}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton onClick={password.onToggle} edge="end">
+                              <Iconify
+                                icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                              />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Grid>
+                  <Grid xs={12}>
+                    <RHFSelect name="status" label="Status" disabled>
+                      {optionStatus?.map((item: option, index) => (
+                        <MenuItem value={item?.value} key={index}>
+                          {item?.label}
+                        </MenuItem>
+                      ))}
+                    </RHFSelect>
+                  </Grid>
+                </>
+              ) : (
+                <Grid xs={12}>
+                  <RHFTextField
+                    name="password"
+                    label="Password"
+                    type={password.value ? 'text' : 'password'}
+                    InputProps={{
+                      endAdornment: (
+                        <InputAdornment position="end">
+                          <IconButton onClick={password.onToggle} edge="end">
+                            <Iconify
+                              icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                            />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                </Grid>
+              )}
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          {/* <Button variant="contained">Save</Button> */}
+          <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
+            Save
+          </LoadingButton>
+          <Button variant="outlined" color="inherit" onClick={onClose}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </FormProvider>
+    </Dialog>
   );
 }

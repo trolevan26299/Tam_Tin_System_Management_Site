@@ -9,7 +9,6 @@ import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableContainer from '@mui/material/TableContainer';
 // routes
-import { RouterLink } from 'src/routes/components';
 import { useRouter } from 'src/routes/hooks';
 import { paths } from 'src/routes/paths';
 // _mock
@@ -32,11 +31,10 @@ import {
 // types
 import { IUserList, IUserTableFilters } from 'src/types/user';
 //
-import { getUserById, getUsers } from 'src/api/user';
-import { Box, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import UserTableRow from '../user-table-row';
+import { getUserById, getUsers } from 'src/api/user';
 import UserInfo, { userInfo } from '../user-info';
+import UserTableRow from '../user-table-row';
 
 const TABLE_HEAD = [
   { id: 'username', label: 'Username' },
@@ -192,37 +190,8 @@ export default function UserListView() {
           />
         </Card>
       </Container>
-      <Dialog
-        fullWidth
-        maxWidth="sm"
-        open={openDialog}
-        onClose={handleCloseDialog}
-        transitionDuration={{
-          enter: theme.transitions.duration.shortest,
-          exit: 0,
-        }}
-        PaperProps={{
-          sx: {
-            mt: 15,
-            overflow: 'unset',
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 2 }}>{!selectedItem ? 'Create User' : 'Update User'}</DialogTitle>
 
-        <DialogContent>
-          <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
-            <UserInfo currentProduct={selectedItem} />
-          </Box>
-        </DialogContent>
-
-        <DialogActions>
-          <Button variant="contained">Save</Button>
-          <Button variant="outlined" color="inherit" onClick={handleCloseDialog}>
-            Cancel
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <UserInfo currentProduct={selectedItem} open={openDialog} onClose={handleCloseDialog} />
     </>
   );
 }
