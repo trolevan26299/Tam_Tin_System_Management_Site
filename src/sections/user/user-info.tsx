@@ -1,3 +1,4 @@
+/* eslint-disable import/no-cycle */
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
 import {
@@ -14,18 +15,21 @@ import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useTheme } from '@mui/material/styles';
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
+import { createUser, updateUserById } from 'src/api/user';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 import * as Yup from 'yup';
+import { useSnackbar } from '../../components/snackbar';
 
 export type userInfo = {
   username: string;
   password: string;
   status?: string;
   oldPassword?: string;
+  _id?: string;
 };
 
 export type option = {
@@ -38,13 +42,15 @@ const optionStatus: option[] = [
 ];
 
 export default function UserInfo({
-  currentProduct,
+  currentAccount,
+  getUserList,
   open,
   onClose,
 }: {
-  currentProduct?: userInfo;
+  currentAccount?: userInfo;
   open: boolean;
   onClose: () => void;
+  getUserList: () => void;
 }) {
   const theme = useTheme();
   const NewAccount = Yup.object().shape({
@@ -53,14 +59,15 @@ export default function UserInfo({
     status: Yup.string(),
   });
   const password = useBoolean();
+  const { enqueueSnackbar } = useSnackbar();
 
-  const defaultValues = {
+  const defaultValues: DefaultValues<userInfo> = {
     username: '',
     password: '',
     status: '',
   };
 
-  const methods = useForm({
+  const methods = useForm<userInfo>({
     resolver: yupResolver(NewAccount),
     defaultValues,
   });
@@ -72,22 +79,40 @@ export default function UserInfo({
     formState: { isSubmitting },
   } = methods;
 
+  const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
+    getUserList();
+    enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
+      variant: 'success',
+    });
+    onClose();
+  };
+
   const onSubmit = handleSubmit(async (data) => {
-    console.log('🚀 ~ onSubmit ~ data:', data);
-    //
+    if (currentAccount) {
+      const updateAccount = await updateUserById(String(currentAccount?._id), data);
+
+      if (updateAccount !== 'error') {
+        handleGetWhenCreateAndUpdateSuccess(!!currentAccount);
+      } else {
+        enqueueSnackbar('Update fail!', {
+          variant: 'error',
+        });
+      }
+    } else {
+      const createAccount = await createUser(data);
+      if (createAccount) {
+        handleGetWhenCreateAndUpdateSuccess(!currentAccount);
+      }
+    }
   });
 
   useEffect(() => {
-    if (!currentProduct) {
-      reset(defaultValues);
-    } else {
-      setValue('username', currentProduct?.username);
-      setValue('password', currentProduct?.password);
-      setValue('status', currentProduct?.status);
-    }
+    reset();
+    setValue('username', currentAccount?.username || '');
+    setValue('password', currentAccount?.password || '');
+    setValue('status', currentAccount?.status);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentProduct]);
-
+  }, [currentAccount]);
   return (
     <Dialog
       fullWidth
@@ -106,14 +131,14 @@ export default function UserInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>{!currentProduct ? 'Create User' : 'Update User'}</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentAccount ? 'Create User' : 'Update User'}</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="username" label="User Name" />
+                <RHFTextField name="username" label="User Name" disabled={!!currentAccount} />
               </Grid>
-              {currentProduct ? (
+              {currentAccount ? (
                 <>
                   <Grid xs={12}>
                     <RHFTextField
@@ -185,7 +210,6 @@ export default function UserInfo({
           </Box>
         </DialogContent>
         <DialogActions>
-          {/* <Button variant="contained">Save</Button> */}
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
             Save
           </LoadingButton>

@@ -35,7 +35,9 @@ export const endpoints = {
   },
   user: {
     list: '/api/account/list',
+    create: '/api/account',
     details: (userId: string) => `/api/account/${userId}`,
+    update: (userId: string) => `/api/account/${userId}`,
   },
   mail: {
     list: '/api/mail/list',

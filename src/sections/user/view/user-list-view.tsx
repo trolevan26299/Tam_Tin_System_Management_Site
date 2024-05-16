@@ -150,7 +150,6 @@ export default function UserListView() {
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                 />
-
                 <TableBody>
                   {dataFiltered
                     ?.slice(
@@ -191,7 +190,12 @@ export default function UserListView() {
         </Card>
       </Container>
 
-      <UserInfo currentProduct={selectedItem} open={openDialog} onClose={handleCloseDialog} />
+      <UserInfo
+        currentAccount={selectedItem}
+        open={openDialog}
+        onClose={handleCloseDialog}
+        getUserList={getUserList}
+      />
     </>
   );
 }
