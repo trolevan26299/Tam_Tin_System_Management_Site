@@ -1,64 +1,53 @@
 'use client';
 
 import isEqual from 'lodash/isEqual';
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // @mui
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
+import Card from '@mui/material/Card';
 import Container from '@mui/material/Container';
+import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
 import TableContainer from '@mui/material/TableContainer';
 // routes
-import { paths } from 'src/routes/paths';
 import { useRouter } from 'src/routes/hooks';
-import { RouterLink } from 'src/routes/components';
+import { paths } from 'src/routes/paths';
 // hooks
-import { useBoolean } from 'src/hooks/use-boolean';
 // _mock
-import { PRODUCT_STOCK_OPTIONS } from 'src/_mock';
 // api
-import { useGetProducts } from 'src/api/product';
 // components
-import { useSettingsContext } from 'src/components/settings';
-import {
-  useTable,
-  getComparator,
-  emptyRows,
-  TableNoData,
-  TableSkeleton,
-  TableEmptyRows,
-  TableHeadCustom,
-  TableSelectedAction,
-  TablePaginationCustom,
-} from 'src/components/table';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
+import { useSettingsContext } from 'src/components/settings';
+import {
+  emptyRows,
+  getComparator,
+  TableEmptyRows,
+  TableHeadCustom,
+  TableNoData,
+  TablePaginationCustom,
+  useTable,
+} from 'src/components/table';
 // types
-import { IProductItem, IProductTableFilters, IProductTableFilterValue } from 'src/types/product';
-//
+import { getListDevice } from 'src/api/product';
+import { IDevice, IProductTableFilters, IProductTableFilterValue } from 'src/types/product';
 import ProductTableRow from '../product-table-row';
-import ProductTableToolbar from '../product-table-toolbar';
-import ProductTableFiltersResult from '../product-table-filters-result';
+import DeviceInfo from '../product-info';
+//
 
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Product' },
-  { id: 'createdAt', label: 'Create at', width: 160 },
-  { id: 'inventoryType', label: 'Stock', width: 160 },
-  { id: 'price', label: 'Price', width: 140 },
-  { id: 'publish', label: 'Publish', width: 110 },
-  { id: '', width: 88 },
-];
-
-const PUBLISH_OPTIONS = [
-  { value: 'published', label: 'Published' },
-  { value: 'draft', label: 'Draft' },
+  { id: 'name', label: 'Name' },
+  { id: 'id_device', label: 'ID Device', width: 120 },
+  { id: 'category_name', label: 'Category name', width: 160 },
+  { id: 'warranty', label: 'Warranty', width: 140 },
+  { id: 'status', label: 'Status', width: 90 },
+  { id: 'delivery_date', label: 'Delivery date', width: 160 },
+  { id: 'belong_to', label: 'Belong to', width: 180 },
+  { id: 'note', label: 'Note', width: 160 },
+  { id: 'action', label: 'Action', width: 80 },
 ];
 
 const defaultFilters: IProductTableFilters = {
@@ -76,19 +65,13 @@ export default function ProductListView() {
 
   const settings = useSettingsContext();
 
-  const [tableData, setTableData] = useState<IProductItem[]>([]);
+  const [tableData, setTableData] = useState<IDevice[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
-  const { products, productsLoading, productsEmpty } = useGetProducts();
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
-  const confirm = useBoolean();
-
-  useEffect(() => {
-    if (products.length) {
-      setTableData(products);
-    }
-  }, [products]);
+  const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -105,39 +88,17 @@ export default function ProductListView() {
 
   const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = (!dataFiltered.length && canReset) || productsEmpty;
-
-  const handleFilters = useCallback(
-    (name: string, value: IProductTableFilterValue) => {
-      table.onResetPage();
-      setFilters((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    },
-    [table]
-  );
+  const notFound = !dataFiltered.length && canReset;
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+      const deleteRow = tableData.filter((row) => row._id !== id);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage.length);
     },
     [dataInPage.length, table, tableData]
   );
-
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-    setTableData(deleteRows);
-
-    table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
 
   const handleEditRow = useCallback(
     (id: string) => {
@@ -146,17 +107,23 @@ export default function ProductListView() {
     [router]
   );
 
-  const handleViewRow = useCallback(
-    (id: string) => {
-      router.push(paths.dashboard.product.details(id));
-    },
-    [router]
-  );
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(undefined);
+  };
 
-  const handleResetFilters = useCallback(() => {
-    setFilters(defaultFilters);
+  const getDeviceList = async () => {
+    try {
+      const deviceList = await getListDevice();
+      setTableData(deviceList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getDeviceList();
   }, []);
-
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -172,58 +139,21 @@ export default function ProductListView() {
           ]}
           action={
             <Button
-              component={RouterLink}
-              href={paths.dashboard.product.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={() => {
+                setOpenDialog(true);
+                setSelectedItem(undefined);
+              }}
             >
-              New Product
+              Create Device
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <ProductTableToolbar
-            filters={filters}
-            onFilters={handleFilters}
-            //
-            stockOptions={PRODUCT_STOCK_OPTIONS}
-            publishOptions={PUBLISH_OPTIONS}
-          />
-
-          {canReset && (
-            <ProductTableFiltersResult
-              filters={filters}
-              onFilters={handleFilters}
-              //
-              onResetFilters={handleResetFilters}
-              //
-              results={dataFiltered.length}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )}
-
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={tableData.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.id)
-                )
-              }
-              action={
-                <Tooltip title="Delete">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
-              }
-            />
-
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom
@@ -233,43 +163,28 @@ export default function ProductListView() {
                   rowCount={tableData.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id)
-                    )
-                  }
                 />
 
                 <TableBody>
-                  {productsLoading ? (
-                    [...Array(table.rowsPerPage)].map((i, index) => (
-                      <TableSkeleton key={index} sx={{ height: denseHeight }} />
-                    ))
-                  ) : (
-                    <>
-                      {dataFiltered
-                        .slice(
-                          table.page * table.rowsPerPage,
-                          table.page * table.rowsPerPage + table.rowsPerPage
-                        )
-                        .map((row) => (
-                          <ProductTableRow
-                            key={row.id}
-                            row={row}
-                            selected={table.selected.includes(row.id)}
-                            onSelectRow={() => table.onSelectRow(row.id)}
-                            onDeleteRow={() => handleDeleteRow(row.id)}
-                            onEditRow={() => handleEditRow(row.id)}
-                            onViewRow={() => handleViewRow(row.id)}
-                          />
-                        ))}
-                    </>
-                  )}
+                  {dataFiltered
+                    ?.slice(
+                      table.page * table.rowsPerPage,
+                      table.page * table.rowsPerPage + table.rowsPerPage
+                    )
+                    .map((row) => (
+                      <ProductTableRow
+                        key={row._id}
+                        row={row}
+                        selected={table.selected.includes(row?._id as string)}
+                        onSelectRow={() => table.onSelectRow(row?._id as string)}
+                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                        onEditRow={() => handleEditRow(row?._id as string)}
+                      />
+                    ))}
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
                   />
 
                   <TableNoData notFound={notFound} />
@@ -290,28 +205,11 @@ export default function ProductListView() {
           />
         </Card>
       </Container>
-
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Delete"
-        content={
-          <>
-            Are you sure want to delete <strong> {table.selected.length} </strong> items?
-          </>
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            Delete
-          </Button>
-        }
+      <DeviceInfo
+        currentDevice={selectedItem}
+        open={openDialog}
+        onClose={handleCloseDialog}
+        getDeviceList={getDeviceList}
       />
     </>
   );
@@ -324,11 +222,11 @@ function applyFilter({
   comparator,
   filters,
 }: {
-  inputData: IProductItem[];
+  inputData: IDevice[];
   comparator: (a: any, b: any) => number;
   filters: IProductTableFilters;
 }) {
-  const { name, stock, publish } = filters;
+  const { name } = filters;
 
   const stabilizedThis = inputData.map((el, index) => [el, index] as const);
 
@@ -344,14 +242,6 @@ function applyFilter({
     inputData = inputData.filter(
       (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
-  }
-
-  if (stock.length) {
-    inputData = inputData.filter((product) => stock.includes(product.inventoryType));
-  }
-
-  if (publish.length) {
-    inputData = inputData.filter((product) => publish.includes(product.publish));
   }
 
   return inputData;

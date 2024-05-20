@@ -1,35 +1,27 @@
 import { format } from 'date-fns';
 // @mui
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import MenuItem from '@mui/material/MenuItem';
-import TableRow from '@mui/material/TableRow';
-import Checkbox from '@mui/material/Checkbox';
-import TableCell from '@mui/material/TableCell';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import LinearProgress from '@mui/material/LinearProgress';
+import MenuItem from '@mui/material/MenuItem';
+import TableCell from '@mui/material/TableCell';
+import TableRow from '@mui/material/TableRow';
 // utils
-import { fCurrency } from 'src/utils/format-number';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
-import Label from 'src/components/label';
-import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import Iconify from 'src/components/iconify';
 // types
-import { IProductItem } from 'src/types/product';
+import { IDevice } from 'src/types/product';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  row: IProductItem;
+  row: IDevice;
   selected: boolean;
   onEditRow: VoidFunction;
-  onViewRow: VoidFunction;
   onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
@@ -40,19 +32,8 @@ export default function ProductTableRow({
   onSelectRow,
   onDeleteRow,
   onEditRow,
-  onViewRow,
 }: Props) {
-  const {
-    name,
-    price,
-    publish,
-    coverUrl,
-    category,
-    quantity,
-    createdAt,
-    available,
-    inventoryType,
-  } = row;
+  const { name, id_device, category_id, status, belong_to, delivery_date, note, warranty } = row;
 
   const confirm = useBoolean();
 
@@ -61,72 +42,32 @@ export default function ProductTableRow({
   return (
     <>
       <TableRow hover selected={selected}>
-        <TableCell padding="checkbox">
-          <Checkbox checked={selected} onClick={onSelectRow} />
+        <TableCell>
+          <ListItemText primary={name} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
-
-        <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          <Avatar
-            alt={name}
-            src={coverUrl}
-            variant="rounded"
-            sx={{ width: 64, height: 64, mr: 2 }}
-          />
-
-          <ListItemText
-            disableTypography
-            primary={
-              <Link
-                noWrap
-                color="inherit"
-                variant="subtitle2"
-                onClick={onViewRow}
-                sx={{ cursor: 'pointer' }}
-              >
-                {name}
-              </Link>
-            }
-            secondary={
-              <Box component="div" sx={{ typography: 'body2', color: 'text.disabled' }}>
-                {category}
-              </Box>
-            }
-          />
+        <TableCell>
+          <ListItemText primary={id_device} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
-
         <TableCell>
           <ListItemText
-            primary={format(new Date(createdAt), 'dd MMM yyyy')}
-            secondary={format(new Date(createdAt), 'p')}
-            primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-            secondaryTypographyProps={{
-              mt: 0.5,
-              component: 'span',
-              typography: 'caption',
-            }}
+            primary={category_id.name}
+            primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
-
-        <TableCell sx={{ typography: 'caption', color: 'text.secondary' }}>
-          <LinearProgress
-            value={(available * 100) / quantity}
-            variant="determinate"
-            color={
-              (inventoryType === 'out of stock' && 'error') ||
-              (inventoryType === 'low stock' && 'warning') ||
-              'success'
-            }
-            sx={{ mb: 1, height: 6, maxWidth: 80 }}
-          />
-          {!!available && available} {inventoryType}
-        </TableCell>
-
-        <TableCell>{fCurrency(price)}</TableCell>
-
         <TableCell>
-          <Label variant="soft" color={(publish === 'published' && 'info') || 'default'}>
-            {publish}
-          </Label>
+          <ListItemText primary={warranty} primaryTypographyProps={{ typography: 'body2' }} />
+        </TableCell>
+        <TableCell>
+          <ListItemText primary={status} primaryTypographyProps={{ typography: 'body2' }} />
+        </TableCell>
+        <TableCell>
+          <ListItemText primary={delivery_date} primaryTypographyProps={{ typography: 'body2' }} />
+        </TableCell>
+        <TableCell>
+          <ListItemText primary={belong_to} primaryTypographyProps={{ typography: 'body2' }} />
+        </TableCell>
+        <TableCell>
+          <ListItemText primary={note} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
 
         <TableCell align="right">
@@ -144,7 +85,7 @@ export default function ProductTableRow({
       >
         <MenuItem
           onClick={() => {
-            onViewRow();
+            confirm.onTrue();
             popover.onClose();
           }}
         >

@@ -37,9 +37,9 @@ import UserInfo, { userInfo } from '../user-info';
 import UserTableRow from '../user-table-row';
 
 const TABLE_HEAD = [
-  { id: 'username', label: 'Username' },
-  { id: 'status', label: 'Trạng thái', width: 180 },
-  { id: 'action', label: 'Sự kiện', width: 80 },
+  { id: 'username', label: 'User name' },
+  { id: 'status', label: 'Status', width: 180 },
+  { id: 'action', label: 'Action', width: 80 },
 ];
 
 const filtersData: IUserTableFilters = {
@@ -52,12 +52,6 @@ export default function UserListView() {
   const table = useTable();
 
   const settings = useSettingsContext();
-
-  const router = useRouter();
-
-  const confirm = useBoolean();
-
-  const theme = useTheme();
 
   const [tableData, setTableData] = useState<IUserList[]>();
 
@@ -80,6 +74,7 @@ export default function UserListView() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
+    setSelectedItem(undefined);
   };
 
   const handleDeleteRow = useCallback(
