@@ -136,16 +136,6 @@ export default function ProductTableRow({
       >
         <MenuItem
           onClick={() => {
-            confirm.onTrue();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:eye-bold" />
-          View
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
             onEditRow();
             popover.onClose();
           }}
