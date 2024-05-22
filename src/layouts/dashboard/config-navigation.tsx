@@ -102,8 +102,8 @@ export function useNavData() {
             icon: ICONS.user,
             children: [
               { title: t('list'), path: paths.dashboard.user.list },
-              { title: t('create'), path: paths.dashboard.user.new },
-              { title: t('edit'), path: paths.dashboard.user.demo.edit },
+              // { title: t('create'), path: paths.dashboard.user.new },
+              // { title: t('edit'), path: paths.dashboard.user.demo.edit },
             ],
           },
 
@@ -114,12 +114,12 @@ export function useNavData() {
             icon: ICONS.product,
             children: [
               { title: t('list'), path: paths.dashboard.product.root },
-              {
-                title: t('details'),
-                path: paths.dashboard.product.demo.details,
-              },
-              { title: t('create'), path: paths.dashboard.product.new },
-              { title: t('edit'), path: paths.dashboard.product.demo.edit },
+              // {
+              //   title: t('details'),
+              //   path: paths.dashboard.product.demo.details,
+              // },
+              // { title: t('create'), path: paths.dashboard.product.new },
+              // { title: t('edit'), path: paths.dashboard.product.demo.edit },
             ],
           },
 

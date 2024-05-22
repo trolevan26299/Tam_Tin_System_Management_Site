@@ -1,70 +1,67 @@
 import useSWR from 'swr';
 import { useMemo } from 'react';
 // utils
-import { fetcher, endpoints } from 'src/utils/axios';
+import axiosInstance, { fetcher, endpoints } from 'src/utils/axios';
 // types
-import { IProductItem } from 'src/types/product';
+import { IDevice } from 'src/types/product';
 
 // ----------------------------------------------------------------------
 
-export function useGetProducts() {
-  const URL = endpoints.product.list;
-
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
-
-  const memoizedValue = useMemo(
-    () => ({
-      products: (data?.products as IProductItem[]) || [],
-      productsLoading: isLoading,
-      productsError: error,
-      productsValidating: isValidating,
-      productsEmpty: !isLoading && !data?.products.length,
-    }),
-    [data?.products, error, isLoading, isValidating]
-  );
-
-  return memoizedValue;
+export async function getListDevice() {
+  try {
+    const res = await axiosInstance.post(endpoints.device.list);
+    return res.data.dataRes;
+  } catch (error) {
+    return console.error(error);
+  }
 }
 
-// ----------------------------------------------------------------------
-
-export function useGetProduct(productId: string) {
-  const URL = productId ? [endpoints.product.details, { params: { productId } }] : null;
-
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
-
-  const memoizedValue = useMemo(
-    () => ({
-      product: data?.product as IProductItem,
-      productLoading: isLoading,
-      productError: error,
-      productValidating: isValidating,
-    }),
-    [data?.product, error, isLoading, isValidating]
-  );
-
-  return memoizedValue;
+export async function getListCategory() {
+  try {
+    const res = await axiosInstance.get(endpoints.category.list);
+    return res.data.data;
+  } catch (error) {
+    return console.error(error);
+  }
 }
 
-// ----------------------------------------------------------------------
+export async function getDeviceById(id: string) {
+  try {
+    const url = endpoints.device.details(id);
+    const res = await axiosInstance.get(url);
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
 
-export function useSearchProducts(query: string) {
-  const URL = query ? [endpoints.product.search, { params: { query } }] : null;
+export async function createDevice(body: IDevice) {
+  try {
+    const res = await axiosInstance.post(endpoints.device.create, body);
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
 
-  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
-    keepPreviousData: true,
-  });
+export async function updateDeviceById(id: string, body: IDevice) {
+  try {
+    const url = endpoints.device.update(id);
+    const res = await axiosInstance.put(url, body);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
+  }
+}
 
-  const memoizedValue = useMemo(
-    () => ({
-      searchResults: (data?.results as IProductItem[]) || [],
-      searchLoading: isLoading,
-      searchError: error,
-      searchValidating: isValidating,
-      searchEmpty: !isLoading && !data?.results.length,
-    }),
-    [data?.results, error, isLoading, isValidating]
-  );
-
-  return memoizedValue;
+export async function deleteDeviceById(id: string) {
+  try {
+    const url = endpoints.device.delete(id);
+    const res = await axiosInstance.delete(url);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
+  }
 }

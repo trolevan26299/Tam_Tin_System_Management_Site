@@ -72,6 +72,23 @@ export type IProductItem = {
   };
 };
 
+export type IDevice = {
+  _id: string;
+  name: string;
+  id_device: string;
+  category_id: string;
+  status: string;
+  belong_to: string;
+  delivery_date: string;
+  note: string;
+  warranty: number;
+};
+
+export type ICategory = {
+  _id: string;
+  name: string;
+};
+
 export type IProductTableFilterValue = string | string[];
 
 export type IProductTableFilters = {

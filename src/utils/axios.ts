@@ -35,6 +35,9 @@ export const endpoints = {
   },
   user: {
     list: '/api/account/list',
+    create: '/api/account',
+    details: (userId: string) => `/api/account/${userId}`,
+    update: (userId: string) => `/api/account/${userId}`,
   },
   mail: {
     list: '/api/mail/list',
@@ -47,9 +50,14 @@ export const endpoints = {
     latest: '/api/post/latest',
     search: '/api/post/search',
   },
-  product: {
-    list: '/api/product/list',
-    details: '/api/product/details',
-    search: '/api/product/search',
+  device: {
+    list: '/api/device/list',
+    details: (deviceId: string) => `/api/device/${deviceId}`,
+    create: '/api/device',
+    update: (deviceId: string) => `/api/device/${deviceId}`,
+    delete: (deviceId: string) => `api/device/${deviceId}`,
+  },
+  category: {
+    list: '/api/category/list',
   },
 };
