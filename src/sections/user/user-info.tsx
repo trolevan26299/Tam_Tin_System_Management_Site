@@ -107,7 +107,6 @@ export default function UserInfo({
   });
 
   useEffect(() => {
-    reset();
     setValue('username', currentAccount?.username || '');
     setValue('password', currentAccount?.password || '');
     setValue('status', currentAccount?.status);

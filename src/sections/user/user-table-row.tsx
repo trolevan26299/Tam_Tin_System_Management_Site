@@ -1,22 +1,18 @@
 // @mui
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
-import Tooltip from '@mui/material/Tooltip';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // types
 import { IUserList } from 'src/types/user';
 // components
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
 import Label from 'src/components/label';
 //
-import UserQuickEditForm from './user-quick-edit-form';
 
 // ----------------------------------------------------------------------
 
@@ -25,16 +21,9 @@ type Props = {
   onEditRow: VoidFunction;
   row: IUserList;
   onSelectRow: VoidFunction;
-  onDeleteRow: VoidFunction;
 };
 
-export default function UserTableRow({
-  row,
-  selected,
-  onEditRow,
-  onSelectRow,
-  onDeleteRow,
-}: Props) {
+export default function UserTableRow({ row, selected, onEditRow, onSelectRow }: Props) {
   const { status, username } = row;
 
   const confirm = useBoolean();
@@ -61,19 +50,7 @@ export default function UserTableRow({
           </Label>
         </TableCell>
 
-        <TableCell align="right" sx={{ px: 1, whiteSpace: 'nowrap' }}>
-          <Tooltip title="Quick Edit" placement="top" arrow>
-            <IconButton
-              color={quickEdit.value ? 'inherit' : 'default'}
-              onClick={() => {
-                quickEdit.onTrue();
-                onEditRow();
-              }}
-            >
-              <Iconify icon="solar:pen-bold" />
-            </IconButton>
-          </Tooltip>
-
+        <TableCell align="center" sx={{ px: 1, whiteSpace: 'nowrap' }}>
           <IconButton color={popover.open ? 'inherit' : 'default'} onClick={popover.onOpen}>
             <Iconify icon="eva:more-vertical-fill" />
           </IconButton>
@@ -90,17 +67,6 @@ export default function UserTableRow({
       >
         <MenuItem
           onClick={() => {
-            confirm.onTrue();
-            popover.onClose();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
             onEditRow();
             popover.onClose();
           }}
@@ -109,18 +75,6 @@ export default function UserTableRow({
           Edit
         </MenuItem>
       </CustomPopover>
-
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Delete"
-        content="Are you sure want to delete?"
-        action={
-          <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Delete
-          </Button>
-        }
-      />
     </>
   );
 }

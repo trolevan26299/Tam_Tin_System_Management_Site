@@ -6,6 +6,7 @@ import ListItemText from '@mui/material/ListItemText';
 import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
+import Tooltip from '@mui/material/Tooltip';
 // utils
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
@@ -39,35 +40,85 @@ export default function ProductTableRow({
 
   const popover = usePopover();
 
+  const renderCellWithTooltip = (text: string) => (
+    <Tooltip title={text} arrow>
+      <div
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxHeight: '3.6em', // 2 lines * line-height (1.8em)
+        }}
+      >
+        {text}
+      </div>
+    </Tooltip>
+  );
+
+  const formatDeliveryDate = (date: string) => {
+    try {
+      if (date) {
+        return format(new Date(date), 'dd/MM/yyyy');
+      }
+      return '';
+    } catch (error) {
+      console.error('Invalid date format:', error);
+      return '';
+    }
+  };
+
   return (
     <>
       <TableRow hover selected={selected}>
         <TableCell>
-          <ListItemText primary={name} primaryTypographyProps={{ typography: 'body2' }} />
-        </TableCell>
-        <TableCell>
-          <ListItemText primary={id_device} primaryTypographyProps={{ typography: 'body2' }} />
-        </TableCell>
-        <TableCell>
           <ListItemText
-            primary={category_id.name}
+            primary={renderCellWithTooltip(name)}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
         <TableCell>
-          <ListItemText primary={warranty} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(id_device)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
         <TableCell>
-          <ListItemText primary={status} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(category_id)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
         <TableCell>
-          <ListItemText primary={delivery_date} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(String(warranty))}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
         <TableCell>
-          <ListItemText primary={belong_to} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(status)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
         <TableCell>
-          <ListItemText primary={note} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(formatDeliveryDate(delivery_date))}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(belong_to)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(note)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
 
         <TableCell align="right">

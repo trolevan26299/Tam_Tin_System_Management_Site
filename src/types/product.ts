@@ -76,15 +76,17 @@ export type IDevice = {
   _id: string;
   name: string;
   id_device: string;
-  category_id: {
-    _id: string;
-    name: string;
-  };
+  category_id: string;
   status: string;
   belong_to: string;
-  delivery_date: number;
+  delivery_date: string;
   note: string;
   warranty: number;
+};
+
+export type ICategory = {
+  _id: string;
+  name: string;
 };
 
 export type IProductTableFilterValue = string | string[];

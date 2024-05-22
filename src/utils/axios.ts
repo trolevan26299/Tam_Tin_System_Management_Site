@@ -52,7 +52,12 @@ export const endpoints = {
   },
   device: {
     list: '/api/device/list',
-    // details: '/api/product/details',
-    // search: '/api/product/search',
+    details: (deviceId: string) => `/api/device/${deviceId}`,
+    create: '/api/device',
+    update: (deviceId: string) => `/api/device/${deviceId}`,
+    delete: (deviceId: string) => `api/device/${deviceId}`,
+  },
+  category: {
+    list: '/api/category/list',
   },
 };

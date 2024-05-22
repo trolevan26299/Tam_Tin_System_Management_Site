@@ -30,10 +30,10 @@ import {
   useTable,
 } from 'src/components/table';
 // types
-import { getListDevice } from 'src/api/product';
-import { IDevice, IProductTableFilters, IProductTableFilterValue } from 'src/types/product';
-import ProductTableRow from '../product-table-row';
+import { deleteDeviceById, getDeviceById, getListCategory, getListDevice } from 'src/api/product';
+import { ICategory, IDevice, IProductTableFilters } from 'src/types/product';
 import DeviceInfo from '../product-info';
+import ProductTableRow from '../product-table-row';
 //
 
 // ----------------------------------------------------------------------
@@ -66,6 +66,7 @@ export default function ProductListView() {
   const settings = useSettingsContext();
 
   const [tableData, setTableData] = useState<IDevice[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
@@ -79,7 +80,7 @@ export default function ProductListView() {
     filters,
   });
 
-  const dataInPage = dataFiltered.slice(
+  const dataInPage = dataFiltered?.slice(
     table.page * table.rowsPerPage,
     table.page * table.rowsPerPage + table.rowsPerPage
   );
@@ -88,24 +89,32 @@ export default function ProductListView() {
 
   const canReset = !isEqual(defaultFilters, filters);
 
-  const notFound = !dataFiltered.length && canReset;
+  const notFound = !dataFiltered?.length && canReset;
+
+  const handleDeleteById = async (id: string) => {
+    await deleteDeviceById(id);
+  };
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row._id !== id);
+      handleDeleteById(id);
+      const deleteRow = tableData?.filter((row) => row._id !== id);
       setTableData(deleteRow);
 
-      table.onUpdatePageDeleteRow(dataInPage.length);
+      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage?.length, table, tableData]
   );
 
-  const handleEditRow = useCallback(
-    (id: string) => {
-      router.push(paths.dashboard.product.edit(id));
-    },
-    [router]
-  );
+  const handleEditRow = async (id: string) => {
+    try {
+      const currentDevice = await getDeviceById(id);
+      setSelectedItem(currentDevice.data);
+      setOpenDialog(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -113,16 +122,28 @@ export default function ProductListView() {
   };
 
   const getDeviceList = async () => {
+    const deviceList = await getListDevice();
+    return deviceList;
+  };
+
+  const getCategoryList = async () => {
+    const categoryList = await getListCategory();
+    return categoryList;
+  };
+
+  const getAllData = async () => {
     try {
-      const deviceList = await getListDevice();
+      const [deviceList, categoryList] = await Promise.all([getDeviceList(), getCategoryList()]);
       setTableData(deviceList);
+      setCategories(categoryList);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    getDeviceList();
+    getAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <>
@@ -160,7 +181,7 @@ export default function ProductListView() {
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={tableData.length}
+                  rowCount={tableData?.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                 />
@@ -174,7 +195,11 @@ export default function ProductListView() {
                     .map((row) => (
                       <ProductTableRow
                         key={row._id}
-                        row={row}
+                        row={{
+                          ...row,
+                          category_id: categories?.find((x) => x._id === row.category_id)
+                            ?.name as string,
+                        }}
                         selected={table.selected.includes(row?._id as string)}
                         onSelectRow={() => table.onSelectRow(row?._id as string)}
                         onDeleteRow={() => handleDeleteRow(row?._id as string)}
@@ -209,7 +234,8 @@ export default function ProductListView() {
         currentDevice={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
-        getDeviceList={getDeviceList}
+        getDeviceList={getAllData}
+        listCategory={categories}
       />
     </>
   );
@@ -228,15 +254,15 @@ function applyFilter({
 }) {
   const { name } = filters;
 
-  const stabilizedThis = inputData.map((el, index) => [el, index] as const);
+  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
 
-  stabilizedThis.sort((a, b) => {
+  stabilizedThis?.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;
     return a[1] - b[1];
   });
 
-  inputData = stabilizedThis.map((el) => el[0]);
+  inputData = stabilizedThis?.map((el) => el[0]);
 
   if (name) {
     inputData = inputData.filter(
