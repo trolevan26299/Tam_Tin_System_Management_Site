@@ -50,5 +50,7 @@
   "upgrade_to_pro": "Nâng cấp lên phiên bản Pro",
   "demo": {
     "title": "Vietnamese"
-  }
+  },
+  "sub_category": "danh mục con",
+  "category": "danh mục"
 }

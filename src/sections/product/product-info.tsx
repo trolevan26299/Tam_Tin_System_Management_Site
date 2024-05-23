@@ -19,7 +19,8 @@ import { Controller, DefaultValues, useForm } from 'react-hook-form';
 import { createDevice, updateDeviceById } from 'src/api/product';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
-import { ICategory, IDevice } from 'src/types/product';
+import { ISubCategory } from 'src/types/category';
+import { IDevice } from 'src/types/product';
 import uuidv4 from 'src/utils/uuidv4';
 import * as Yup from 'yup';
 import { option } from '../user/user-info';
@@ -27,7 +28,7 @@ import { option } from '../user/user-info';
 export type deviceInfo = {
   _id?: string;
   name: string;
-  category_id: string;
+  sub_category_id: string;
   status: string;
   warranty: number;
 
@@ -47,13 +48,13 @@ export default function DeviceInfo({
   getDeviceList,
   open,
   onClose,
-  listCategory,
+  listSubCategory,
 }: {
   currentDevice?: IDevice;
   open: boolean;
   onClose: () => void;
   getDeviceList: () => void;
-  listCategory: ICategory[];
+  listSubCategory: ISubCategory[];
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -67,12 +68,12 @@ export default function DeviceInfo({
     belong_to: '',
     delivery_date: '',
     note: '',
-    category_id: '',
+    sub_category_id: '',
   });
 
   const NewDevice = Yup.object().shape({
     name: Yup.string().required('Name is required !'),
-    category_id: Yup.string().required('Category is required !'),
+    sub_category_id: Yup.string().required('Sub category is required !'),
     status: Yup.string().required('Status is required !'),
     warranty: Yup.number().required('warranty is required !'),
     delivery_date: Yup.string().when('status', {
@@ -111,7 +112,6 @@ export default function DeviceInfo({
     const newDate = { ...data, delivery_date: deliveryDate };
     if (newDate?._id) {
       const updateDevice = await updateDeviceById(newDate?._id, newDate as IDevice);
-      console.log('🚀 ~ onSubmit ~ updateDevice:', updateDevice);
       if (updateDevice) {
         handleGetWhenCreateAndUpdateSuccess(!!currentDevice);
       }
@@ -220,9 +220,9 @@ export default function DeviceInfo({
                 </Grid>
               )}
               <Grid xs={12}>
-                <RHFSelect name="category_id" label="Category">
-                  {listCategory?.map((item: option, index) => (
-                    <MenuItem value={item?._id} key={index}>
+                <RHFSelect name="sub_category_id" label="Sub Category">
+                  {listSubCategory?.map((item: ISubCategory) => (
+                    <MenuItem value={item?._id} key={item?._id}>
                       {item?.name}
                     </MenuItem>
                   ))}

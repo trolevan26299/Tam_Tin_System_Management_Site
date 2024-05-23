@@ -16,15 +16,6 @@ export async function getListDevice() {
   }
 }
 
-export async function getListCategory() {
-  try {
-    const res = await axiosInstance.get(endpoints.category.list);
-    return res.data.data;
-  } catch (error) {
-    return console.error(error);
-  }
-}
-
 export async function getDeviceById(id: string) {
   try {
     const url = endpoints.device.details(id);

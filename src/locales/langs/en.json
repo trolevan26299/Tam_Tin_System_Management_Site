@@ -50,5 +50,7 @@
   "upgrade_to_pro": "Upgrade to Pro",
   "demo": {
     "title": "English"
-  }
+  },
+  "sub_category": "Sub category",
+  "category": "Category"
 }

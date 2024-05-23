@@ -107,6 +107,14 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/product/${MOCK_ID}/edit`,
       },
     },
+    category: {
+      root: `${ROOTS.DASHBOARD}/category`,
+      list: `${ROOTS.DASHBOARD}/category/list`,
+    },
+    subCategory: {
+      root: `${ROOTS.DASHBOARD}/sub-category`,
+      list: `${ROOTS.DASHBOARD}/sub-category/list`,
+    },
     invoice: {
       root: `${ROOTS.DASHBOARD}/invoice`,
       new: `${ROOTS.DASHBOARD}/invoice/new`,
