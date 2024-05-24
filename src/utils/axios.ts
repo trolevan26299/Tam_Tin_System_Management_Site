@@ -59,5 +59,16 @@ export const endpoints = {
   },
   category: {
     list: '/api/category/list',
+    details: (categoryId: string) => `/api/category/${categoryId}`,
+    create: '/api/category',
+    update: (categoryId: string) => `/api/category/${categoryId}`,
+    delete: (categoryId: string) => `api/category/${categoryId}`,
+  },
+  subCategory: {
+    list: '/api/sub-category/list',
+    details: (subCategoryId: string) => `/api/sub-category/${subCategoryId}`,
+    create: '/api/sub-category',
+    update: (subCategoryId: string) => `/api/sub-category/${subCategoryId}`,
+    delete: (subCategoryId: string) => `api/sub-category/${subCategoryId}`,
   },
 };

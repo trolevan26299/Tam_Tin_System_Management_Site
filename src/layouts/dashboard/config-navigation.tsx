@@ -44,7 +44,6 @@ const ICONS = {
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
 };
-
 // ----------------------------------------------------------------------
 
 export function useNavData() {
@@ -121,6 +120,18 @@ export function useNavData() {
               // { title: t('create'), path: paths.dashboard.product.new },
               // { title: t('edit'), path: paths.dashboard.product.demo.edit },
             ],
+          },
+          {
+            title: t('category'),
+            path: paths.dashboard.category.root,
+            icon: ICONS.product,
+            children: [{ title: t('list'), path: paths.dashboard.category.root }],
+          },
+          {
+            title: t('sub_category'),
+            path: paths.dashboard.subCategory.root,
+            icon: ICONS.product,
+            children: [{ title: t('list'), path: paths.dashboard.subCategory.root }],
           },
 
           // ORDER

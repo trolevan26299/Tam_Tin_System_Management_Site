@@ -1,85 +1,52 @@
 'use client';
 
-import isEqual from 'lodash/isEqual';
 import { useCallback, useEffect, useState } from 'react';
-// @mui
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Container from '@mui/material/Container';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-// routes
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
-// hooks
-// _mock
-// api
-// components
+
+import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { getListCategory } from 'src/api/product';
+import { deleteSubCategoryById, getListSubCategory, getSubCategoryById } from 'src/api/allCategory';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { useSettingsContext } from 'src/components/settings';
 import {
-  emptyRows,
-  getComparator,
   TableEmptyRows,
   TableHeadCustom,
   TableNoData,
   TablePaginationCustom,
+  emptyRows,
+  getComparator,
   useTable,
 } from 'src/components/table';
-// types
-import { getListSubCategory } from 'src/api/allCategory';
-import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
-import { ISubCategory } from 'src/types/category';
-import { IDevice, IProductTableFilters } from 'src/types/product';
-import DeviceInfo from '../product-info';
-import ProductTableRow from '../product-table-row';
-//
-
-// ----------------------------------------------------------------------
+import { paths } from 'src/routes/paths';
+import { ICategory, ICategoryTableFilters, ISubCategory } from 'src/types/category';
+import SubCategoryInfo from '../sub-category-info';
+import SubCategoryTableRow from '../sub-category-table-row';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
-  { id: 'id_device', label: 'ID Device', width: 120 },
-  { id: 'category_name', label: 'Category name', width: 160 },
-  { id: 'warranty', label: 'Warranty', width: 140 },
-  { id: 'status', label: 'Status', width: 90 },
-  { id: 'delivery_date', label: 'Delivery date', width: 160 },
-  { id: 'belong_to', label: 'Belong to', width: 180 },
-  { id: 'note', label: 'Note', width: 160 },
-  { id: 'action', label: 'Action', width: 80 },
+  { id: 'category', label: 'Category' },
+  { id: 'number_of_device', label: 'Number of device' },
+  { id: 'action', label: 'Action' },
 ];
 
-const defaultFilters: IProductTableFilters = {
+const filtersData: ICategoryTableFilters = {
   name: '',
-  publish: [],
-  stock: [],
 };
 
-// ----------------------------------------------------------------------
-
-export default function ProductListView() {
-  const router = useRouter();
-
+export default function SubCategoryListView() {
   const table = useTable();
-
   const settings = useSettingsContext();
 
-  const [tableData, setTableData] = useState<IDevice[]>([]);
-  const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
-
-  const [filters, setFilters] = useState(defaultFilters);
-
+  const [tableData, setTableData] = useState<ISubCategory[]>([]);
+  const [categories, setCategories] = useState<ICategory[]>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-
-  const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
+  const [selectedItem, setSelectedItem] = useState<ISubCategory | undefined>(undefined);
 
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
-    filters,
+    filters: filtersData,
   });
 
   const dataInPage = dataFiltered?.slice(
@@ -87,14 +54,15 @@ export default function ProductListView() {
     table.page * table.rowsPerPage + table.rowsPerPage
   );
 
-  const denseHeight = table.dense ? 60 : 80;
+  const denseHeight = table.dense ? 52 : 72;
 
-  const canReset = !isEqual(defaultFilters, filters);
-
-  const notFound = !dataFiltered?.length && canReset;
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(undefined);
+  };
 
   const handleDeleteById = async (id: string) => {
-    await deleteDeviceById(id);
+    await deleteSubCategoryById(id);
   };
 
   const handleDeleteRow = useCallback(
@@ -110,22 +78,12 @@ export default function ProductListView() {
 
   const handleEditRow = async (id: string) => {
     try {
-      const currentDevice = await getDeviceById(id);
-      setSelectedItem(currentDevice.data);
+      const currentSubCategory = await getSubCategoryById(id);
+      setSelectedItem(currentSubCategory.data);
       setOpenDialog(true);
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedItem(undefined);
-  };
-
-  const getDeviceList = async () => {
-    const deviceList = await getListDevice();
-    return deviceList;
   };
 
   const getSubCategoryList = async () => {
@@ -133,14 +91,19 @@ export default function ProductListView() {
     return subCategoryList;
   };
 
+  const getCategoryList = async () => {
+    const categoryList = await getListCategory();
+    return categoryList;
+  };
+
   const getAllData = async () => {
     try {
-      const [deviceList, subCategoryList] = await Promise.all([
-        getDeviceList(),
+      const [subCategoryList, categoryList] = await Promise.all([
         getSubCategoryList(),
+        getCategoryList(),
       ]);
-      setTableData(deviceList);
-      setSubCategories(subCategoryList);
+      setTableData(subCategoryList);
+      setCategories(categoryList);
     } catch (error) {
       console.log(error);
     }
@@ -158,8 +121,8 @@ export default function ProductListView() {
           links={[
             { name: 'Dashboard', href: paths.dashboard.root },
             {
-              name: 'Product',
-              href: paths.dashboard.product.root,
+              name: 'Sub Category',
+              href: paths.dashboard.subCategory.root,
             },
             { name: 'List' },
           ]}
@@ -172,12 +135,11 @@ export default function ProductListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Create Device
+              Create sub category
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
-
         <Card>
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
@@ -190,7 +152,6 @@ export default function ProductListView() {
                   numSelected={table.selected.length}
                   onSort={table.onSort}
                 />
-
                 <TableBody>
                   {dataFiltered
                     ?.slice(
@@ -198,11 +159,11 @@ export default function ProductListView() {
                       table.page * table.rowsPerPage + table.rowsPerPage
                     )
                     .map((row) => (
-                      <ProductTableRow
+                      <SubCategoryTableRow
                         key={row._id}
                         row={{
                           ...row,
-                          sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
+                          category_id: categories?.find((x) => x._id === row.category_id)
                             ?.name as string,
                         }}
                         selected={table.selected.includes(row?._id as string)}
@@ -211,51 +172,46 @@ export default function ProductListView() {
                         onEditRow={() => handleEditRow(row?._id as string)}
                       />
                     ))}
-
                   <TableEmptyRows
                     height={denseHeight}
                     emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
                   />
-
-                  <TableNoData notFound={notFound} />
+                  <TableNoData notFound={tableData?.length === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered.length}
+            count={dataFiltered?.length || 0}
             page={table.page}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
             onRowsPerPageChange={table.onChangeRowsPerPage}
-            //
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
         </Card>
       </Container>
-      <DeviceInfo
-        currentDevice={selectedItem}
+      <SubCategoryInfo
+        currentSubCategory={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
-        getDeviceList={getAllData}
-        listSubCategory={subCategories}
+        getSubCategoryList={getAllData}
+        listCategory={categories}
       />
     </>
   );
 }
-
-// ----------------------------------------------------------------------
 
 function applyFilter({
   inputData,
   comparator,
   filters,
 }: {
-  inputData: IDevice[];
+  inputData?: ISubCategory[];
   comparator: (a: any, b: any) => number;
-  filters: IProductTableFilters;
+  filters: ICategoryTableFilters;
 }) {
   const { name } = filters;
 
@@ -270,8 +226,8 @@ function applyFilter({
   inputData = stabilizedThis?.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter(
-      (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    inputData = inputData?.filter(
+      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
   }
 
