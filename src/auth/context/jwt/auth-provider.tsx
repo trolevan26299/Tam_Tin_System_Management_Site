@@ -83,6 +83,7 @@ export function AuthProvider({ children }: Props) {
           payload: {
             user: {
               ...user,
+              role: res.data?.data?.role,
               access_token,
             },
           },
