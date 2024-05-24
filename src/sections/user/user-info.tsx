@@ -17,6 +17,7 @@ import { useTheme } from '@mui/material/styles';
 import { useEffect } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
 import { createUser, updateUserById } from 'src/api/user';
+import { useAuthContext } from 'src/auth/hooks';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
@@ -52,6 +53,7 @@ export default function UserInfo({
   onClose: () => void;
   getUserList: () => void;
 }) {
+  const { user } = useAuthContext();
   const theme = useTheme();
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
@@ -71,9 +73,9 @@ export default function UserInfo({
     resolver: yupResolver(NewAccount),
     defaultValues,
   });
+  console.log(!(user?.role === optionStatus?.[2]?.value));
 
   const {
-    reset,
     setValue,
     handleSubmit,
     formState: { isSubmitting },
@@ -176,7 +178,11 @@ export default function UserInfo({
                     />
                   </Grid>
                   <Grid xs={12}>
-                    <RHFSelect name="status" label="Status" disabled>
+                    <RHFSelect
+                      name="status"
+                      label="Status"
+                      disabled={!(user?.role === 'superadmin')}
+                    >
                       {optionStatus?.map((item: option, index) => (
                         <MenuItem value={item?.value} key={index}>
                           {item?.label}

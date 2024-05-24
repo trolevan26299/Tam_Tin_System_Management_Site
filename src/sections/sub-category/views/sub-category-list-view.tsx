@@ -3,8 +3,12 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
-import { getListCategory } from 'src/api/product';
-import { deleteSubCategoryById, getListSubCategory, getSubCategoryById } from 'src/api/allCategory';
+import {
+  deleteSubCategoryById,
+  getListCategory,
+  getListSubCategory,
+  getSubCategoryById,
+} from 'src/api/allCategory';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
