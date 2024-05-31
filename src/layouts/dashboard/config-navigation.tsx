@@ -134,6 +134,14 @@ export function useNavData() {
             children: [{ title: t('list'), path: paths.dashboard.subCategory.root }],
           },
 
+          // CUSTOMER
+          {
+            title: t('customer'),
+            path: paths.dashboard.customer.root,
+            icon: ICONS.product,
+            children: [{ title: t('list'), path: paths.dashboard.customer.root }],
+          },
+
           // ORDER
           {
             title: t('order'),

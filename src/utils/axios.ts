@@ -71,4 +71,11 @@ export const endpoints = {
     update: (subCategoryId: string) => `/api/sub-category/${subCategoryId}`,
     delete: (subCategoryId: string) => `api/sub-category/${subCategoryId}`,
   },
+  customer: {
+    list: '/api/customer/list',
+    details: (customerId: string) => `/api/customer/${customerId}`,
+    create: '/api/customer',
+    update: (customerId: string) => `/api/customer/${customerId}`,
+    delete: (customerId: string) => `api/customer/${customerId}`,
+  },
 };
