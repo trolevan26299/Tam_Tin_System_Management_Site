@@ -115,6 +115,10 @@ export const paths = {
       root: `${ROOTS.DASHBOARD}/sub-category`,
       list: `${ROOTS.DASHBOARD}/sub-category/list`,
     },
+    customer: {
+      root: `${ROOTS.DASHBOARD}/customer`,
+      list: `${ROOTS.DASHBOARD}/customer/list`,
+    },
     invoice: {
       root: `${ROOTS.DASHBOARD}/invoice`,
       new: `${ROOTS.DASHBOARD}/invoice/new`,
