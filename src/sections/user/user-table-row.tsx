@@ -34,7 +34,7 @@ export default function UserTableRow({ row, selected, onEditRow, onSelectRow }: 
 
   return (
     <TableRow hover selected={selected}>
-      <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+      <TableCell>
         <ListItemText primary={username} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
 
