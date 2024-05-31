@@ -4,9 +4,9 @@ import { SubCategoryListView } from 'src/sections/sub-category/views';
 // ----------------------------------------------------------------------
 
 export const metadata = {
-  title: 'Dashboard: Product List',
+  title: 'Dashboard: Sub category List',
 };
 
-export default function ProductListPage() {
+export default function SubCategoryPage() {
   return <SubCategoryListView />;
 }
