@@ -1,9 +1,11 @@
-import { ICustomer } from 'src/types/customer';
+import { ICustomer, IQueryCustomer } from 'src/types/customer';
 import axiosInstance, { endpoints } from 'src/utils/axios';
 
-export async function getListCustomer() {
+export async function getListCustomer(query?: IQueryCustomer) {
   try {
-    const res = await axiosInstance.get(endpoints.customer.list);
+    const res = await axiosInstance.get(endpoints.customer.list, {
+      params: query,
+    });
     return res.data.data;
   } catch (error) {
     return console.error(error);

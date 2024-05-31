@@ -17,9 +17,10 @@ import {
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import { ICustomer, ICustomerTableFilters } from 'src/types/customer';
+import { ICustomer, ICustomerTableFilters, IQueryCustomer } from 'src/types/customer';
 import CustomerTableRow from '../customer-table-row';
 import CustomerInfo from '../customer-info';
+import CustomerTableToolbar from '../customer-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
@@ -86,8 +87,8 @@ export default function CustomerListView() {
     setSelectedItem(undefined);
   };
 
-  const getList = async () => {
-    const customerList = await getListCustomer();
+  const getList = async (query?: IQueryCustomer) => {
+    const customerList = await getListCustomer(query || undefined);
     setTableData(customerList);
   };
 
@@ -123,6 +124,7 @@ export default function CustomerListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
         <Card>
+          <CustomerTableToolbar onSearch={getList} />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
