@@ -32,8 +32,8 @@ const initializeDefaultValues = (): DefaultValues<ICustomer> => ({
 });
 
 const optionStatus: option[] = [
-  { label: 'Bank', value: 'bank' },
-  { label: 'Private', value: 'private' },
+  { label: 'Ngân hàng', value: 'bank' },
+  { label: 'Cá nhân', value: 'private' },
 ];
 
 function CustomerInfo({

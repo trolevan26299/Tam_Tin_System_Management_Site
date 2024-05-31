@@ -11,3 +11,9 @@ export type ICustomer = {
 export type ICustomerTableFilters = {
   name: string;
 };
+
+export type IQueryCustomer = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
+};
