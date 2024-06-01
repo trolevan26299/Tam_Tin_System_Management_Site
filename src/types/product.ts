@@ -80,6 +80,7 @@ export type IDevice = {
   status: string;
   belong_to: string;
   delivery_date: string;
+  price: string;
   note: string;
   warranty: number;
 };

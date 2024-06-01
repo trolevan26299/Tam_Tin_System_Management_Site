@@ -82,7 +82,6 @@ export default function UserListView() {
     (id: string) => {
       handleDeleteById(id);
       const deleteRow = tableData?.filter((row) => row._id !== id);
-      console.log('🚀 ~ UserListView ~ deleteRow:', deleteRow);
       setTableData(deleteRow);
 
       table.onUpdatePageDeleteRow(dataInPage?.length || 0);

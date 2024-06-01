@@ -107,7 +107,6 @@ export default function UserInfo({
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log('🚀 ~ onSubmit ~ data:', data);
     if (currentAccount) {
       const updateAccount = await updateUserById(String(currentAccount?._id), data);
       if (updateAccount !== 'error') {
