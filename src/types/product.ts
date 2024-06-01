@@ -90,4 +90,11 @@ export type IProductTableFilters = {
   name: string;
   stock: string[];
   publish: string[];
+  status: string;
+};
+
+export type IQueryDevice = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
 };

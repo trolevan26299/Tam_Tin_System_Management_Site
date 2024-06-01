@@ -30,13 +30,19 @@ import {
   useTable,
 } from 'src/components/table';
 // types
+import { Tab, Tabs } from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
 import { getListSubCategory } from 'src/api/allCategory';
+import { getListCustomer } from 'src/api/customer';
 import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
+import Label from 'src/components/label';
 import { ISubCategory } from 'src/types/category';
-import { IDevice, IProductTableFilters } from 'src/types/product';
+import { ICustomer } from 'src/types/customer';
+import { IInvoiceTableFilterValue } from 'src/types/invoice';
+import { IDevice, IProductTableFilters, IQueryDevice } from 'src/types/product';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
-//
+import ProductTableToolbar from '../product-table-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -48,6 +54,7 @@ const TABLE_HEAD = [
   { id: 'status', label: 'Status', width: 90 },
   { id: 'delivery_date', label: 'Delivery date', width: 160 },
   { id: 'belong_to', label: 'Belong to', width: 180 },
+  { id: 'price', label: 'Price', width: 180 },
   { id: 'note', label: 'Note', width: 160 },
   { id: 'action', label: 'Action', width: 80 },
 ];
@@ -56,12 +63,14 @@ const defaultFilters: IProductTableFilters = {
   name: '',
   publish: [],
   stock: [],
+  status: 'all',
 };
 
 // ----------------------------------------------------------------------
 
 export default function ProductListView() {
   const router = useRouter();
+  const theme = useTheme();
 
   const table = useTable();
 
@@ -69,12 +78,33 @@ export default function ProductListView() {
 
   const [tableData, setTableData] = useState<IDevice[]>([]);
   const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
 
   const [filters, setFilters] = useState(defaultFilters);
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
+  const [queryDevice, setQueryDevice] = useState<IQueryDevice>({});
+
+  const getInvoiceLength = (status: string) =>
+    tableData.filter((item) => item.status === status).length;
+
+  const TABS = [
+    { value: 'all', label: 'All', color: 'default', count: tableData.length },
+    {
+      value: 'inventory',
+      label: 'Inventory',
+      color: 'success',
+      count: getInvoiceLength('inventory'),
+    },
+    {
+      value: 'sold',
+      label: 'Sold',
+      color: 'warning',
+      count: getInvoiceLength('sold'),
+    },
+  ] as const;
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -96,6 +126,24 @@ export default function ProductListView() {
   const handleDeleteById = async (id: string) => {
     await deleteDeviceById(id);
   };
+
+  const handleFilters = useCallback(
+    (name: string, value: IInvoiceTableFilterValue) => {
+      table.onResetPage();
+      setFilters((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    },
+    [table]
+  );
+
+  const handleFilterStatus = useCallback(
+    (event: React.SyntheticEvent, newValue: string) => {
+      handleFilters('status', newValue);
+    },
+    [handleFilters]
+  );
 
   const handleDeleteRow = useCallback(
     (id: string) => {
@@ -123,8 +171,8 @@ export default function ProductListView() {
     setSelectedItem(undefined);
   };
 
-  const getDeviceList = async () => {
-    const deviceList = await getListDevice();
+  const getDeviceList = async (query?: IQueryDevice) => {
+    const deviceList = await getListDevice(query);
     return deviceList;
   };
 
@@ -133,14 +181,28 @@ export default function ProductListView() {
     return subCategoryList;
   };
 
+  const getCustomers = async () => {
+    const customerList: ICustomer[] = await getListCustomer();
+    return customerList;
+  };
+
+  const handleSearch = async (query: IQueryDevice) => {
+    const newQuery = { ...queryDevice, ...query };
+    const deviceList = await getDeviceList(newQuery);
+    setQueryDevice(newQuery);
+    setTableData(deviceList);
+  };
+
   const getAllData = async () => {
     try {
-      const [deviceList, subCategoryList] = await Promise.all([
+      const [deviceList, subCategoryList, customerList] = await Promise.all([
         getDeviceList(),
         getSubCategoryList(),
+        getCustomers(),
       ]);
       setTableData(deviceList);
       setSubCategories(subCategoryList);
+      setCustomers(customerList);
     } catch (error) {
       console.log(error);
     }
@@ -179,6 +241,34 @@ export default function ProductListView() {
         />
 
         <Card>
+          <Tabs
+            value={filters.status}
+            onChange={handleFilterStatus}
+            sx={{
+              px: 2.5,
+              boxShadow: `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
+            }}
+          >
+            {TABS.map((tab) => (
+              <Tab
+                key={tab.value}
+                value={tab.value}
+                label={tab.label}
+                iconPosition="end"
+                icon={
+                  <Label
+                    variant={
+                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
+                    }
+                    color={tab.color}
+                  >
+                    {tab.count}
+                  </Label>
+                }
+              />
+            ))}
+          </Tabs>
+          <ProductTableToolbar onSearch={(query) => handleSearch(query)} listCustomer={customers} />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
@@ -203,6 +293,8 @@ export default function ProductListView() {
                         row={{
                           ...row,
                           sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
+                            ?.name as string,
+                          belong_to: customers?.find((x) => x?._id === row?.belong_to)
                             ?.name as string,
                         }}
                         selected={table.selected.includes(row?._id as string)}
@@ -241,6 +333,7 @@ export default function ProductListView() {
         onClose={handleCloseDialog}
         getDeviceList={getAllData}
         listSubCategory={subCategories}
+        listCustomer={customers}
       />
     </>
   );
@@ -257,7 +350,7 @@ function applyFilter({
   comparator: (a: any, b: any) => number;
   filters: IProductTableFilters;
 }) {
-  const { name } = filters;
+  const { name, status } = filters;
 
   const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
 
@@ -273,6 +366,10 @@ function applyFilter({
     inputData = inputData.filter(
       (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
+  }
+
+  if (status !== 'all') {
+    inputData = inputData.filter((invoice) => invoice.status === status);
   }
 
   return inputData;

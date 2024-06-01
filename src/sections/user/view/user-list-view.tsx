@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 // @mui
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -29,7 +29,7 @@ import {
 // types
 import { IUserList, IUserTableFilters } from 'src/types/user';
 //
-import { getUserById, getUsers } from 'src/api/user';
+import { deleteUserById, getUserById, getUsers } from 'src/api/user';
 import UserInfo, { userInfo } from '../user-info';
 import UserTableRow from '../user-table-row';
 
@@ -73,6 +73,22 @@ export default function UserListView() {
     setOpenDialog(false);
     setSelectedItem(undefined);
   };
+
+  const handleDeleteById = async (id: string) => {
+    await deleteUserById(id);
+  };
+
+  const handleDeleteRow = useCallback(
+    (id: string) => {
+      handleDeleteById(id);
+      const deleteRow = tableData?.filter((row) => row._id !== id);
+      console.log('🚀 ~ UserListView ~ deleteRow:', deleteRow);
+      setTableData(deleteRow);
+
+      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
+    },
+    [dataInPage?.length, table, tableData]
+  );
 
   const handleEditRow = async (id: string) => {
     const detail = await getUserById(id);
@@ -145,6 +161,7 @@ export default function UserListView() {
                         selected={table.selected.includes(row._id)}
                         onSelectRow={() => table.onSelectRow(row._id)}
                         onEditRow={() => handleEditRow(row._id)}
+                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
                       />
                     ))}
 

@@ -21,6 +21,7 @@ import { useAuthContext } from 'src/auth/hooks';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
+import { ROLE } from 'src/types/user';
 import * as Yup from 'yup';
 import { useSnackbar } from '../../components/snackbar';
 
@@ -64,8 +65,18 @@ export default function UserInfo({
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
     password: Yup.string().required('Password is required'),
+    oldPassword: Yup.string().test('oldPassword', 'Old Password is required', (value) => {
+      if (currentAccount) {
+        if (currentAccount && value) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }),
     status: Yup.string(),
   });
+
   const { enqueueSnackbar } = useSnackbar();
   const [state, setState] = useState<{
     usePwd: boolean;
@@ -96,9 +107,9 @@ export default function UserInfo({
   };
 
   const onSubmit = handleSubmit(async (data) => {
+    console.log('🚀 ~ onSubmit ~ data:', data);
     if (currentAccount) {
       const updateAccount = await updateUserById(String(currentAccount?._id), data);
-
       if (updateAccount !== 'error') {
         handleGetWhenCreateAndUpdateSuccess(!!currentAccount);
       } else {
@@ -107,7 +118,12 @@ export default function UserInfo({
         });
       }
     } else {
-      const createAccount = await createUser(data);
+      const newData: userInfo = {
+        username: data?.username,
+        password: data?.password,
+        status: '',
+      };
+      const createAccount = await createUser(newData);
       if (createAccount) {
         handleGetWhenCreateAndUpdateSuccess(!currentAccount);
       }
@@ -206,7 +222,7 @@ export default function UserInfo({
                     <RHFSelect
                       name="status"
                       label="Status"
-                      disabled={!(user?.role === 'superadmin')}
+                      disabled={!(user?.role === ROLE.superadmin)}
                     >
                       {optionStatus?.map((item: option, index) => (
                         <MenuItem value={item?.value} key={index}>

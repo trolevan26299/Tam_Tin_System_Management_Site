@@ -41,3 +41,14 @@ export async function updateUserById(id: string, body: userInfo) {
     return error.status;
   }
 }
+
+export async function deleteUserById(id: string) {
+  try {
+    const url = endpoints.user.delete(id);
+    const res = await axiosInstance.delete(url);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
+  }
+}

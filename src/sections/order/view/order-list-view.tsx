@@ -137,6 +137,7 @@ export default function OrderListView() {
       totalRowsFiltered: dataFiltered.length,
     });
   }, [dataFiltered.length, dataInPage.length, table, tableData]);
+  console.log('🚀 ~ OrderListView ~ dataFiltered:', dataFiltered);
 
   const handleResetFilters = useCallback(() => {
     setFilters(defaultFilters);
