@@ -34,8 +34,17 @@ export default function ProductTableRow({
   onDeleteRow,
   onEditRow,
 }: Props) {
-  const { name, id_device, sub_category_id, status, belong_to, delivery_date, note, warranty } =
-    row;
+  const {
+    name,
+    id_device,
+    sub_category_id,
+    status,
+    belong_to,
+    delivery_date,
+    note,
+    warranty,
+    price,
+  } = row;
 
   const confirm = useBoolean();
 
@@ -112,6 +121,12 @@ export default function ProductTableRow({
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(belong_to)}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(price)}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

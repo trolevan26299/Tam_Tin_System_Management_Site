@@ -1,15 +1,13 @@
-import useSWR from 'swr';
-import { useMemo } from 'react';
 // utils
-import axiosInstance, { fetcher, endpoints } from 'src/utils/axios';
+import axiosInstance, { endpoints } from 'src/utils/axios';
 // types
-import { IDevice } from 'src/types/product';
+import { IDevice, IQueryDevice } from 'src/types/product';
 
 // ----------------------------------------------------------------------
 
-export async function getListDevice() {
+export async function getListDevice(query?: IQueryDevice) {
   try {
-    const res = await axiosInstance.post(endpoints.device.list);
+    const res = await axiosInstance.get(endpoints.device.list, { params: query });
     return res.data.dataRes;
   } catch (error) {
     return console.error(error);

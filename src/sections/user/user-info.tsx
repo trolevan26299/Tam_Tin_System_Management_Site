@@ -14,14 +14,14 @@ import {
 import IconButton from '@mui/material/IconButton';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useTheme } from '@mui/material/styles';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
 import { createUser, updateUserById } from 'src/api/user';
 import { useAuthContext } from 'src/auth/hooks';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
-import { useBoolean } from 'src/hooks/use-boolean';
+import { ROLE } from 'src/types/user';
 import * as Yup from 'yup';
 import { useSnackbar } from '../../components/snackbar';
 
@@ -42,6 +42,12 @@ const optionStatus: option[] = [
   { label: 'suspend', value: 'suspend' },
 ];
 
+const initializeDefaultValues = (): DefaultValues<userInfo> => ({
+  username: '',
+  password: '',
+  status: '',
+});
+
 export default function UserInfo({
   currentAccount,
   getUserList,
@@ -54,30 +60,41 @@ export default function UserInfo({
   getUserList: () => void;
 }) {
   const { user } = useAuthContext();
+
   const theme = useTheme();
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
     password: Yup.string().required('Password is required'),
+    oldPassword: Yup.string().test('oldPassword', 'Old Password is required', (value) => {
+      if (currentAccount) {
+        if (currentAccount && value) {
+          return true;
+        }
+        return false;
+      }
+      return true;
+    }),
     status: Yup.string(),
   });
-  const password = useBoolean();
-  const { enqueueSnackbar } = useSnackbar();
 
-  const defaultValues: DefaultValues<userInfo> = {
-    username: '',
-    password: '',
-    status: '',
-  };
+  const { enqueueSnackbar } = useSnackbar();
+  const [state, setState] = useState<{
+    usePwd: boolean;
+    useOldPwd: boolean;
+  }>({
+    usePwd: false,
+    useOldPwd: false,
+  });
 
   const methods = useForm<userInfo>({
     resolver: yupResolver(NewAccount),
-    defaultValues,
+    defaultValues: initializeDefaultValues(),
   });
-  console.log(!(user?.role === optionStatus?.[2]?.value));
 
   const {
     setValue,
     handleSubmit,
+    clearErrors,
     formState: { isSubmitting },
   } = methods;
 
@@ -92,7 +109,6 @@ export default function UserInfo({
   const onSubmit = handleSubmit(async (data) => {
     if (currentAccount) {
       const updateAccount = await updateUserById(String(currentAccount?._id), data);
-
       if (updateAccount !== 'error') {
         handleGetWhenCreateAndUpdateSuccess(!!currentAccount);
       } else {
@@ -101,7 +117,12 @@ export default function UserInfo({
         });
       }
     } else {
-      const createAccount = await createUser(data);
+      const newData: userInfo = {
+        username: data?.username,
+        password: data?.password,
+        status: '',
+      };
+      const createAccount = await createUser(newData);
       if (createAccount) {
         handleGetWhenCreateAndUpdateSuccess(!currentAccount);
       }
@@ -109,11 +130,20 @@ export default function UserInfo({
   });
 
   useEffect(() => {
-    setValue('username', currentAccount?.username || '');
-    setValue('password', currentAccount?.password || '');
-    setValue('status', currentAccount?.status);
+    if (currentAccount) {
+      setValue('username', currentAccount?.username);
+      setValue('oldPassword', '');
+      setValue('password', '');
+      setValue('status', currentAccount?.status);
+    } else {
+      const newDefaultValues = initializeDefaultValues();
+      setValue('username', newDefaultValues?.username as string);
+      setValue('password', newDefaultValues?.password as string);
+      setValue('status', newDefaultValues?.status as string);
+    }
+    clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentAccount]);
+  }, [currentAccount, open]);
   return (
     <Dialog
       fullWidth
@@ -145,13 +175,18 @@ export default function UserInfo({
                     <RHFTextField
                       name="oldPassword"
                       label="Old Password"
-                      type={password.value ? 'text' : 'password'}
+                      type={state.useOldPwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <IconButton onClick={password.onToggle} edge="end">
+                            <IconButton
+                              onClick={() => {
+                                setState({ ...state, useOldPwd: !state.useOldPwd });
+                              }}
+                              edge="end"
+                            >
                               <Iconify
-                                icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                                icon={state.useOldPwd ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
                               />
                             </IconButton>
                           </InputAdornment>
@@ -163,13 +198,18 @@ export default function UserInfo({
                     <RHFTextField
                       name="password"
                       label="Password"
-                      type={password.value ? 'text' : 'password'}
+                      type={state.usePwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
-                            <IconButton onClick={password.onToggle} edge="end">
+                            <IconButton
+                              onClick={() => {
+                                setState({ ...state, usePwd: !state.usePwd });
+                              }}
+                              edge="end"
+                            >
                               <Iconify
-                                icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                                icon={state.usePwd ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
                               />
                             </IconButton>
                           </InputAdornment>
@@ -181,7 +221,7 @@ export default function UserInfo({
                     <RHFSelect
                       name="status"
                       label="Status"
-                      disabled={!(user?.role === 'superadmin')}
+                      disabled={!(user?.role === ROLE.superadmin)}
                     >
                       {optionStatus?.map((item: option, index) => (
                         <MenuItem value={item?.value} key={index}>
@@ -196,13 +236,18 @@ export default function UserInfo({
                   <RHFTextField
                     name="password"
                     label="Password"
-                    type={password.value ? 'text' : 'password'}
+                    type={state.usePwd ? 'text' : 'password'}
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={password.onToggle} edge="end">
+                          <IconButton
+                            onClick={() => {
+                              setState({ ...state, usePwd: !state.usePwd });
+                            }}
+                            edge="end"
+                          >
                             <Iconify
-                              icon={password.value ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
+                              icon={state.usePwd ? 'solar:eye-bold' : 'solar:eye-closed-bold'}
                             />
                           </IconButton>
                         </InputAdornment>

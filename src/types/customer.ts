@@ -16,4 +16,5 @@ export type IQueryCustomer = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  belong_to?: string;
 };

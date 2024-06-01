@@ -80,6 +80,7 @@ export type IDevice = {
   status: string;
   belong_to: string;
   delivery_date: string;
+  price: string;
   note: string;
   warranty: number;
 };
@@ -90,4 +91,11 @@ export type IProductTableFilters = {
   name: string;
   stock: string[];
   publish: string[];
+  status: string;
+};
+
+export type IQueryDevice = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
 };
