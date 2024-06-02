@@ -31,7 +31,7 @@ const initializeDefaultValues = (): DefaultValues<ICustomer> => ({
   note: '',
 });
 
-const optionStatus: option[] = [
+export const optionStatus: option[] = [
   { label: 'Ngân hàng', value: 'bank' },
   { label: 'Cá nhân', value: 'private' },
 ];

@@ -1,6 +1,6 @@
-import { InputAdornment, MenuItem, Stack, TextField } from '@mui/material';
+import { MenuItem, Stack, TextField } from '@mui/material';
 import { ChangeEvent, useState } from 'react';
-import Iconify from 'src/components/iconify';
+import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
 import { ICustomer, IQueryCustomer } from 'src/types/customer';
 
 export default function ProductTableToolbar({
@@ -10,13 +10,7 @@ export default function ProductTableToolbar({
   onSearch: (query: IQueryCustomer) => void;
   listCustomer: ICustomer[];
 }) {
-  const [inputSearch, setInputSearch] = useState<string>('');
   const [selectBelongTo, setSelectBelongTo] = useState<string>('');
-
-  const handleSearchBar = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { value } = event.target;
-    setInputSearch(value);
-  };
 
   const handleChangeBelongTo = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
@@ -52,23 +46,13 @@ export default function ProductTableToolbar({
             </MenuItem>
           ))}
         </TextField>
-        <TextField
-          sx={{ width: 300 }}
-          value={inputSearch}
-          onChange={handleSearchBar}
-          placeholder="Search customer or phone number..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            ),
+
+        <SearchInputDebounce
+          onSearch={(value: string) => {
+            onSearch({ keyword: value });
           }}
-          onKeyUp={(e: any) => {
-            if (e.key.toLocaleLowerCase() === 'enter') {
-              onSearch({ keyword: e.target?.value });
-            }
-          }}
+          placeholder="Search device..."
+          width={300}
         />
       </Stack>
     </Stack>
