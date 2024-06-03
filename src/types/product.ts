@@ -81,6 +81,7 @@ export type IDevice = {
   belong_to: string;
   delivery_date: string;
   price: number;
+  quantity: number;
   note: string;
   warranty: number;
 

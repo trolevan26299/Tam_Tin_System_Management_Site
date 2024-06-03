@@ -45,6 +45,7 @@ export default function ProductTableRow({
     note,
     warranty,
     price,
+    quantity,
   } = row;
 
   const confirm = useBoolean();
@@ -128,6 +129,12 @@ export default function ProductTableRow({
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(renderMoney(String(price)))}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(String(quantity || ''))}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

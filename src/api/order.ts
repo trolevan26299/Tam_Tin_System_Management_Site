@@ -1,4 +1,4 @@
-import { IQueryOrder } from 'src/types/order';
+import { IOrderCreateOrUpdate, IQueryOrder } from 'src/types/order';
 import axiosInstance, { endpoints } from 'src/utils/axios';
 
 export async function getListOrder(query?: IQueryOrder) {
@@ -9,5 +9,25 @@ export async function getListOrder(query?: IQueryOrder) {
     return res.data.data;
   } catch (error) {
     return console.error(error);
+  }
+}
+
+export async function createOrder(body: IOrderCreateOrUpdate) {
+  try {
+    const res = await axiosInstance.post(endpoints.order.create, body);
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
+
+export async function updateOrderById(id: string, body: IOrderCreateOrUpdate) {
+  try {
+    const url = endpoints.order.update(id);
+    const res = await axiosInstance.put(url, body);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
   }
 }

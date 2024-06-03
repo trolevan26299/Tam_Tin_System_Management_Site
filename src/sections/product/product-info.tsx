@@ -33,6 +33,7 @@ export type deviceInfo = {
   price: number;
   status?: string;
   warranty: number;
+  quantity: number;
 
   id_device?: string;
   belong_to?: string;
@@ -74,12 +75,14 @@ export default function DeviceInfo({
     note: '',
     sub_category_id: '',
     price: undefined,
+    quantity: undefined,
   });
 
   const NewDevice = Yup.object().shape({
     name: Yup.string().required('Name is required !'),
     sub_category_id: Yup.string().required('Sub category is required !'),
     warranty: Yup.number().required('warranty is required !'),
+    quantity: Yup.number().required('quantity is required !'),
     delivery_date: Yup.string().when('status', {
       is: 'sold',
       then: (schema) => schema.required('Delivery date is required when the status is sold!'),
@@ -238,6 +241,16 @@ export default function DeviceInfo({
                 <RHFTextField
                   name="price"
                   label="Price"
+                  type="number"
+                  onKeyDown={(evt) =>
+                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                  }
+                />
+              </Grid>
+              <Grid xs={12}>
+                <RHFTextField
+                  name="quantity"
+                  label="Quantity"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()

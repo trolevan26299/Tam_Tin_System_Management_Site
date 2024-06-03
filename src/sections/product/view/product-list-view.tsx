@@ -55,6 +55,7 @@ const TABLE_HEAD = [
   { id: 'delivery_date', label: 'Delivery date', width: 160 },
   { id: 'belong_to', label: 'Belong to', width: 180 },
   { id: 'price', label: 'Price', width: 180 },
+  { id: 'quantity', label: 'Quantity', width: 180 },
   { id: 'note', label: 'Note', width: 160 },
   { id: 'action', label: 'Action', width: 80 },
 ];

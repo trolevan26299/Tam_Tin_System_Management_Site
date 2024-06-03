@@ -13,6 +13,7 @@ import {
   TableEmptyRows,
   TableHeadCustom,
   TableNoData,
+  TablePaginationCustom,
   emptyRows,
   getComparator,
   useTable,
@@ -196,6 +197,17 @@ function OrderListView() {
               </Table>
             </Scrollbar>
           </TableContainer>
+
+          <TablePaginationCustom
+            count={dataFiltered?.length as number}
+            page={table.page}
+            rowsPerPage={table.rowsPerPage}
+            onPageChange={table.onChangePage}
+            onRowsPerPageChange={table.onChangeRowsPerPage}
+            //
+            dense={table.dense}
+            onChangeDense={table.onChangeDense}
+          />
         </Card>
       </Container>
       <OrderDetailsInfo
@@ -204,6 +216,9 @@ function OrderListView() {
         currentOrder={selectedItem}
         listCustomer={customers}
         listDevice={devices}
+        getAllOrder={() => {
+          getList(queryList);
+        }}
       />
     </>
   );

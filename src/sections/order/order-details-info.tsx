@@ -13,8 +13,11 @@ import {
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
+import { format } from 'date-fns';
+import { useSnackbar } from 'notistack';
 import { Fragment, useEffect } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
+import { createOrder } from 'src/api/order';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
@@ -48,14 +51,17 @@ export default function OrderDetailsInfo({
   onClose,
   listCustomer,
   listDevice,
+  getAllOrder,
 }: {
   currentOrder?: IOrder;
   open: boolean;
-  onClose: () => void;
+  onClose: VoidFunction;
   listCustomer: ICustomer[];
   listDevice: IDevice[];
+  getAllOrder: VoidFunction;
 }) {
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
 
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Delivery date is required'),
@@ -95,14 +101,40 @@ export default function OrderDetailsInfo({
     control,
     name: 'items',
   });
-  const totalQuantity = watch('items')?.reduce((total, item) => total + Number(item.quantity), 0);
+
+  const totalAmount = watch('items')?.reduce((total, orderItem) => {
+    const device = listDevice?.find((d: IDevice) => d._id === orderItem.device);
+    if (device) {
+      return total + device.price * Number(orderItem.quantity);
+    }
+    return total;
+  }, 0);
+
+  const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
+    getAllOrder();
+    enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
+      variant: 'success',
+    });
+    onClose();
+  };
 
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
-    console.log(data);
+    const newData: IOrderCreateOrUpdate = {
+      ...data,
+      delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd'),
+      totalAmount,
+    };
+    if (newData?._id) {
+      // update
+    } else {
+      const newOrder = await createOrder(newData);
+      if (newOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!currentOrder);
+      }
+    }
   };
 
   const handleRemove = (index: number) => {
-    console.log(`Removing item at index ${index}`);
     remove(index);
   };
 
@@ -258,7 +290,7 @@ export default function OrderDetailsInfo({
 
               <Grid xs={12} display="flex" justifyContent="space-between">
                 <Box>Tổng:</Box>
-                <Box>{renderMoney(String(totalQuantity))}</Box>
+                <Box>{renderMoney(String(totalAmount))}</Box>
               </Grid>
 
               <Grid xs={12}>
