@@ -16,6 +16,7 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
 // types
 import { IDevice } from 'src/types/product';
+import { renderMoney } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -126,7 +127,7 @@ export default function ProductTableRow({
         </TableCell>
         <TableCell>
           <ListItemText
-            primary={renderCellWithTooltip(String(price))}
+            primary={renderCellWithTooltip(renderMoney(String(price)))}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

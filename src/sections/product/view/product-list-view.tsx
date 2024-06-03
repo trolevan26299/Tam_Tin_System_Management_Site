@@ -187,9 +187,7 @@ export default function ProductListView() {
   };
 
   const handleSearch = async (query: IQueryDevice) => {
-    const newQuery = { ...queryDevice, ...query };
-    const deviceList = await getDeviceList(newQuery);
-    setQueryDevice(newQuery);
+    const deviceList = await getDeviceList(query);
     setTableData(deviceList);
   };
 
@@ -268,7 +266,11 @@ export default function ProductListView() {
               />
             ))}
           </Tabs>
-          <ProductTableToolbar onSearch={(query) => handleSearch(query)} listCustomer={customers} />
+          <ProductTableToolbar
+            onSearch={(query) => handleSearch(query)}
+            listCustomer={customers}
+            query={queryDevice}
+          />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>

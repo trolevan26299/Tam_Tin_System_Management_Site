@@ -1,13 +1,21 @@
 // ----------------------------------------------------------------------
 
+import { ICustomer } from './customer';
+import { IDevice } from './product';
+
 export type IOrderTableFilterValue = string | Date | null;
 
 export type IOrderTableFilters = {
+  trackingNumber?: string;
   name: string;
-  status: string;
-  startDate: Date | null;
-  endDate: Date | null;
 };
+// export type IOrderTableFilters = {
+//   name: string;
+//   status: string;
+//   startDate: Date | null;
+//   endDate: Date | null;
+//   order: string;
+// };
 
 // ----------------------------------------------------------------------
 
@@ -70,4 +78,48 @@ export type IOrderItem = {
   delivery: IOrderDelivery;
   items: IOrderProductItem[];
   createdAt: Date;
+};
+
+export type Items = {
+  device?: IDevice;
+  quantity?: number;
+};
+
+export type IOrder = {
+  _id?: string;
+  note?: string;
+  totalAmount?: number;
+
+  delivery_date: string;
+  delivery?: {
+    shipBy: string;
+    trackingNumber: string;
+  };
+  customer?: ICustomer;
+  items?: Items[];
+};
+
+export type IOrderCreateOrUpdate = {
+  _id?: string;
+  note?: string;
+  totalAmount: number;
+
+  delivery_date: string;
+  customer: string;
+  delivery: {
+    shipBy: string;
+    trackingNumber: string;
+  };
+  items: {
+    device: string;
+    quantity: number;
+  }[];
+};
+
+export type IQueryOrder = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
+  from_date?: string;
+  to_date?: string;
 };

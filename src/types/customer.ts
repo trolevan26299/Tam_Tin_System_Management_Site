@@ -6,6 +6,8 @@ export type ICustomer = {
   type: string;
   email: string;
   note?: string;
+
+  avatarUrl?: string;
 };
 
 export type ICustomerTableFilters = {
@@ -16,5 +18,4 @@ export type IQueryCustomer = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
-  belong_to?: string;
 };

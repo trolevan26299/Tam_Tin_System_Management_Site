@@ -79,4 +79,11 @@ export const endpoints = {
     update: (customerId: string) => `/api/customer/${customerId}`,
     delete: (customerId: string) => `api/customer/${customerId}`,
   },
+  order: {
+    create: '/api/order',
+    list: '/api/order/list',
+    details: (orderId: string) => `/api/order/${orderId}`,
+    update: (orderId: string) => `/api/order/${orderId}`,
+    delete: (orderId: string) => `api/order/${orderId}`,
+  },
 };

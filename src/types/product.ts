@@ -83,6 +83,8 @@ export type IDevice = {
   price: number;
   note: string;
   warranty: number;
+
+  coverUrl?: string;
 };
 
 export type IProductTableFilterValue = string | string[];
@@ -98,4 +100,5 @@ export type IQueryDevice = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  belong_to?: string;
 };

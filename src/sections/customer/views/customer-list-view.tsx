@@ -43,6 +43,7 @@ export default function CustomerListView() {
   const [tableData, setTableData] = useState<ICustomer[]>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<ICustomer | undefined>(undefined);
+  const [queryList, setQueryList] = useState<IQueryCustomer>({});
 
   const dataFiltered = applyFilter({
     inputData: tableData,
@@ -124,7 +125,7 @@ export default function CustomerListView() {
           sx={{ mb: { xs: 3, md: 5 } }}
         />
         <Card>
-          <CustomerTableToolbar onSearch={getList} />
+          <CustomerTableToolbar onSearch={getList} query={queryList} />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>

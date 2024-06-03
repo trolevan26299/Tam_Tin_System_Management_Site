@@ -4,8 +4,10 @@ import { IQueryCustomer } from 'src/types/customer';
 
 export default function CustomerTableToolbar({
   onSearch,
+  query,
 }: {
   onSearch: (query: IQueryCustomer) => void;
+  query: IQueryCustomer;
 }) {
   return (
     <Stack
@@ -27,6 +29,8 @@ export default function CustomerTableToolbar({
           }}
           placeholder="Search customer or phone number..."
           width={400}
+          value={query.keyword || ''}
+          useIconClear
         />
       </Stack>
     </Stack>

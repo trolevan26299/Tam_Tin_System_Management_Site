@@ -159,7 +159,6 @@ export default function DeviceInfo({
       }}
       PaperProps={{
         sx: {
-          mt: 15,
           overflow: 'unset',
         },
       }}

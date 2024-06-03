@@ -147,10 +147,7 @@ export function useNavData() {
             title: t('order'),
             path: paths.dashboard.order.root,
             icon: ICONS.order,
-            children: [
-              { title: t('list'), path: paths.dashboard.order.root },
-              { title: t('details'), path: paths.dashboard.order.demo.details },
-            ],
+            children: [{ title: t('list'), path: paths.dashboard.order.root }],
           },
 
           // INVOICE

@@ -1,174 +1,281 @@
-// @mui
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
-import CardHeader from '@mui/material/CardHeader';
-import Typography from '@mui/material/Typography';
-// types
+import { yupResolver } from '@hookform/resolvers/yup';
+import { LoadingButton } from '@mui/lab';
 import {
-  IOrderCustomer,
-  IOrderDelivery,
-  IOrderPayment,
-  IOrderShippingAddress,
-} from 'src/types/order';
-// components
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  MenuItem,
+} from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import Grid from '@mui/system/Unstable_Grid/Grid';
+import { DatePicker } from '@mui/x-date-pickers';
+import { Fragment, useEffect } from 'react';
+import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
+import { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
+import { ICustomer } from 'src/types/customer';
+import { IOrder, IOrderCreateOrUpdate } from 'src/types/order';
+import { IDevice } from 'src/types/product';
+import { renderMoney } from 'src/utils/format-number';
+import * as Yup from 'yup';
 
-// ----------------------------------------------------------------------
+const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
+  _id: undefined,
+  delivery_date: '',
+  totalAmount: undefined,
+  customer: '',
+  items: [
+    {
+      device: '',
+      quantity: 0,
+    },
+  ],
+  delivery: {
+    shipBy: '',
+    trackingNumber: '',
+  },
+  note: '',
+});
 
-type Props = {
-  customer: IOrderCustomer;
-  delivery: IOrderDelivery;
-  payment: IOrderPayment;
-  shippingAddress: IOrderShippingAddress;
-};
+export default function OrderDetailsInfo({
+  currentOrder,
+  open,
+  onClose,
+  listCustomer,
+  listDevice,
+}: {
+  currentOrder?: IOrder;
+  open: boolean;
+  onClose: () => void;
+  listCustomer: ICustomer[];
+  listDevice: IDevice[];
+}) {
+  const theme = useTheme();
 
-export default function OrderDetailsInfo({ customer, delivery, payment, shippingAddress }: Props) {
-  const renderCustomer = (
-    <>
-      <CardHeader
-        title="Customer Info"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
-      <Stack direction="row" sx={{ p: 3 }}>
-        <Avatar
-          alt={customer.name}
-          src={customer.avatarUrl}
-          sx={{ width: 48, height: 48, mr: 2 }}
-        />
+  const NewOrderSchema = Yup.object().shape({
+    delivery_date: Yup.string().required('Delivery date is required'),
+    totalAmount: Yup.number().required('Total amount is required'),
+    delivery: Yup.object().shape({
+      shipBy: Yup.string().required('ShipBy is required'),
+      trackingNumber: Yup.string().required('Tracking number is required'),
+    }),
+    customer: Yup.string().required('Customer is required'),
+    items: Yup.array()
+      .of(
+        Yup.object().shape({
+          device: Yup.string().required('Device is required'),
+          quantity: Yup.number()
+            .required('Quantity is required')
+            .min(1, 'Quantity must be at least 1'),
+        })
+      )
+      .required(),
+  });
 
-        <Stack spacing={0.5} alignItems="flex-start" sx={{ typography: 'body2' }}>
-          <Typography variant="subtitle2">{customer.name}</Typography>
+  const methods = useForm<IOrderCreateOrUpdate>({
+    resolver: yupResolver(NewOrderSchema),
+    defaultValues: initializeDefaultValues(),
+  });
 
-          <Box sx={{ color: 'text.secondary' }}>{customer.email}</Box>
+  const {
+    setValue,
+    handleSubmit,
+    clearErrors,
+    control,
+    watch,
+    formState: { isSubmitting },
+  } = methods;
 
-          <Box>
-            IP Address:
-            <Box component="span" sx={{ color: 'text.secondary', ml: 0.25 }}>
-              {customer.ipAddress}
-            </Box>
-          </Box>
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'items',
+  });
+  const totalQuantity = watch('items')?.reduce((total, item) => total + Number(item.quantity), 0);
 
-          <Button
-            size="small"
-            color="error"
-            startIcon={<Iconify icon="mingcute:add-line" />}
-            sx={{ mt: 1 }}
-          >
-            Add to Blacklist
-          </Button>
-        </Stack>
-      </Stack>
-    </>
-  );
+  const onSubmit = async (data: IOrderCreateOrUpdate) => {
+    console.log(data);
+  };
 
-  const renderDelivery = (
-    <>
-      <CardHeader
-        title="Delivery"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
-      <Stack spacing={1.5} sx={{ p: 3, typography: 'body2' }}>
-        <Stack direction="row" alignItems="center">
-          <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Ship by
-          </Box>
-          {delivery.shipBy}
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Speedy
-          </Box>
-          {delivery.speedy}
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Tracking No.
-          </Box>
-          <Link underline="always" color="inherit">
-            {delivery.trackingNumber}
-          </Link>
-        </Stack>
-      </Stack>
-    </>
-  );
+  const handleRemove = (index: number) => {
+    console.log(`Removing item at index ${index}`);
+    remove(index);
+  };
 
-  const renderShipping = (
-    <>
-      <CardHeader
-        title="Shipping"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
-      <Stack spacing={1.5} sx={{ p: 3, typography: 'body2' }}>
-        <Stack direction="row" alignItems="center">
-          <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Address
-          </Box>
-          {shippingAddress.fullAddress}
-        </Stack>
-        <Stack direction="row" alignItems="center">
-          <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Phone number
-          </Box>
-          {shippingAddress.phoneNumber}
-        </Stack>
-      </Stack>
-    </>
-  );
-
-  const renderPayment = (
-    <>
-      <CardHeader
-        title="Payment"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
-      <Stack direction="row" alignItems="center" sx={{ p: 3, typography: 'body2' }}>
-        <Box component="span" sx={{ color: 'text.secondary', flexGrow: 1 }}>
-          Phone number
-        </Box>
-
-        {payment.cardNumber}
-        <Iconify icon="logos:mastercard" width={24} sx={{ ml: 0.5 }} />
-      </Stack>
-    </>
-  );
-
+  useEffect(() => {
+    if (currentOrder) {
+      //
+    } else {
+      setValue('_id', undefined);
+      setValue('totalAmount', 0);
+      setValue('delivery_date', '');
+      setValue('delivery.shipBy', '');
+      setValue('delivery.trackingNumber', '');
+      setValue('customer', '');
+      setValue('items', [
+        {
+          device: '',
+          quantity: 0,
+        },
+      ]);
+      setValue('note', '');
+    }
+    clearErrors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrder, open]);
   return (
-    <Card>
-      {renderCustomer}
+    <Dialog
+      fullWidth
+      maxWidth="sm"
+      open={open}
+      onClose={onClose}
+      transitionDuration={{
+        enter: theme.transitions.duration.shortest,
+        exit: 0,
+      }}
+      PaperProps={{
+        sx: {
+          overflow: 'unset',
+          minWidth: 750,
+        },
+      }}
+    >
+      <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        <DialogTitle sx={{ pb: 2 }}>{!currentOrder ? 'Tạo mới' : 'Cập nhật'} đơn hàng</DialogTitle>
+        <DialogContent>
+          <Box
+            sx={{
+              p: 3,
+              borderBottom: `solid 1px ${theme.palette.divider}`,
+              height: '600px',
+              overflow: 'auto',
+            }}
+          >
+            <Grid container spacing={3}>
+              <Grid xs={12}>
+                <Controller
+                  name="delivery_date"
+                  control={control}
+                  render={({ field, fieldState: { error } }) => (
+                    <DatePicker
+                      {...field}
+                      value={new Date(String(field?.value) || '')}
+                      label="Delivery date"
+                      format="dd/MM/yyyy"
+                      slotProps={{
+                        textField: {
+                          fullWidth: true,
+                          error: !!error,
+                          helperText: error?.message,
+                        },
+                      }}
+                    />
+                  )}
+                />
+              </Grid>
 
-      <Divider sx={{ borderStyle: 'dashed' }} />
+              <Grid xs={12}>
+                <RHFSelect name="customer" label="Customer">
+                  {listCustomer?.map((item) => (
+                    <MenuItem key={item?._id} value={item?._id}>
+                      {item?.name}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
+              </Grid>
+              <Grid xs={6}>
+                <RHFTextField name="delivery.shipBy" label="Ship By" />
+              </Grid>
+              <Grid xs={6}>
+                <RHFTextField name="delivery.trackingNumber" label="Tracking Number" />
+              </Grid>
 
-      {renderDelivery}
+              {fields.map((item, index) => (
+                <Fragment key={item?.id}>
+                  <Grid xs={5}>
+                    <Controller
+                      name={`items.${index}.device`}
+                      control={control}
+                      render={({ field }) => (
+                        <RHFSelect {...field} label="Device">
+                          {listDevice?.map((device) => (
+                            <MenuItem key={device._id} value={device._id}>
+                              {device.name}
+                            </MenuItem>
+                          ))}
+                        </RHFSelect>
+                      )}
+                    />
+                  </Grid>
+                  <Grid xs={4}>
+                    <Controller
+                      name={`items.${index}.quantity`}
+                      control={control}
+                      render={({ field }) => (
+                        <RHFTextField
+                          {...field}
+                          label="Quantity"
+                          type="number"
+                          onKeyDown={(evt) =>
+                            ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                          }
+                        />
+                      )}
+                    />
+                  </Grid>
+                  <Grid xs={1.5}>
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleRemove(index)}
+                      color="error"
+                      sx={{ height: '55px' }}
+                      disabled={fields?.length === 1}
+                    >
+                      <Iconify icon="eva:trash-2-outline" />
+                    </Button>
+                  </Grid>
+                  {index === 0 && (
+                    <Grid xs={1.5}>
+                      <Button
+                        variant="outlined"
+                        color="inherit"
+                        onClick={() => append({ device: '', quantity: 0 })}
+                        sx={{ height: '55px' }}
+                      >
+                        <Iconify icon="mingcute:add-line" />
+                      </Button>
+                    </Grid>
+                  )}
+                </Fragment>
+              ))}
+              <Grid xs={12}>
+                <Divider sx={{ flex: 1, border: `solid 1px ${theme.palette.divider}` }} />
+              </Grid>
 
-      <Divider sx={{ borderStyle: 'dashed' }} />
+              <Grid xs={12} display="flex" justifyContent="space-between">
+                <Box>Tổng:</Box>
+                <Box>{renderMoney(String(totalQuantity))}</Box>
+              </Grid>
 
-      {renderShipping}
-
-      <Divider sx={{ borderStyle: 'dashed' }} />
-
-      {renderPayment}
-    </Card>
+              <Grid xs={12}>
+                <RHFTextField name="note" label="Note" multiline rows={4} />
+              </Grid>
+            </Grid>
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
+            Save
+          </LoadingButton>
+          <Button variant="outlined" color="inherit" onClick={onClose}>
+            Cancel
+          </Button>
+        </DialogActions>
+      </FormProvider>
+    </Dialog>
   );
 }
