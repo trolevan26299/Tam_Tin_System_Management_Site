@@ -20,6 +20,7 @@ import { createDevice, updateDeviceById } from 'src/api/product';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import { ISubCategory } from 'src/types/category';
+import { ICustomer } from 'src/types/customer';
 import { IDevice } from 'src/types/product';
 import uuidv4 from 'src/utils/uuidv4';
 import * as Yup from 'yup';
@@ -29,7 +30,8 @@ export type deviceInfo = {
   _id?: string;
   name: string;
   sub_category_id: string;
-  status: string;
+  price: number;
+  status?: string;
   warranty: number;
 
   id_device?: string;
@@ -49,12 +51,14 @@ export default function DeviceInfo({
   open,
   onClose,
   listSubCategory,
+  listCustomer,
 }: {
   currentDevice?: IDevice;
   open: boolean;
   onClose: () => void;
   getDeviceList: () => void;
   listSubCategory: ISubCategory[];
+  listCustomer: ICustomer[];
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
@@ -69,18 +73,20 @@ export default function DeviceInfo({
     delivery_date: '',
     note: '',
     sub_category_id: '',
+    price: undefined,
   });
 
   const NewDevice = Yup.object().shape({
     name: Yup.string().required('Name is required !'),
     sub_category_id: Yup.string().required('Sub category is required !'),
-    status: Yup.string().required('Status is required !'),
     warranty: Yup.number().required('warranty is required !'),
     delivery_date: Yup.string().when('status', {
       is: 'sold',
       then: (schema) => schema.required('Delivery date is required when the status is sold!'),
       otherwise: (schema) => schema.notRequired(),
     }),
+    price: Yup.number().required('Price is required !'),
+    status: Yup.string(),
     id_device: Yup.string(),
   });
 
@@ -109,7 +115,11 @@ export default function DeviceInfo({
     const deliveryDate = data?.delivery_date
       ? format(new Date(data.delivery_date), 'yyyy-MM-dd')
       : '';
-    const newDate = { ...data, delivery_date: deliveryDate };
+    const newDate = {
+      ...data,
+      delivery_date: deliveryDate,
+      status: 'inventory',
+    };
     if (newDate?._id) {
       const updateDevice = await updateDeviceById(newDate?._id, newDate as IDevice);
       if (updateDevice) {
@@ -175,15 +185,6 @@ export default function DeviceInfo({
                 <RHFTextField name="id_device" label="Id Device" disabled />
               </Grid>
               <Grid xs={12}>
-                <RHFSelect name="status" label="Status">
-                  {optionStatus?.map((item: option, index) => (
-                    <MenuItem value={item?.value} key={index}>
-                      {item?.label}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
-              </Grid>
-              <Grid xs={12}>
                 <RHFTextField
                   name="warranty"
                   label="Warranty"
@@ -194,7 +195,13 @@ export default function DeviceInfo({
                 />
               </Grid>
               <Grid xs={12}>
-                <RHFTextField name="belong_to" label="Belong to" />
+                <RHFSelect name="belong_to" label="Belong to">
+                  {listCustomer?.map((item: ICustomer) => (
+                    <MenuItem value={item._id} key={item._id}>
+                      {item.name}
+                    </MenuItem>
+                  ))}
+                </RHFSelect>
               </Grid>
               {watch('status') === 'sold' && (
                 <Grid xs={12}>
@@ -227,6 +234,16 @@ export default function DeviceInfo({
                     </MenuItem>
                   ))}
                 </RHFSelect>
+              </Grid>
+              <Grid xs={12}>
+                <RHFTextField
+                  name="price"
+                  label="Price"
+                  type="number"
+                  onKeyDown={(evt) =>
+                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                  }
+                />
               </Grid>
               <Grid xs={12}>
                 <RHFTextField name="note" label="Note" multiline rows={4} />

@@ -138,3 +138,8 @@ export type IUserAccountChangePassword = {
   newPassword: string;
   confirmNewPassword: string;
 };
+
+export enum ROLE {
+  admin = 'admin',
+  superadmin = 'superadmin',
+}
