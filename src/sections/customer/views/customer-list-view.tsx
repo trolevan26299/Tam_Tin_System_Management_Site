@@ -19,7 +19,7 @@ import {
 import { paths } from 'src/routes/paths';
 import { ICustomer, ICustomerTableFilters, IQueryCustomer } from 'src/types/customer';
 import CustomerTableRow from '../customer-table-row';
-import CustomerInfo from '../customer-info';
+import CustomerInfo, { optionStatus } from '../customer-info';
 import CustomerTableToolbar from '../customer-table-toolbar';
 
 const TABLE_HEAD = [
@@ -145,7 +145,10 @@ export default function CustomerListView() {
                     .map((row) => (
                       <CustomerTableRow
                         key={row._id}
-                        row={row}
+                        row={{
+                          ...row,
+                          type: optionStatus?.find((x) => x.value === row.type)?.label as string,
+                        }}
                         selected={table.selected.includes(row?._id as string)}
                         onSelectRow={() => table.onSelectRow(row?._id as string)}
                         onDeleteRow={() => handleDeleteRow(row?._id as string)}

@@ -91,7 +91,7 @@ export default function ProductListView() {
     tableData.filter((item) => item.status === status).length;
 
   const TABS = [
-    { value: 'all', label: 'All', color: 'default', count: tableData.length },
+    { value: 'all', label: 'All', color: 'default', count: tableData?.length },
     {
       value: 'inventory',
       label: 'Inventory',

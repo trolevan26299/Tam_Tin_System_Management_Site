@@ -140,6 +140,6 @@ export type IUserAccountChangePassword = {
 };
 
 export enum ROLE {
-  'admin',
-  'superadmin',
+  admin = 'admin',
+  superadmin = 'superadmin',
 }

@@ -126,7 +126,7 @@ export default function ProductTableRow({
         </TableCell>
         <TableCell>
           <ListItemText
-            primary={renderCellWithTooltip(price)}
+            primary={renderCellWithTooltip(String(price))}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

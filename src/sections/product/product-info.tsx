@@ -115,7 +115,11 @@ export default function DeviceInfo({
     const deliveryDate = data?.delivery_date
       ? format(new Date(data.delivery_date), 'yyyy-MM-dd')
       : '';
-    const newDate = { ...data, delivery_date: deliveryDate, status: 'inventory' };
+    const newDate = {
+      ...data,
+      delivery_date: deliveryDate,
+      status: 'inventory',
+    };
     if (newDate?._id) {
       const updateDevice = await updateDeviceById(newDate?._id, newDate as IDevice);
       if (updateDevice) {
