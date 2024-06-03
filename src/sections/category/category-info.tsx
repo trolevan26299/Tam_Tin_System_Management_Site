@@ -68,7 +68,13 @@ export default function CategoryInfo({
   });
 
   useEffect(() => {
-    setValue('name', currentCategory?.name || '');
+    if (currentCategory) {
+      setValue('name', currentCategory?.name);
+      setValue('_id', currentCategory?._id);
+    } else {
+      setValue('name', '');
+      setValue('_id', undefined);
+    }
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentCategory, open]);
