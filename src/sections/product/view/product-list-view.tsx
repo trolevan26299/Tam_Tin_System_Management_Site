@@ -39,7 +39,7 @@ import Label from 'src/components/label';
 import { ISubCategory } from 'src/types/category';
 import { ICustomer } from 'src/types/customer';
 import { IInvoiceTableFilterValue } from 'src/types/invoice';
-import { IDevice, IProductTableFilters, IQueryDevice } from 'src/types/product';
+import { IDevice, IProductTableFilters, IQueryDevice, IStatusDevice } from 'src/types/product';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
@@ -48,11 +48,9 @@ import ProductTableToolbar from '../product-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name' },
-  { id: 'id_device', label: 'ID Device', width: 120 },
-  { id: 'category_name', label: 'Category name', width: 160 },
+  { id: 'id_device', label: 'ID Device', width: 160 },
+  { id: 'category_name', label: 'Category', width: 160 },
   { id: 'warranty', label: 'Warranty', width: 140 },
-  { id: 'status', label: 'Status', width: 90 },
-  { id: 'delivery_date', label: 'Delivery date', width: 160 },
   { id: 'belong_to', label: 'Belong to', width: 180 },
   { id: 'price', label: 'Price', width: 180 },
   { id: 'quantity', label: 'Quantity', width: 180 },
@@ -88,8 +86,18 @@ export default function ProductListView() {
   const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
   const [queryDevice, setQueryDevice] = useState<IQueryDevice>({});
 
-  const getInvoiceLength = (status: string) =>
-    tableData.filter((item) => item.status === status).length;
+  const getInvoiceLength = (statusType: string) => {
+    let count = 0;
+    tableData.forEach((data) => {
+      data.status.forEach((status: IStatusDevice) => {
+        if (status.status === statusType && status?.quantity > 0) {
+          // eslint-disable-next-line no-plusplus
+          count++;
+        }
+      });
+    });
+    return count;
+  };
 
   const TABS = [
     { value: 'all', label: 'All', color: 'default', count: tableData?.length },
@@ -189,6 +197,7 @@ export default function ProductListView() {
 
   const handleSearch = async (query: IQueryDevice) => {
     const deviceList = await getDeviceList(query);
+    setQueryDevice(query);
     setTableData(deviceList);
   };
 
@@ -261,7 +270,7 @@ export default function ProductListView() {
                     }
                     color={tab.color}
                   >
-                    {tab.count}
+                    {tab?.count}
                   </Label>
                 }
               />
@@ -334,7 +343,9 @@ export default function ProductListView() {
         currentDevice={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
-        getDeviceList={getAllData}
+        getDeviceList={() => {
+          handleSearch(queryDevice);
+        }}
         listSubCategory={subCategories}
         listCustomer={customers}
       />
@@ -372,7 +383,9 @@ function applyFilter({
   }
 
   if (status !== 'all') {
-    inputData = inputData.filter((invoice) => invoice.status === status);
+    inputData = inputData.filter((invoice) =>
+      invoice.status.some((statusType) => statusType.status === status && statusType.quantity > 0)
+    );
   }
 
   return inputData;

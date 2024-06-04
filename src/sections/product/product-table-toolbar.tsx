@@ -49,7 +49,7 @@ export default function ProductTableToolbar({
 
         <SearchInputDebounce
           onSearch={(value: string) => {
-            onSearch({ keyword: value });
+            onSearch({ ...query, keyword: value });
           }}
           placeholder="Search device..."
           width={300}
