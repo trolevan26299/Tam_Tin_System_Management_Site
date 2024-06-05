@@ -47,13 +47,14 @@ import ProductTableToolbar from '../product-table-toolbar';
 // ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
+  { id: 'name', label: 'Name', width: 160 },
   { id: 'id_device', label: 'ID Device', width: 160 },
   { id: 'category_name', label: 'Category', width: 160 },
   { id: 'warranty', label: 'Warranty', width: 140 },
   { id: 'belong_to', label: 'Belong to', width: 180 },
-  { id: 'price', label: 'Price', width: 180 },
-  { id: 'quantity', label: 'Quantity', width: 180 },
+  { id: 'price', label: 'Price', width: 160 },
+  { id: 'inventory', label: 'Inventory', width: 100 },
+  { id: 'sold', label: 'Sold', width: 10 },
   { id: 'note', label: 'Note', width: 160 },
   { id: 'action', label: 'Action', width: 80 },
 ];

@@ -31,3 +31,25 @@ export async function updateOrderById(id: string, body: IOrderCreateOrUpdate) {
     return error.status;
   }
 }
+
+export async function getOrderById(id: string) {
+  try {
+    const url = endpoints.order.details(id);
+    const res = await axiosInstance.get(url);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
+  }
+}
+
+export async function deleteOrderById(id: string) {
+  try {
+    const url = endpoints.order.delete(id);
+    const res = await axiosInstance.delete(url);
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return error.status;
+  }
+}

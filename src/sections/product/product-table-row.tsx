@@ -108,6 +108,14 @@ export default function ProductTableRow({
         </TableCell>
         <TableCell>
           <ListItemText
+            primary={renderCellWithTooltip(
+              String(status?.find((x) => x.status === 'sold')?.quantity || 0)
+            )}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
             primary={renderCellWithTooltip(String(note))}
             primaryTypographyProps={{ typography: 'body2' }}
           />

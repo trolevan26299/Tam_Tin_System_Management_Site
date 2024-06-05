@@ -121,9 +121,10 @@ export default function OrderDetailsInfo({
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
     const newData: IOrderCreateOrUpdate = {
       ...data,
-      delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd'),
+      delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
       totalAmount,
     };
+    console.log('🚀 ~ onSubmit ~ newData:', newData);
     if (newData?._id) {
       // update
     } else {
@@ -138,9 +139,32 @@ export default function OrderDetailsInfo({
     remove(index);
   };
 
-  useEffect(() => {
+  const handleSetDataToForm = () => {
     if (currentOrder) {
-      //
+      setValue('_id', currentOrder?._id);
+      setValue('totalAmount', Number(currentOrder?.totalAmount));
+      setValue('delivery_date', currentOrder?.delivery_date);
+      setValue('delivery.shipBy', String(currentOrder?.delivery?.shipBy));
+      setValue('delivery.trackingNumber', String(currentOrder?.delivery?.trackingNumber));
+      setValue('customer', String(currentOrder?.customer?._id));
+      setValue('note', currentOrder?.note);
+
+      if (currentOrder?.items && currentOrder?.items?.length > 0) {
+        setValue(
+          'items',
+          currentOrder?.items?.map((item) => ({
+            device: item?.device?._id as string,
+            quantity: item?.quantity as number,
+          }))
+        );
+      } else {
+        setValue('items', [
+          {
+            device: '',
+            quantity: 0,
+          },
+        ]);
+      }
     } else {
       setValue('_id', undefined);
       setValue('totalAmount', 0);
@@ -156,6 +180,10 @@ export default function OrderDetailsInfo({
       ]);
       setValue('note', '');
     }
+  };
+
+  useEffect(() => {
+    handleSetDataToForm();
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder, open]);

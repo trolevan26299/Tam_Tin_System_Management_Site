@@ -3,7 +3,7 @@
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { getListCustomer } from 'src/api/customer';
-import { getListOrder } from 'src/api/order';
+import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
@@ -20,7 +20,7 @@ import {
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
 import { ICustomer } from 'src/types/customer';
-import { IOrder, IOrderCreateOrUpdate, IOrderTableFilters, IQueryOrder } from 'src/types/order';
+import { IOrder, IOrderTableFilters, IQueryOrder } from 'src/types/order';
 import { IDevice } from 'src/types/product';
 import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
@@ -69,9 +69,13 @@ function OrderListView() {
     setSelectedItem(undefined);
   };
 
+  const handleDeleteById = async (id: string) => {
+    await deleteOrderById(id);
+  };
+
   const handleDeleteRow = useCallback(
     (id: string) => {
-      // handleDeleteById(id);
+      handleDeleteById(id);
       const deleteRow = tableData?.filter((row) => row._id !== id);
       setTableData(deleteRow);
 
@@ -82,12 +86,18 @@ function OrderListView() {
 
   const handleEditRow = async (id: string) => {
     try {
-      // const currentCustomer = await getCustomerById(id);
-      // setSelectedItem(currentCustomer);
+      const currentOrder = await getOrderById(id);
+      setSelectedItem(currentOrder);
       setOpenDialog(true);
     } catch (error) {
       console.log(error);
     }
+  };
+
+  const handleSearch = async (query?: IQueryOrder) => {
+    const orderList = await getListOrder(query);
+    setQueryList(query || {});
+    setTableData(orderList);
   };
 
   const getList = async (query?: IQueryOrder) => {
@@ -155,10 +165,10 @@ function OrderListView() {
         />
         <Card>
           <OrderTableToolbar
-            onSearch={getList}
+            onSearch={handleSearch}
             query={queryList}
             onReset={() => {
-              getList({});
+              handleSearch({});
             }}
           />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
@@ -217,7 +227,7 @@ function OrderListView() {
         listCustomer={customers}
         listDevice={devices}
         getAllOrder={() => {
-          getList(queryList);
+          handleSearch(queryList);
         }}
       />
     </>
