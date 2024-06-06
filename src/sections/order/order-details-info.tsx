@@ -17,7 +17,7 @@ import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 import { Fragment, useEffect } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
-import { createOrder } from 'src/api/order';
+import { createOrder, updateOrderById } from 'src/api/order';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
@@ -124,11 +124,13 @@ export default function OrderDetailsInfo({
       delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
       totalAmount,
     };
-    console.log('🚀 ~ onSubmit ~ newData:', newData);
     if (newData?._id) {
-      // update
+      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+      if (updateOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+      }
     } else {
-      const newOrder = await createOrder(newData);
+      const newOrder = await createOrder(newData, enqueueSnackbar);
       if (newOrder) {
         handleGetWhenCreateAndUpdateSuccess(!currentOrder);
       }
