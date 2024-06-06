@@ -1,21 +1,21 @@
 import { MenuItem, Stack, TextField } from '@mui/material';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent } from 'react';
 import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
-import { ICustomer, IQueryCustomer } from 'src/types/customer';
+import { ICustomer } from 'src/types/customer';
+import { IQueryDevice } from 'src/types/product';
 
 export default function ProductTableToolbar({
   onSearch,
   listCustomer,
+  query,
 }: {
-  onSearch: (query: IQueryCustomer) => void;
+  onSearch: (query: IQueryDevice) => void;
   listCustomer: ICustomer[];
+  query: IQueryDevice;
 }) {
-  const [selectBelongTo, setSelectBelongTo] = useState<string>('');
-
   const handleChangeBelongTo = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
-    setSelectBelongTo(value);
-    onSearch({ belong_to: value });
+    onSearch({ ...query, belong_to: value });
   };
 
   return (
@@ -37,7 +37,7 @@ export default function ProductTableToolbar({
           sx={{ width: 200 }}
           label="Belong to"
           onChange={(e) => handleChangeBelongTo(e)}
-          value={selectBelongTo}
+          value={query?.belong_to}
         >
           <MenuItem value="">All</MenuItem>
           {listCustomer?.map((item: ICustomer) => (
@@ -49,10 +49,12 @@ export default function ProductTableToolbar({
 
         <SearchInputDebounce
           onSearch={(value: string) => {
-            onSearch({ keyword: value });
+            onSearch({ ...query, keyword: value });
           }}
           placeholder="Search device..."
           width={300}
+          value={query?.keyword || ''}
+          useIconClear
         />
       </Stack>
     </Stack>

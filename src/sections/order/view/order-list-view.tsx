@@ -1,312 +1,215 @@
 'use client';
 
-import { useState, useCallback } from 'react';
-// @mui
-import { alpha } from '@mui/material/styles';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
-import Card from '@mui/material/Card';
-import Table from '@mui/material/Table';
-import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import Container from '@mui/material/Container';
-import TableBody from '@mui/material/TableBody';
-import IconButton from '@mui/material/IconButton';
-import TableContainer from '@mui/material/TableContainer';
-// routes
-import { paths } from 'src/routes/paths';
-import { useRouter } from 'src/routes/hooks';
-// _mock
-import { _orders, ORDER_STATUS_OPTIONS } from 'src/_mock';
-// utils
-import { fTimestamp } from 'src/utils/format-time';
-// hooks
-import { useBoolean } from 'src/hooks/use-boolean';
-// components
-import Label from 'src/components/label';
+import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
+import { getListCustomer } from 'src/api/customer';
+import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
+import { getListDevice } from 'src/api/product';
+import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import { ConfirmDialog } from 'src/components/custom-dialog';
 import { useSettingsContext } from 'src/components/settings';
-import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import {
-  useTable,
-  getComparator,
-  emptyRows,
-  TableNoData,
   TableEmptyRows,
   TableHeadCustom,
-  TableSelectedAction,
+  TableNoData,
   TablePaginationCustom,
+  emptyRows,
+  getComparator,
+  useTable,
 } from 'src/components/table';
-// types
-import { IOrderItem, IOrderTableFilters, IOrderTableFilterValue } from 'src/types/order';
-//
+import { paths } from 'src/routes/paths';
+import { ICustomer } from 'src/types/customer';
+import { IOrder, IOrderTableFilters, IQueryOrder } from 'src/types/order';
+import { IDevice } from 'src/types/product';
+import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
-import OrderTableFiltersResult from '../order-table-filters-result';
-
-// ----------------------------------------------------------------------
-
-const STATUS_OPTIONS = [{ value: 'all', label: 'All' }, ...ORDER_STATUS_OPTIONS];
 
 const TABLE_HEAD = [
-  { id: 'orderNumber', label: 'Order', width: 116 },
-  { id: 'name', label: 'Customer' },
-  { id: 'createdAt', label: 'Date', width: 140 },
-  { id: 'totalQuantity', label: 'Items', width: 120, align: 'center' },
-  { id: 'totalAmount', label: 'Price', width: 140 },
-  { id: 'status', label: 'Status', width: 110 },
-  { id: '', width: 88 },
+  { id: 'delivery', label: 'Order' },
+  { id: 'customer', label: 'Customer' },
+  { id: 'delivery_date', label: 'Date' },
+  { id: 'items', label: 'Items' },
+  { id: 'price', label: 'Price' },
+  { id: 'note', label: 'Note' },
+  { id: 'action', label: 'Action' },
 ];
 
-const defaultFilters: IOrderTableFilters = {
+const filtersData: IOrderTableFilters = {
   name: '',
-  status: 'all',
-  startDate: null,
-  endDate: null,
 };
 
-// ----------------------------------------------------------------------
-
-export default function OrderListView() {
-  const table = useTable({ defaultOrderBy: 'orderNumber' });
-
+function OrderListView() {
+  const table = useTable();
   const settings = useSettingsContext();
 
-  const router = useRouter();
+  const [tableData, setTableData] = useState<IOrder[]>([]);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<IOrder | undefined>(undefined);
+  const [queryList, setQueryList] = useState<IQueryOrder>({});
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+  const [devices, setDevices] = useState<IDevice[]>([]);
 
-  const confirm = useBoolean();
-
-  const [tableData, setTableData] = useState(_orders);
-
-  const [filters, setFilters] = useState(defaultFilters);
-
-  const dateError =
-    filters.startDate && filters.endDate
-      ? filters.startDate.getTime() > filters.endDate.getTime()
-      : false;
+  const denseHeight = table.dense ? 52 : 72;
 
   const dataFiltered = applyFilter({
     inputData: tableData,
     comparator: getComparator(table.order, table.orderBy),
-    filters,
-    dateError,
+    filters: filtersData,
   });
 
-  const dataInPage = dataFiltered.slice(
+  const dataInPage = dataFiltered?.slice(
     table.page * table.rowsPerPage,
     table.page * table.rowsPerPage + table.rowsPerPage
   );
 
-  const denseHeight = table.dense ? 52 : 72;
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(undefined);
+  };
 
-  const canReset =
-    !!filters.name || filters.status !== 'all' || (!!filters.startDate && !!filters.endDate);
-
-  const notFound = (!dataFiltered.length && canReset) || !dataFiltered.length;
-
-  const handleFilters = useCallback(
-    (name: string, value: IOrderTableFilterValue) => {
-      table.onResetPage();
-      setFilters((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    },
-    [table]
-  );
+  const handleDeleteById = async (id: string) => {
+    await deleteOrderById(id);
+  };
 
   const handleDeleteRow = useCallback(
     (id: string) => {
-      const deleteRow = tableData.filter((row) => row.id !== id);
+      handleDeleteById(id);
+      const deleteRow = tableData?.filter((row) => row._id !== id);
       setTableData(deleteRow);
 
-      table.onUpdatePageDeleteRow(dataInPage.length);
+      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
     },
-    [dataInPage.length, table, tableData]
+    [dataInPage?.length, table, tableData]
   );
 
-  const handleDeleteRows = useCallback(() => {
-    const deleteRows = tableData.filter((row) => !table.selected.includes(row.id));
-    setTableData(deleteRows);
+  const handleEditRow = async (id: string) => {
+    try {
+      const currentOrder = await getOrderById(id);
+      setSelectedItem(currentOrder);
+      setOpenDialog(true);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
-    table.onUpdatePageDeleteRows({
-      totalRows: tableData.length,
-      totalRowsInPage: dataInPage.length,
-      totalRowsFiltered: dataFiltered.length,
-    });
-  }, [dataFiltered.length, dataInPage.length, table, tableData]);
+  const handleSearch = async (query?: IQueryOrder) => {
+    const orderList = await getListOrder(query);
+    setQueryList(query || {});
+    setTableData(orderList);
+  };
 
-  const handleResetFilters = useCallback(() => {
-    setFilters(defaultFilters);
+  const getList = async (query?: IQueryOrder) => {
+    const orderList = await getListOrder(query);
+    setQueryList(query || {});
+    return orderList;
+  };
+
+  const getCustomers = async () => {
+    const listCustomer = await getListCustomer();
+    return listCustomer;
+  };
+
+  const getDevices = async () => {
+    const listDevices = await getListDevice();
+    return listDevices;
+  };
+
+  const getAllData = async () => {
+    try {
+      const [orderList, listCustomer, listDevices] = await Promise.all([
+        getList(),
+        getCustomers(),
+        getDevices(),
+      ]);
+
+      setTableData(orderList);
+      setCustomers(listCustomer);
+      setDevices(listDevices);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  useEffect(() => {
+    getAllData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const handleViewRow = useCallback(
-    (id: string) => {
-      router.push(paths.dashboard.order.details(id));
-    },
-    [router]
-  );
-
-  const handleFilterStatus = useCallback(
-    (event: React.SyntheticEvent, newValue: string) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
-  );
-
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <CustomBreadcrumbs
           heading="List"
           links={[
-            {
-              name: 'Dashboard',
-              href: paths.dashboard.root,
-            },
+            { name: 'Dashboard', href: paths.dashboard.root },
             {
               name: 'Order',
               href: paths.dashboard.order.root,
             },
             { name: 'List' },
           ]}
-          sx={{
-            mb: { xs: 3, md: 5 },
-          }}
+          action={
+            <Button
+              variant="contained"
+              startIcon={<Iconify icon="mingcute:add-line" />}
+              onClick={() => {
+                setOpenDialog(true);
+                setSelectedItem(undefined);
+              }}
+            >
+              Tạo order
+            </Button>
+          }
+          sx={{ mb: { xs: 3, md: 5 } }}
         />
-
         <Card>
-          <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: (theme) => `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
-            }}
-          >
-            {STATUS_OPTIONS.map((tab) => (
-              <Tab
-                key={tab.value}
-                iconPosition="end"
-                value={tab.value}
-                label={tab.label}
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                    }
-                    color={
-                      (tab.value === 'completed' && 'success') ||
-                      (tab.value === 'pending' && 'warning') ||
-                      (tab.value === 'cancelled' && 'error') ||
-                      'default'
-                    }
-                  >
-                    {tab.value === 'all' && _orders.length}
-                    {tab.value === 'completed' &&
-                      _orders.filter((order) => order.status === 'completed').length}
-
-                    {tab.value === 'pending' &&
-                      _orders.filter((order) => order.status === 'pending').length}
-                    {tab.value === 'cancelled' &&
-                      _orders.filter((order) => order.status === 'cancelled').length}
-                    {tab.value === 'refunded' &&
-                      _orders.filter((order) => order.status === 'refunded').length}
-                  </Label>
-                }
-              />
-            ))}
-          </Tabs>
-
           <OrderTableToolbar
-            filters={filters}
-            onFilters={handleFilters}
-            //
-            canReset={canReset}
-            onResetFilters={handleResetFilters}
+            onSearch={handleSearch}
+            query={queryList}
+            onReset={() => {
+              handleSearch({});
+            }}
           />
-
-          {canReset && (
-            <OrderTableFiltersResult
-              filters={filters}
-              onFilters={handleFilters}
-              //
-              onResetFilters={handleResetFilters}
-              //
-              results={dataFiltered.length}
-              sx={{ p: 2.5, pt: 0 }}
-            />
-          )}
-
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <TableSelectedAction
-              dense={table.dense}
-              numSelected={table.selected.length}
-              rowCount={tableData.length}
-              onSelectAllRows={(checked) =>
-                table.onSelectAllRows(
-                  checked,
-                  tableData.map((row) => row.id)
-                )
-              }
-              action={
-                <Tooltip title="Delete">
-                  <IconButton color="primary" onClick={confirm.onTrue}>
-                    <Iconify icon="solar:trash-bin-trash-bold" />
-                  </IconButton>
-                </Tooltip>
-              }
-            />
-
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom
                   order={table.order}
                   orderBy={table.orderBy}
                   headLabel={TABLE_HEAD}
-                  rowCount={tableData.length}
+                  rowCount={tableData?.length}
                   numSelected={table.selected.length}
                   onSort={table.onSort}
-                  onSelectAllRows={(checked) =>
-                    table.onSelectAllRows(
-                      checked,
-                      tableData.map((row) => row.id)
-                    )
-                  }
                 />
-
                 <TableBody>
                   {dataFiltered
-                    .slice(
+                    ?.slice(
                       table.page * table.rowsPerPage,
                       table.page * table.rowsPerPage + table.rowsPerPage
                     )
-                    .map((row) => (
+                    .map((row, index) => (
                       <OrderTableRow
-                        key={row.id}
+                        key={index}
                         row={row}
-                        selected={table.selected.includes(row.id)}
-                        onSelectRow={() => table.onSelectRow(row.id)}
-                        onDeleteRow={() => handleDeleteRow(row.id)}
-                        onViewRow={() => handleViewRow(row.id)}
+                        selected={table.selected.includes(row?._id as string)}
+                        onSelectRow={() => table.onSelectRow(row?._id as string)}
+                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                        onEditRow={() => handleEditRow(row?._id as string)}
                       />
                     ))}
-
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData.length)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
                   />
-
-                  <TableNoData notFound={notFound} />
+                  <TableNoData notFound={tableData?.length === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered.length}
+            count={dataFiltered?.length as number}
             page={table.page}
             rowsPerPage={table.rowsPerPage}
             onPageChange={table.onChangePage}
@@ -317,79 +220,47 @@ export default function OrderListView() {
           />
         </Card>
       </Container>
-
-      <ConfirmDialog
-        open={confirm.value}
-        onClose={confirm.onFalse}
-        title="Delete"
-        content={
-          <>
-            Are you sure want to delete <strong> {table.selected.length} </strong> items?
-          </>
-        }
-        action={
-          <Button
-            variant="contained"
-            color="error"
-            onClick={() => {
-              handleDeleteRows();
-              confirm.onFalse();
-            }}
-          >
-            Delete
-          </Button>
-        }
+      <OrderDetailsInfo
+        open={openDialog}
+        onClose={handleCloseDialog}
+        currentOrder={selectedItem}
+        listCustomer={customers}
+        listDevice={devices}
+        getAllOrder={() => {
+          handleSearch(queryList);
+        }}
       />
     </>
   );
 }
 
-// ----------------------------------------------------------------------
+export default OrderListView;
 
 function applyFilter({
   inputData,
   comparator,
   filters,
-  dateError,
 }: {
-  inputData: IOrderItem[];
+  inputData?: IOrder[];
   comparator: (a: any, b: any) => number;
   filters: IOrderTableFilters;
-  dateError: boolean;
 }) {
-  const { status, name, startDate, endDate } = filters;
+  const { name } = filters;
 
-  const stabilizedThis = inputData.map((el, index) => [el, index] as const);
+  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
 
-  stabilizedThis.sort((a, b) => {
+  stabilizedThis?.sort((a, b) => {
     const order = comparator(a[0], b[0]);
     if (order !== 0) return order;
     return a[1] - b[1];
   });
 
-  inputData = stabilizedThis.map((el) => el[0]);
+  inputData = stabilizedThis?.map((el) => el[0]);
 
   if (name) {
-    inputData = inputData.filter(
-      (order) =>
-        order.orderNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        order.customer.name.toLowerCase().indexOf(name.toLowerCase()) !== -1 ||
-        order.customer.email.toLowerCase().indexOf(name.toLowerCase()) !== -1
+    inputData = inputData?.filter(
+      (user) => user.delivery?.trackingNumber.toLowerCase().indexOf(name.toLowerCase()) !== -1
     );
-  }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((order) => order.status === status);
-  }
-
-  if (!dateError) {
-    if (startDate && endDate) {
-      inputData = inputData.filter(
-        (order) =>
-          fTimestamp(order.createdAt) >= fTimestamp(startDate) &&
-          fTimestamp(order.createdAt) <= fTimestamp(endDate)
-      );
-    }
   }
 
   return inputData;

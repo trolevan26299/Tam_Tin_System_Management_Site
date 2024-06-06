@@ -37,3 +37,9 @@ function result(format: string, key = '.00') {
 
   return isInteger ? format.replace(key, '') : format;
 }
+
+export const renderMoney = (value: string) => {
+  // eslint-disable-next-line prefer-template, no-useless-concat
+  const formattedValue = `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' ' + '₫';
+  return formattedValue;
+};

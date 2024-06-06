@@ -11,11 +11,9 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useTheme } from '@mui/material/styles';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 import { useEffect } from 'react';
-import { Controller, DefaultValues, useForm } from 'react-hook-form';
+import { DefaultValues, useForm } from 'react-hook-form';
 import { createDevice, updateDeviceById } from 'src/api/product';
 import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
@@ -24,26 +22,19 @@ import { ICustomer } from 'src/types/customer';
 import { IDevice } from 'src/types/product';
 import uuidv4 from 'src/utils/uuidv4';
 import * as Yup from 'yup';
-import { option } from '../user/user-info';
 
 export type deviceInfo = {
   _id?: string;
   name: string;
   sub_category_id: string;
   price: number;
-  status?: string;
   warranty: number;
+  quantity: number;
 
   id_device?: string;
   belong_to?: string;
-  delivery_date?: string;
   note?: string;
 };
-
-const optionStatus: option[] = [
-  { label: 'inventory', value: 'inventory' },
-  { label: 'sold', value: 'sold' },
-];
 
 export default function DeviceInfo({
   currentDevice,
@@ -67,26 +58,21 @@ export default function DeviceInfo({
     _id: undefined,
     name: '',
     id_device: uuidv4() as string,
-    status: '',
     warranty: undefined,
     belong_to: '',
-    delivery_date: '',
     note: '',
     sub_category_id: '',
     price: undefined,
+    quantity: undefined,
   });
 
   const NewDevice = Yup.object().shape({
     name: Yup.string().required('Name is required !'),
     sub_category_id: Yup.string().required('Sub category is required !'),
     warranty: Yup.number().required('warranty is required !'),
-    delivery_date: Yup.string().when('status', {
-      is: 'sold',
-      then: (schema) => schema.required('Delivery date is required when the status is sold!'),
-      otherwise: (schema) => schema.notRequired(),
-    }),
+    quantity: Yup.number().required('quantity is required !'),
+
     price: Yup.number().required('Price is required !'),
-    status: Yup.string(),
     id_device: Yup.string(),
   });
 
@@ -98,8 +84,6 @@ export default function DeviceInfo({
     setValue,
     handleSubmit,
     clearErrors,
-    watch,
-    control,
     formState: { isSubmitting },
   } = methods;
 
@@ -112,13 +96,21 @@ export default function DeviceInfo({
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    const deliveryDate = data?.delivery_date
-      ? format(new Date(data.delivery_date), 'yyyy-MM-dd')
-      : '';
-    const newDate = {
-      ...data,
-      delivery_date: deliveryDate,
-      status: 'inventory',
+    const newDate: IDevice = {
+      _id: data?._id,
+      name: data?.name,
+      id_device: data?.id_device as string,
+      sub_category_id: data?.sub_category_id,
+      belong_to: data?.belong_to as string,
+      price: data?.price,
+      note: data?.note,
+      warranty: data?.warranty,
+      status: [
+        {
+          status: 'inventory',
+          quantity: data?.quantity,
+        },
+      ],
     };
     if (newDate?._id) {
       const updateDevice = await updateDeviceById(newDate?._id, newDate as IDevice);
@@ -138,6 +130,7 @@ export default function DeviceInfo({
       Object.keys(currentDevice).forEach((key: any) => {
         setValue(key, (currentDevice as any)?.[key]);
       });
+      setValue('quantity', currentDevice?.status?.[0]?.quantity);
     } else {
       const newDefaultValues = initializeDefaultValues();
       Object.keys(newDefaultValues).forEach((key: any) => {
@@ -159,7 +152,6 @@ export default function DeviceInfo({
       }}
       PaperProps={{
         sx: {
-          mt: 15,
           overflow: 'unset',
         },
       }}
@@ -203,29 +195,7 @@ export default function DeviceInfo({
                   ))}
                 </RHFSelect>
               </Grid>
-              {watch('status') === 'sold' && (
-                <Grid xs={12}>
-                  <Controller
-                    name="delivery_date"
-                    control={control}
-                    render={({ field, fieldState: { error } }) => (
-                      <DatePicker
-                        {...field}
-                        value={new Date(String(field?.value) || '')}
-                        label="Delivery date"
-                        format="dd/MM/yyyy"
-                        slotProps={{
-                          textField: {
-                            fullWidth: true,
-                            error: !!error,
-                            helperText: error?.message,
-                          },
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-              )}
+
               <Grid xs={12}>
                 <RHFSelect name="sub_category_id" label="Sub Category">
                   {listSubCategory?.map((item: ISubCategory) => (
@@ -239,6 +209,16 @@ export default function DeviceInfo({
                 <RHFTextField
                   name="price"
                   label="Price"
+                  type="number"
+                  onKeyDown={(evt) =>
+                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                  }
+                />
+              </Grid>
+              <Grid xs={12}>
+                <RHFTextField
+                  name="quantity"
+                  label="Quantity"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()

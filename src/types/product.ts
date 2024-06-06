@@ -72,17 +72,23 @@ export type IProductItem = {
   };
 };
 
+export type IStatusDevice = {
+  status: string;
+  quantity: number;
+};
+
 export type IDevice = {
-  _id: string;
+  _id?: string;
   name: string;
   id_device: string;
   sub_category_id: string;
-  status: string;
   belong_to: string;
-  delivery_date: string;
   price: number;
-  note: string;
+  note?: string;
   warranty: number;
+
+  coverUrl?: string;
+  status: IStatusDevice[];
 };
 
 export type IProductTableFilterValue = string | string[];
@@ -98,4 +104,5 @@ export type IQueryDevice = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  belong_to?: string;
 };

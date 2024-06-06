@@ -16,6 +16,7 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
 // types
 import { IDevice } from 'src/types/product';
+import { renderMoney } from 'src/utils/format-number';
 
 // ----------------------------------------------------------------------
 
@@ -34,17 +35,7 @@ export default function ProductTableRow({
   onDeleteRow,
   onEditRow,
 }: Props) {
-  const {
-    name,
-    id_device,
-    sub_category_id,
-    status,
-    belong_to,
-    delivery_date,
-    note,
-    warranty,
-    price,
-  } = row;
+  const { name, id_device, sub_category_id, belong_to, note, warranty, price, status } = row;
 
   const confirm = useBoolean();
 
@@ -66,18 +57,6 @@ export default function ProductTableRow({
       </div>
     </Tooltip>
   );
-
-  const formatDeliveryDate = (date: string) => {
-    try {
-      if (date) {
-        return format(new Date(date), 'dd/MM/yyyy');
-      }
-      return '';
-    } catch (error) {
-      console.error('Invalid date format:', error);
-      return '';
-    }
-  };
 
   return (
     <>
@@ -106,18 +85,7 @@ export default function ProductTableRow({
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(status)}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(formatDeliveryDate(delivery_date))}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
+
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(belong_to)}
@@ -126,13 +94,29 @@ export default function ProductTableRow({
         </TableCell>
         <TableCell>
           <ListItemText
-            primary={renderCellWithTooltip(String(price))}
+            primary={renderCellWithTooltip(renderMoney(String(price)))}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
         <TableCell>
           <ListItemText
-            primary={renderCellWithTooltip(note)}
+            primary={renderCellWithTooltip(
+              String(status?.find((x) => x.status === 'inventory')?.quantity || '')
+            )}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(
+              String(status?.find((x) => x.status === 'sold')?.quantity || 0)
+            )}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
+        </TableCell>
+        <TableCell>
+          <ListItemText
+            primary={renderCellWithTooltip(String(note))}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>

@@ -1,4 +1,4 @@
-import { InputAdornment, TextField } from '@mui/material';
+import { IconButton, InputAdornment, TextField } from '@mui/material';
 import { debounce } from 'lodash';
 import React, { useEffect, useMemo, useState } from 'react';
 import Iconify from '../iconify';
@@ -8,6 +8,9 @@ interface SearchProps {
   delay?: number;
   placeholder?: string;
   width?: number;
+  fullWidth?: boolean;
+  value: string;
+  useIconClear?: boolean;
 }
 
 export default function SearchInputDebounce({
@@ -15,6 +18,9 @@ export default function SearchInputDebounce({
   delay = 2000,
   placeholder,
   width,
+  fullWidth,
+  value,
+  useIconClear,
 }: SearchProps) {
   const [query, setQuery] = useState<string>('');
 
@@ -31,8 +37,13 @@ export default function SearchInputDebounce({
       debouncedSearch.cancel();
     };
   }, [debouncedSearch]);
+
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
   return (
     <TextField
+      fullWidth={fullWidth}
       sx={{ width }}
       value={query}
       onChange={handleChange}
@@ -41,6 +52,18 @@ export default function SearchInputDebounce({
         startAdornment: (
           <InputAdornment position="start">
             <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+          </InputAdornment>
+        ),
+        endAdornment: useIconClear && (
+          <InputAdornment position="end">
+            <IconButton
+              onClick={() => {
+                setQuery('');
+                onSearch('');
+              }}
+            >
+              <Iconify icon="eva:close-fill" sx={{ color: 'text.disabled' }} />
+            </IconButton>
           </InputAdornment>
         ),
       }}
