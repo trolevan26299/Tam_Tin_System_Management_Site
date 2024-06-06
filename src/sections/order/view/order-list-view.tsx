@@ -2,7 +2,6 @@
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { getListCustomer } from 'src/api/customer';
 import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
@@ -19,7 +18,6 @@ import {
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import { ICustomer } from 'src/types/customer';
 import { IOrder, IOrderTableFilters, IQueryOrder } from 'src/types/order';
 import { IDevice } from 'src/types/product';
 import OrderDetailsInfo from '../order-details-info';
@@ -48,7 +46,6 @@ function OrderListView() {
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<IOrder | undefined>(undefined);
   const [queryList, setQueryList] = useState<IQueryOrder>({});
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [devices, setDevices] = useState<IDevice[]>([]);
 
   const denseHeight = table.dense ? 52 : 72;
@@ -106,11 +103,6 @@ function OrderListView() {
     return orderList;
   };
 
-  const getCustomers = async () => {
-    const listCustomer = await getListCustomer();
-    return listCustomer;
-  };
-
   const getDevices = async () => {
     const listDevices = await getListDevice();
     return listDevices;
@@ -118,14 +110,9 @@ function OrderListView() {
 
   const getAllData = async () => {
     try {
-      const [orderList, listCustomer, listDevices] = await Promise.all([
-        getList(),
-        getCustomers(),
-        getDevices(),
-      ]);
+      const [orderList, listDevices] = await Promise.all([getList(), getDevices()]);
 
       setTableData(orderList);
-      setCustomers(listCustomer);
       setDevices(listDevices);
     } catch (error) {
       console.log(error);
@@ -224,7 +211,6 @@ function OrderListView() {
         open={openDialog}
         onClose={handleCloseDialog}
         currentOrder={selectedItem}
-        listCustomer={customers}
         listDevice={devices}
         getAllOrder={() => {
           handleSearch(queryList);

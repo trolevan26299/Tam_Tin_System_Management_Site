@@ -1,6 +1,7 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
 import {
+  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -9,16 +10,19 @@ import {
   DialogTitle,
   Divider,
   MenuItem,
+  TextField,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
+import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
+import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
-import { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
 import { ICustomer } from 'src/types/customer';
@@ -45,23 +49,34 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   note: '',
 });
 
+export interface CustomerOption {
+  label?: string;
+  value?: string;
+  [key: string]: any;
+}
+
 export default function OrderDetailsInfo({
   currentOrder,
   open,
   onClose,
-  listCustomer,
   listDevice,
   getAllOrder,
 }: {
   currentOrder?: IOrder;
   open: boolean;
   onClose: VoidFunction;
-  listCustomer: ICustomer[];
   listDevice: IDevice[];
   getAllOrder: VoidFunction;
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
+  const [state, setState] = useState<{
+    customers: ICustomer[];
+    keywordSearchCustomer: string;
+  }>({
+    customers: [],
+    keywordSearchCustomer: '',
+  });
 
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Delivery date is required'),
@@ -124,17 +139,18 @@ export default function OrderDetailsInfo({
       delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
       totalAmount,
     };
-    if (newData?._id) {
-      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
-      if (updateOrder) {
-        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
-      }
-    } else {
-      const newOrder = await createOrder(newData, enqueueSnackbar);
-      if (newOrder) {
-        handleGetWhenCreateAndUpdateSuccess(!currentOrder);
-      }
-    }
+    console.log('🚀 ~ onSubmit ~ newData:', newData);
+    // if (newData?._id) {
+    //   const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+    //   if (updateOrder) {
+    //     handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+    //   }
+    // } else {
+    //   const newOrder = await createOrder(newData, enqueueSnackbar);
+    //   if (newOrder) {
+    //     handleGetWhenCreateAndUpdateSuccess(!currentOrder);
+    //   }
+    // }
   };
 
   const handleRemove = (index: number) => {
@@ -184,11 +200,38 @@ export default function OrderDetailsInfo({
     }
   };
 
+  const handleInputChangeCustomer = (value: string) => {
+    if (value !== '') {
+      getCustomer(value, (results?: ICustomer[]) => {
+        if (results) {
+          setState({ ...state, customers: results, keywordSearchCustomer: value });
+        }
+      });
+    }
+  };
+
+  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
+    const params = {
+      keyword: input,
+    };
+    const listCustomer = await getListCustomer(params);
+    callback(listCustomer);
+  }, 200);
+
   useEffect(() => {
     handleSetDataToForm();
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder, open]);
+
+  useEffect(() => {
+    if (currentOrder) {
+      handleInputChangeCustomer(currentOrder?.customer?.name as string);
+    } else {
+      setState({ ...state, customers: [], keywordSearchCustomer: '' });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentOrder]);
   return (
     <Dialog
       fullWidth
@@ -241,13 +284,17 @@ export default function OrderDetailsInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFSelect name="customer" label="Customer">
-                  {listCustomer?.map((item) => (
-                    <MenuItem key={item?._id} value={item?._id}>
-                      {item?.name}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
+                <RHFAutocomplete
+                  name="customer"
+                  label="Customer"
+                  options={state.customers.map((item) => item?._id)}
+                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) =>
+                    handleInputChangeCustomer(value)
+                  }
+                  getOptionLabel={(option) =>
+                    (state.customers?.find((x) => x._id === option)?.name || '') as any
+                  }
+                />
               </Grid>
               <Grid xs={6}>
                 <RHFTextField name="delivery.shipBy" label="Ship By" />
