@@ -19,3 +19,12 @@ export type IQueryCustomer = {
   items_per_page?: number;
   keyword?: string;
 };
+
+export type IDataCustomer = {
+  data: ICustomer[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};

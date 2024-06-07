@@ -1,7 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
 import {
-  Autocomplete,
   Box,
   Button,
   Dialog,
@@ -10,7 +9,6 @@ import {
   DialogTitle,
   Divider,
   MenuItem,
-  TextField,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/system/Unstable_Grid/Grid';
@@ -18,7 +16,7 @@ import { DatePicker } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
 import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
@@ -72,10 +70,8 @@ export default function OrderDetailsInfo({
   const { enqueueSnackbar } = useSnackbar();
   const [state, setState] = useState<{
     customers: ICustomer[];
-    keywordSearchCustomer: string;
   }>({
     customers: [],
-    keywordSearchCustomer: '',
   });
 
   const NewOrderSchema = Yup.object().shape({
@@ -139,18 +135,17 @@ export default function OrderDetailsInfo({
       delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
       totalAmount,
     };
-    console.log('🚀 ~ onSubmit ~ newData:', newData);
-    // if (newData?._id) {
-    //   const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
-    //   if (updateOrder) {
-    //     handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
-    //   }
-    // } else {
-    //   const newOrder = await createOrder(newData, enqueueSnackbar);
-    //   if (newOrder) {
-    //     handleGetWhenCreateAndUpdateSuccess(!currentOrder);
-    //   }
-    // }
+    if (newData?._id) {
+      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+      if (updateOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+      }
+    } else {
+      const newOrder = await createOrder(newData, enqueueSnackbar);
+      if (newOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!currentOrder);
+      }
+    }
   };
 
   const handleRemove = (index: number) => {
@@ -183,6 +178,7 @@ export default function OrderDetailsInfo({
           },
         ]);
       }
+      handleInputChangeCustomer(currentOrder?.customer?.name as string);
     } else {
       setValue('_id', undefined);
       setValue('totalAmount', 0);
@@ -204,7 +200,7 @@ export default function OrderDetailsInfo({
     if (value !== '') {
       getCustomer(value, (results?: ICustomer[]) => {
         if (results) {
-          setState({ ...state, customers: results, keywordSearchCustomer: value });
+          setState({ ...state, customers: results });
         }
       });
     }
@@ -215,7 +211,7 @@ export default function OrderDetailsInfo({
       keyword: input,
     };
     const listCustomer = await getListCustomer(params);
-    callback(listCustomer);
+    callback(listCustomer?.data);
   }, 200);
 
   useEffect(() => {
@@ -223,15 +219,6 @@ export default function OrderDetailsInfo({
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder, open]);
-
-  useEffect(() => {
-    if (currentOrder) {
-      handleInputChangeCustomer(currentOrder?.customer?.name as string);
-    } else {
-      setState({ ...state, customers: [], keywordSearchCustomer: '' });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentOrder]);
   return (
     <Dialog
       fullWidth
@@ -288,9 +275,11 @@ export default function OrderDetailsInfo({
                   name="customer"
                   label="Customer"
                   options={state.customers.map((item) => item?._id)}
-                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) =>
-                    handleInputChangeCustomer(value)
-                  }
+                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                    if (reason === 'input') {
+                      handleInputChangeCustomer(value);
+                    }
+                  }}
                   getOptionLabel={(option) =>
                     (state.customers?.find((x) => x._id === option)?.name || '') as any
                   }

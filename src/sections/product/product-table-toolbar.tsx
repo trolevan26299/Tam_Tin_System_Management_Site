@@ -1,22 +1,44 @@
-import { MenuItem, Stack, TextField } from '@mui/material';
-import { ChangeEvent } from 'react';
+import { Autocomplete, MenuItem, Stack, TextField } from '@mui/material';
+import { debounce } from 'lodash';
+import { ChangeEvent, useState } from 'react';
+import { getListCustomer } from 'src/api/customer';
+import { RHFAutocomplete } from 'src/components/hook-form';
 import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
 import { ICustomer } from 'src/types/customer';
 import { IQueryDevice } from 'src/types/product';
 
 export default function ProductTableToolbar({
   onSearch,
-  listCustomer,
   query,
 }: {
   onSearch: (query: IQueryDevice) => void;
-  listCustomer: ICustomer[];
   query: IQueryDevice;
 }) {
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+
   const handleChangeBelongTo = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { value } = event.target;
     onSearch({ ...query, belong_to: value });
   };
+
+  const handleInputChangeCustomer = (value: string) => {
+    if (value !== '') {
+      getCustomer(value, (results?: ICustomer[]) => {
+        if (results) {
+          console.log('🚀 ~ getCustomer ~ results:', results);
+          setCustomers(results);
+        }
+      });
+    }
+  };
+
+  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
+    const params = {
+      keyword: input,
+    };
+    const listCustomer = await getListCustomer(params);
+    callback(listCustomer?.data);
+  }, 200);
 
   return (
     <Stack
@@ -32,7 +54,7 @@ export default function ProductTableToolbar({
       }}
     >
       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 500 }}>
-        <TextField
+        {/* <TextField
           select
           sx={{ width: 200 }}
           label="Belong to"
@@ -45,7 +67,24 @@ export default function ProductTableToolbar({
               {item.name}
             </MenuItem>
           ))}
-        </TextField>
+        </TextField> */}
+        <Autocomplete
+          sx={{ width: 200 }}
+          options={customers.map((item: ICustomer) => item?._id)}
+          onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+            if (reason === 'input') {
+              handleInputChangeCustomer(value);
+            }
+          }}
+          getOptionLabel={(option) =>
+            (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
+          }
+          onChange={(event, newValue) => {
+            onSearch({ ...query, belong_to: String(newValue) });
+          }}
+          renderInput={(params) => <TextField label="Belong to" {...params} />}
+          value={query?.belong_to}
+        />
 
         <SearchInputDebounce
           onSearch={(value: string) => {

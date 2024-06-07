@@ -123,3 +123,12 @@ export type IQueryOrder = {
   from_date?: string;
   to_date?: string;
 };
+
+export type IDataOrder = {
+  data: IOrder[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};

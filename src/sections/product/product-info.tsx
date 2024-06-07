@@ -11,11 +11,13 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useTheme } from '@mui/material/styles';
+import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
+import { getListCustomer } from 'src/api/customer';
 import { createDevice, updateDeviceById } from 'src/api/product';
-import { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import { ISubCategory } from 'src/types/category';
 import { ICustomer } from 'src/types/customer';
@@ -42,17 +44,16 @@ export default function DeviceInfo({
   open,
   onClose,
   listSubCategory,
-  listCustomer,
 }: {
   currentDevice?: IDevice;
   open: boolean;
   onClose: () => void;
   getDeviceList: () => void;
   listSubCategory: ISubCategory[];
-  listCustomer: ICustomer[];
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
 
   const initializeDefaultValues = (): DefaultValues<deviceInfo> => ({
     _id: undefined,
@@ -125,12 +126,31 @@ export default function DeviceInfo({
     }
   });
 
+  const handleInputChangeCustomer = (value: string) => {
+    if (value !== '') {
+      getCustomer(value, (results?: ICustomer[]) => {
+        if (results) {
+          setCustomers(results);
+        }
+      });
+    }
+  };
+
+  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
+    const params = {
+      keyword: input,
+    };
+    const listCustomer = await getListCustomer(params);
+    callback(listCustomer?.data);
+  }, 200);
+
   useEffect(() => {
     if (currentDevice) {
       Object.keys(currentDevice).forEach((key: any) => {
         setValue(key, (currentDevice as any)?.[key]);
       });
       setValue('quantity', currentDevice?.status?.[0]?.quantity);
+      handleInputChangeCustomer((currentDevice?.belong_to as any).name as string);
     } else {
       const newDefaultValues = initializeDefaultValues();
       Object.keys(newDefaultValues).forEach((key: any) => {
@@ -187,13 +207,19 @@ export default function DeviceInfo({
                 />
               </Grid>
               <Grid xs={12}>
-                <RHFSelect name="belong_to" label="Belong to">
-                  {listCustomer?.map((item: ICustomer) => (
-                    <MenuItem value={item._id} key={item._id}>
-                      {item.name}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
+                <RHFAutocomplete
+                  name="belong_to"
+                  label="Belong to"
+                  options={customers.map((item: ICustomer) => item?._id)}
+                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                    if (reason === 'input') {
+                      handleInputChangeCustomer(value);
+                    }
+                  }}
+                  getOptionLabel={(option: any) =>
+                    (customers?.find((x: ICustomer) => x._id === option?._id)?.name || '') as any
+                  }
+                />
               </Grid>
 
               <Grid xs={12}>

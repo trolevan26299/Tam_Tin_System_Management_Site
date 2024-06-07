@@ -6,7 +6,7 @@ export async function getListCustomer(query?: IQueryCustomer) {
     const res = await axiosInstance.get(endpoints.customer.list, {
       params: query,
     });
-    return res.data.data;
+    return res.data;
   } catch (error) {
     return console.error(error);
   }

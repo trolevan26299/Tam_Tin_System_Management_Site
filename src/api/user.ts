@@ -1,12 +1,15 @@
 /* eslint-disable import/no-cycle */
-import axiosInstance, { endpoints } from 'src/utils/axios';
 import { userInfo } from 'src/sections/user/user-info';
+import { IQueryUser } from 'src/types/user';
+import axiosInstance, { endpoints } from 'src/utils/axios';
 
 // ----------------------------------------------------------------------
-export async function getUsers() {
+export async function getUsers(query?: IQueryUser) {
   try {
-    const res = await axiosInstance.post(endpoints.user.list);
-    return res.data.dataRes;
+    const res = await axiosInstance.get(endpoints.user.list, {
+      params: query,
+    });
+    return res.data;
   } catch (error) {
     return console.error(error);
   }

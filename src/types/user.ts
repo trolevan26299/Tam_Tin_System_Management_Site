@@ -143,3 +143,18 @@ export enum ROLE {
   admin = 'admin',
   superadmin = 'superadmin',
 }
+
+export type IQueryUser = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
+};
+
+export type IDataUser = {
+  data: IUserList[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};
