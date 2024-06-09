@@ -24,7 +24,7 @@ import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'delivery', label: 'Order' },
+  { id: 'delivery', label: 'Ship by' },
   { id: 'customer', label: 'Customer' },
   { id: 'delivery_date', label: 'Date' },
   { id: 'items', label: 'Items' },

@@ -22,14 +22,11 @@ export default function ProductTableToolbar({
   };
 
   const handleInputChangeCustomer = (value: string) => {
-    if (value !== '') {
-      getCustomer(value, (results?: ICustomer[]) => {
-        if (results) {
-          console.log('🚀 ~ getCustomer ~ results:', results);
-          setCustomers(results);
-        }
-      });
-    }
+    getCustomer(value, (results?: ICustomer[]) => {
+      if (results) {
+        setCustomers(results);
+      }
+    });
   };
 
   const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
@@ -54,20 +51,6 @@ export default function ProductTableToolbar({
       }}
     >
       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 500 }}>
-        {/* <TextField
-          select
-          sx={{ width: 200 }}
-          label="Belong to"
-          onChange={(e) => handleChangeBelongTo(e)}
-          value={query?.belong_to}
-        >
-          <MenuItem value="">All</MenuItem>
-          {listCustomer?.map((item: ICustomer) => (
-            <MenuItem value={item._id} key={item._id}>
-              {item.name}
-            </MenuItem>
-          ))}
-        </TextField> */}
         <Autocomplete
           sx={{ width: 200 }}
           options={customers.map((item: ICustomer) => item?._id)}
@@ -75,12 +58,15 @@ export default function ProductTableToolbar({
             if (reason === 'input') {
               handleInputChangeCustomer(value);
             }
+            if (reason === 'clear') {
+              onSearch({ ...query, belong_to: undefined });
+            }
           }}
           getOptionLabel={(option) =>
             (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
           }
           onChange={(event, newValue) => {
-            onSearch({ ...query, belong_to: String(newValue) });
+            if (newValue) onSearch({ ...query, belong_to: String(newValue) });
           }}
           renderInput={(params) => <TextField label="Belong to" {...params} />}
           value={query?.belong_to}

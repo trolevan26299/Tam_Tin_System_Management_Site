@@ -20,6 +20,7 @@ import { Fragment, useEffect, useState } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
 import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
+import { getListDevice } from 'src/api/product';
 import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
@@ -42,7 +43,6 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   ],
   delivery: {
     shipBy: '',
-    trackingNumber: '',
   },
   note: '',
 });
@@ -74,12 +74,13 @@ export default function OrderDetailsInfo({
     customers: [],
   });
 
+  const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
+
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Delivery date is required'),
     totalAmount: Yup.number().required('Total amount is required'),
     delivery: Yup.object().shape({
       shipBy: Yup.string().required('ShipBy is required'),
-      trackingNumber: Yup.string().required('Tracking number is required'),
     }),
     customer: Yup.string().required('Customer is required'),
     items: Yup.array()
@@ -148,6 +149,18 @@ export default function OrderDetailsInfo({
     }
   };
 
+  const handleSearchDevice = debounce(async (index: number, searchQuery: string) => {
+    try {
+      const response = await getListDevice({ keyword: searchQuery });
+      setDeviceOptions((prevState) => ({
+        ...prevState,
+        [index]: response?.data,
+      }));
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
+
   const handleRemove = (index: number) => {
     remove(index);
   };
@@ -158,7 +171,6 @@ export default function OrderDetailsInfo({
       setValue('totalAmount', Number(currentOrder?.totalAmount));
       setValue('delivery_date', currentOrder?.delivery_date);
       setValue('delivery.shipBy', String(currentOrder?.delivery?.shipBy));
-      setValue('delivery.trackingNumber', String(currentOrder?.delivery?.trackingNumber));
       setValue('customer', String(currentOrder?.customer?._id));
       setValue('note', currentOrder?.note);
 
@@ -170,6 +182,8 @@ export default function OrderDetailsInfo({
             quantity: item?.quantity as number,
           }))
         );
+
+        // update items here
       } else {
         setValue('items', [
           {
@@ -184,7 +198,6 @@ export default function OrderDetailsInfo({
       setValue('totalAmount', 0);
       setValue('delivery_date', '');
       setValue('delivery.shipBy', '');
-      setValue('delivery.trackingNumber', '');
       setValue('customer', '');
       setValue('items', [
         {
@@ -285,28 +298,30 @@ export default function OrderDetailsInfo({
                   }
                 />
               </Grid>
-              <Grid xs={6}>
+              <Grid xs={currentOrder ? 6 : 12}>
                 <RHFTextField name="delivery.shipBy" label="Ship By" />
               </Grid>
-              <Grid xs={6}>
-                <RHFTextField name="delivery.trackingNumber" label="Tracking Number" />
-              </Grid>
+              {currentOrder && (
+                <Grid xs={6}>
+                  <RHFTextField name="_id" label="Tracking Number" disabled />
+                </Grid>
+              )}
 
               {fields.map((item, index) => (
                 <Fragment key={item?.id}>
                   <Grid xs={5}>
-                    <Controller
+                    <RHFAutocomplete
+                      key={item?.id}
                       name={`items.${index}.device`}
-                      control={control}
-                      render={({ field }) => (
-                        <RHFSelect {...field} label="Device">
-                          {listDevice?.map((device) => (
-                            <MenuItem key={device._id} value={device._id}>
-                              {device.name}
-                            </MenuItem>
-                          ))}
-                        </RHFSelect>
-                      )}
+                      label="Device"
+                      options={deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []}
+                      onInputChange={(_, value) => {
+                        handleSearchDevice(index, value);
+                      }}
+                      getOptionLabel={(option) =>
+                        (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)?.name ||
+                          '') as any
+                      }
                     />
                   </Grid>
                   <Grid xs={4}>

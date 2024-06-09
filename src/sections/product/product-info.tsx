@@ -130,6 +130,7 @@ export default function DeviceInfo({
     if (value !== '') {
       getCustomer(value, (results?: ICustomer[]) => {
         if (results) {
+          console.log('🚀 ~ getCustomer ~ results:', results);
           setCustomers(results);
         }
       });
@@ -216,8 +217,8 @@ export default function DeviceInfo({
                       handleInputChangeCustomer(value);
                     }
                   }}
-                  getOptionLabel={(option: any) =>
-                    (customers?.find((x: ICustomer) => x._id === option?._id)?.name || '') as any
+                  getOptionLabel={(option) =>
+                    (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
                   }
                 />
               </Grid>

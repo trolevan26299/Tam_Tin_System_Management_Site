@@ -6,7 +6,6 @@ import { IDevice } from './product';
 export type IOrderTableFilterValue = string | Date | null;
 
 export type IOrderTableFilters = {
-  trackingNumber?: string;
   name: string;
 };
 // export type IOrderTableFilters = {
@@ -93,7 +92,6 @@ export type IOrder = {
   delivery_date: string;
   delivery?: {
     shipBy: string;
-    trackingNumber: string;
   };
   customer?: ICustomer;
   items?: Items[];
@@ -108,7 +106,6 @@ export type IOrderCreateOrUpdate = {
   customer: string;
   delivery: {
     shipBy: string;
-    trackingNumber: string;
   };
   items: {
     device: string;
