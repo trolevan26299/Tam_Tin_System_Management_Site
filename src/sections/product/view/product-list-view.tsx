@@ -1,50 +1,45 @@
 'use client';
 
-import isEqual from 'lodash/isEqual';
-import { useCallback, useEffect, useState } from 'react';
-// @mui
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Container from '@mui/material/Container';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-// routes
-import { useRouter } from 'src/routes/hooks';
-import { paths } from 'src/routes/paths';
-// hooks
-// _mock
-// api
-// components
+import {
+  Button,
+  Card,
+  Container,
+  Tab,
+  Table,
+  TableBody,
+  TableContainer,
+  Tabs,
+} from '@mui/material';
+import { alpha, useTheme } from '@mui/material/styles';
+import React, { useCallback, useEffect, useState } from 'react';
+import { getListSubCategory } from 'src/api/allCategory';
+import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
+import Label from 'src/components/label';
 import Scrollbar from 'src/components/scrollbar';
 import { useSettingsContext } from 'src/components/settings';
 import {
-  emptyRows,
-  getComparator,
   TableEmptyRows,
   TableHeadCustom,
   TableNoData,
   TablePaginationCustom,
+  emptyRows,
   useTable,
 } from 'src/components/table';
-// types
-import { Tab, Tabs } from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import { getListSubCategory } from 'src/api/allCategory';
-import { getListCustomer } from 'src/api/customer';
-import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
-import Label from 'src/components/label';
+import { paths } from 'src/routes/paths';
 import { ISubCategory } from 'src/types/category';
-import { ICustomer } from 'src/types/customer';
 import { IInvoiceTableFilterValue } from 'src/types/invoice';
-import { IDevice, IProductTableFilters, IQueryDevice, IStatusDevice } from 'src/types/product';
+import {
+  IDataDevice,
+  IDevice,
+  IProductTableFilters,
+  IQueryDevice,
+  IStatusDevice,
+} from 'src/types/product';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
-
-// ----------------------------------------------------------------------
 
 const TABLE_HEAD = [
   { id: 'name', label: 'Name', width: 160 },
@@ -66,30 +61,26 @@ const defaultFilters: IProductTableFilters = {
   status: 'all',
 };
 
-// ----------------------------------------------------------------------
-
 export default function ProductListView() {
-  const router = useRouter();
   const theme = useTheme();
-
   const table = useTable();
-
   const settings = useSettingsContext();
 
-  const [tableData, setTableData] = useState<IDevice[]>([]);
+  const [tableData, setTableData] = useState<IDataDevice | undefined>();
   const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
-
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
+  const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
+    page: 0,
+    items_per_page: 5,
+  });
   const [filters, setFilters] = useState(defaultFilters);
 
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-
-  const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
-  const [queryDevice, setQueryDevice] = useState<IQueryDevice>({});
+  const denseHeight = table.dense ? 52 : 72;
 
   const getInvoiceLength = (statusType: string) => {
     let count = 0;
-    tableData.forEach((data) => {
+    tableData?.data.forEach((data) => {
       data.status.forEach((status: IStatusDevice) => {
         if (status.status === statusType && status?.quantity > 0) {
           // eslint-disable-next-line no-plusplus
@@ -101,7 +92,7 @@ export default function ProductListView() {
   };
 
   const TABS = [
-    { value: 'all', label: 'All', color: 'default', count: tableData?.length },
+    { value: 'all', label: 'All', color: 'default', count: tableData?.totalCount },
     {
       value: 'inventory',
       label: 'Inventory',
@@ -116,27 +107,6 @@ export default function ProductListView() {
     },
   ] as const;
 
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters,
-  });
-
-  const dataInPage = dataFiltered?.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
-
-  const denseHeight = table.dense ? 60 : 80;
-
-  const canReset = !isEqual(defaultFilters, filters);
-
-  const notFound = !dataFiltered?.length && canReset;
-
-  const handleDeleteById = async (id: string) => {
-    await deleteDeviceById(id);
-  };
-
   const handleFilters = useCallback(
     (name: string, value: IInvoiceTableFilterValue) => {
       table.onResetPage();
@@ -144,7 +114,9 @@ export default function ProductListView() {
         ...prevState,
         [name]: value,
       }));
+      handleSearch({ ...queryDevice, status: value as string });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [table]
   );
 
@@ -155,16 +127,21 @@ export default function ProductListView() {
     [handleFilters]
   );
 
-  const handleDeleteRow = useCallback(
-    (id: string) => {
-      handleDeleteById(id);
-      const deleteRow = tableData?.filter((row) => row._id !== id);
-      setTableData(deleteRow);
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(undefined);
+  };
 
-      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
-    },
-    [dataInPage?.length, table, tableData]
-  );
+  const handleSearch = async (query: IQueryDevice) => {
+    const deviceList = await getDeviceList(query);
+    setQueryDevice(query);
+    setTableData(deviceList);
+  };
+
+  const getDeviceList = async (query?: IQueryDevice) => {
+    const deviceList = await getListDevice(query);
+    return deviceList;
+  };
 
   const handleEditRow = async (id: string) => {
     try {
@@ -176,47 +153,37 @@ export default function ProductListView() {
     }
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedItem(undefined);
+  const handleDeleteById = async (id: string) => {
+    await deleteDeviceById(id);
   };
 
-  const getDeviceList = async (query?: IQueryDevice) => {
-    const deviceList = await getListDevice(query);
-    return deviceList;
-  };
+  const handleDeleteRow = useCallback(
+    (id: string) => {
+      handleDeleteById(id);
+      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
+      setTableData({ ...tableData, data: deleteRow });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table, tableData]
+  );
 
   const getSubCategoryList = async () => {
     const subCategoryList = await getListSubCategory();
     return subCategoryList;
   };
 
-  const getCustomers = async () => {
-    const customerList: ICustomer[] = await getListCustomer();
-    return customerList;
-  };
-
-  const handleSearch = async (query: IQueryDevice) => {
-    const deviceList = await getDeviceList(query);
-    setQueryDevice(query);
-    setTableData(deviceList);
-  };
-
   const getAllData = async () => {
     try {
-      const [deviceList, subCategoryList, customerList] = await Promise.all([
-        getDeviceList(),
+      const [deviceList, subCategoryList] = await Promise.all([
+        getDeviceList(queryDevice),
         getSubCategoryList(),
-        getCustomers(),
       ]);
       setTableData(deviceList);
-      setSubCategories(subCategoryList);
-      setCustomers(customerList);
+      setSubCategories(subCategoryList?.data);
     } catch (error) {
       console.log(error);
     }
   };
-
   useEffect(() => {
     getAllData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -243,7 +210,7 @@ export default function ProductListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Create Device
+              Tạo sản phẩm
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -278,63 +245,61 @@ export default function ProductListView() {
             ))}
           </Tabs>
           <ProductTableToolbar
-            onSearch={(query) => handleSearch(query)}
-            listCustomer={customers}
+            onSearch={(query) => {
+              const newQuery = { ...query, page: 0 };
+              handleSearch(newQuery);
+            }}
             query={queryDevice}
           />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData?.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                />
+                <TableHeadCustom headLabel={TABLE_HEAD} />
 
                 <TableBody>
-                  {dataFiltered
-                    ?.slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <ProductTableRow
-                        key={row._id}
-                        row={{
-                          ...row,
-                          sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
-                            ?.name as string,
-                          belong_to: customers?.find((x) => x?._id === row?.belong_to)
-                            ?.name as string,
-                        }}
-                        selected={table.selected.includes(row?._id as string)}
-                        onSelectRow={() => table.onSelectRow(row?._id as string)}
-                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                        onEditRow={() => handleEditRow(row?._id as string)}
-                      />
-                    ))}
+                  {tableData?.data.map((row) => (
+                    <ProductTableRow
+                      key={row._id}
+                      row={{
+                        ...row,
+                        sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
+                          ?.name as string,
+                        belong_to: (row?.belong_to as unknown as { name: string })?.name as any,
+                      }}
+                      selected={table.selected.includes(row?._id as string)}
+                      onSelectRow={() => table.onSelectRow(row?._id as string)}
+                      onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                      onEditRow={() => handleEditRow(row?._id as string)}
+                    />
+                  ))}
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
+                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.totalCount || 0)}
                   />
 
-                  <TableNoData notFound={notFound} />
+                  <TableNoData notFound={tableData?.totalCount === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered.length}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
-            //
+            count={tableData?.totalCount || 0}
+            page={Number(queryDevice?.page)}
+            rowsPerPage={Number(queryDevice?.items_per_page)}
+            onPageChange={(event, page) => {
+              const newQuery = { ...queryDevice, page };
+              handleSearch(newQuery);
+            }}
+            onRowsPerPageChange={(event) => {
+              const newQuery = {
+                ...queryDevice,
+                page: 0,
+                items_per_page: Number(event.target.value),
+              };
+              handleSearch(newQuery);
+            }}
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
@@ -348,46 +313,7 @@ export default function ProductListView() {
           handleSearch(queryDevice);
         }}
         listSubCategory={subCategories}
-        listCustomer={customers}
       />
     </>
   );
-}
-
-// ----------------------------------------------------------------------
-
-function applyFilter({
-  inputData,
-  comparator,
-  filters,
-}: {
-  inputData: IDevice[];
-  comparator: (a: any, b: any) => number;
-  filters: IProductTableFilters;
-}) {
-  const { name, status } = filters;
-
-  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
-
-  stabilizedThis?.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis?.map((el) => el[0]);
-
-  if (name) {
-    inputData = inputData.filter(
-      (product) => product.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
-  }
-
-  if (status !== 'all') {
-    inputData = inputData.filter((invoice) =>
-      invoice.status.some((statusType) => statusType.status === status && statusType.quantity > 0)
-    );
-  }
-
-  return inputData;
 }

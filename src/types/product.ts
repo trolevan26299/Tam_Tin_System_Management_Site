@@ -105,4 +105,14 @@ export type IQueryDevice = {
   items_per_page?: number;
   keyword?: string;
   belong_to?: string;
+  status?: string;
+};
+
+export type IDataDevice = {
+  data: IDevice[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
 };

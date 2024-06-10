@@ -13,11 +13,10 @@ import {
   TableNoData,
   TablePaginationCustom,
   emptyRows,
-  getComparator,
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import { ICategory, ICategoryTableFilters } from 'src/types/category';
+import { ICategory, IDataCategory, IQueryCategory } from 'src/types/category';
 import CategoryInfo from '../category-info';
 import CategoryTableRow from '../category-table-row';
 
@@ -26,45 +25,29 @@ const TABLE_HEAD = [
   { id: 'action', label: 'Action' },
 ];
 
-const filtersData: ICategoryTableFilters = {
-  name: '',
-};
-
 export default function CategoryListView() {
   const table = useTable();
   const settings = useSettingsContext();
-
-  const [tableData, setTableData] = useState<ICategory[]>([]);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<ICategory | undefined>(undefined);
-
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters: filtersData,
-  });
-
-  const dataInPage = dataFiltered?.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
-
   const denseHeight = table.dense ? 52 : 72;
 
-  const handleDeleteById = async (id: string) => {
-    await deleteCategoryById(id);
+  const [tableData, setTableData] = useState<IDataCategory | undefined>(undefined);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<ICategory | undefined>(undefined);
+  const [queryCategory, setQueryCategory] = useState<IQueryCategory>({
+    page: 0,
+    items_per_page: 5,
+  });
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+    setSelectedItem(undefined);
   };
 
-  const handleDeleteRow = useCallback(
-    (id: string) => {
-      handleDeleteById(id);
-      const deleteRow = tableData?.filter((row) => row._id !== id);
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
-    },
-    [dataInPage?.length, table, tableData]
-  );
+  const getCategoryList = async (query?: IQueryCategory) => {
+    const categoryList = await getListCategory(query);
+    if (query) setQueryCategory(query);
+    setTableData(categoryList);
+  };
 
   const handleEditRow = async (id: string) => {
     try {
@@ -76,18 +59,22 @@ export default function CategoryListView() {
     }
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedItem(undefined);
+  const handleDeleteById = async (id: string) => {
+    await deleteCategoryById(id);
   };
 
-  const getCategoryList = async () => {
-    const categoryList = await getListCategory();
-    setTableData(categoryList);
-  };
+  const handleDeleteRow = useCallback(
+    (id: string) => {
+      handleDeleteById(id);
+      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as ICategory[];
+      setTableData({ ...tableData, data: deleteRow });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table, tableData]
+  );
 
   useEffect(() => {
-    getCategoryList();
+    getCategoryList(queryCategory);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
@@ -112,7 +99,7 @@ export default function CategoryListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Create sub category
+              Tạo Category
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -121,46 +108,48 @@ export default function CategoryListView() {
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData?.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                />
+                <TableHeadCustom headLabel={TABLE_HEAD} />
                 <TableBody>
-                  {dataFiltered
-                    ?.slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <CategoryTableRow
-                        key={row._id}
-                        row={row}
-                        selected={table.selected.includes(row?._id as string)}
-                        onSelectRow={() => table.onSelectRow(row?._id as string)}
-                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                        onEditRow={() => handleEditRow(row?._id as string)}
-                      />
-                    ))}
+                  {tableData?.data?.map((row) => (
+                    <CategoryTableRow
+                      key={row._id}
+                      row={row}
+                      selected={table.selected.includes(row?._id as string)}
+                      onSelectRow={() => table.onSelectRow(row?._id as string)}
+                      onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                      onEditRow={() => handleEditRow(row?._id as string)}
+                    />
+                  ))}
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
+                    emptyRows={emptyRows(
+                      table.page,
+                      table.rowsPerPage,
+                      tableData?.data?.length || 0
+                    )}
                   />
-                  <TableNoData notFound={tableData?.length === 0} />
+                  <TableNoData notFound={tableData?.data?.length === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered?.length || 0}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
+            count={tableData?.totalCount || 0}
+            page={Number(queryCategory?.page)}
+            rowsPerPage={Number(queryCategory?.items_per_page)}
+            onPageChange={(event, page) => {
+              const newQuery = { ...queryCategory, page };
+              getCategoryList(newQuery);
+            }}
+            onRowsPerPageChange={(event) => {
+              const newQuery = {
+                ...queryCategory,
+                page: 0,
+                items_per_page: Number(event.target.value),
+              };
+              getCategoryList(newQuery);
+            }}
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
@@ -171,38 +160,10 @@ export default function CategoryListView() {
         currentCategory={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
-        getCategoryList={getCategoryList}
+        getCategoryList={() => {
+          getCategoryList(queryCategory);
+        }}
       />
     </>
   );
-}
-
-function applyFilter({
-  inputData,
-  comparator,
-  filters,
-}: {
-  inputData?: ICategory[];
-  comparator: (a: any, b: any) => number;
-  filters: ICategoryTableFilters;
-}) {
-  const { name } = filters;
-
-  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
-
-  stabilizedThis?.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis?.map((el) => el[0]);
-
-  if (name) {
-    inputData = inputData?.filter(
-      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
-  }
-
-  return inputData;
 }

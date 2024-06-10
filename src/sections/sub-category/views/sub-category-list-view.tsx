@@ -1,8 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { useCallback, useEffect, useState } from 'react';
 import {
   deleteSubCategoryById,
   getListCategory,
@@ -19,11 +18,10 @@ import {
   TableNoData,
   TablePaginationCustom,
   emptyRows,
-  getComparator,
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import { ICategory, ICategoryTableFilters, ISubCategory } from 'src/types/category';
+import { ICategory, IDataSubCategory, IQueryCategory, ISubCategory } from 'src/types/category';
 import SubCategoryInfo from '../sub-category-info';
 import SubCategoryTableRow from '../sub-category-table-row';
 
@@ -34,35 +32,41 @@ const TABLE_HEAD = [
   { id: 'action', label: 'Action' },
 ];
 
-const filtersData: ICategoryTableFilters = {
-  name: '',
-};
-
 export default function SubCategoryListView() {
   const table = useTable();
   const settings = useSettingsContext();
 
-  const [tableData, setTableData] = useState<ISubCategory[]>([]);
+  const [tableData, setTableData] = useState<IDataSubCategory | undefined>(undefined);
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<ISubCategory | undefined>(undefined);
-
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters: filtersData,
+  const [querySubCategory, setQuerySubCategory] = useState<IQueryCategory>({
+    page: 0,
+    items_per_page: 5,
   });
-
-  const dataInPage = dataFiltered?.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
 
   const denseHeight = table.dense ? 52 : 72;
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
     setSelectedItem(undefined);
+  };
+
+  const getSubCategoryList = async (query: IQueryCategory) => {
+    const subCategoryList = await getListSubCategory(query);
+    setQuerySubCategory(query);
+    return subCategoryList;
+  };
+
+  const onSearch = async (query: IQueryCategory) => {
+    const subCategoryList = await getListSubCategory(query);
+    setQuerySubCategory(query);
+    setTableData(subCategoryList);
+  };
+
+  const getCategoryList = async () => {
+    const categoryList = await getListCategory();
+    return categoryList?.data;
   };
 
   const handleDeleteById = async (id: string) => {
@@ -72,12 +76,11 @@ export default function SubCategoryListView() {
   const handleDeleteRow = useCallback(
     (id: string) => {
       handleDeleteById(id);
-      const deleteRow = tableData?.filter((row) => row._id !== id);
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
+      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as ISubCategory[];
+      setTableData({ ...tableData, data: deleteRow });
     },
-    [dataInPage?.length, table, tableData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table, tableData]
   );
 
   const handleEditRow = async (id: string) => {
@@ -90,20 +93,10 @@ export default function SubCategoryListView() {
     }
   };
 
-  const getSubCategoryList = async () => {
-    const subCategoryList = await getListSubCategory();
-    return subCategoryList;
-  };
-
-  const getCategoryList = async () => {
-    const categoryList = await getListCategory();
-    return categoryList;
-  };
-
   const getAllData = async () => {
     try {
       const [subCategoryList, categoryList] = await Promise.all([
-        getSubCategoryList(),
+        getSubCategoryList(querySubCategory),
         getCategoryList(),
       ]);
       setTableData(subCategoryList);
@@ -139,7 +132,7 @@ export default function SubCategoryListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Create sub category
+              Tạo sub category
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
@@ -148,50 +141,52 @@ export default function SubCategoryListView() {
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData?.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                />
+                <TableHeadCustom headLabel={TABLE_HEAD} />
                 <TableBody>
-                  {dataFiltered
-                    ?.slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <SubCategoryTableRow
-                        key={row._id}
-                        row={{
-                          ...row,
-                          category_id: categories?.find((x) => x._id === row.category_id)
-                            ?.name as string,
-                        }}
-                        selected={table.selected.includes(row?._id as string)}
-                        onSelectRow={() => table.onSelectRow(row?._id as string)}
-                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                        onEditRow={() => handleEditRow(row?._id as string)}
-                      />
-                    ))}
+                  {tableData?.data?.map((row) => (
+                    <SubCategoryTableRow
+                      key={row._id}
+                      row={{
+                        ...row,
+                        category_id: categories?.find((x) => x._id === row.category_id)
+                          ?.name as string,
+                      }}
+                      selected={table.selected.includes(row?._id as string)}
+                      onSelectRow={() => table.onSelectRow(row?._id as string)}
+                      onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                      onEditRow={() => handleEditRow(row?._id as string)}
+                    />
+                  ))}
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
+                    emptyRows={emptyRows(
+                      table.page,
+                      table.rowsPerPage,
+                      tableData?.data?.length || 0
+                    )}
                   />
-                  <TableNoData notFound={tableData?.length === 0} />
+                  <TableNoData notFound={tableData?.data?.length === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered?.length || 0}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
+            count={tableData?.totalCount || 0}
+            page={Number(querySubCategory?.page)}
+            rowsPerPage={Number(querySubCategory?.items_per_page)}
+            onPageChange={(event, page) => {
+              const newQuery = { ...querySubCategory, page };
+              onSearch(newQuery);
+            }}
+            onRowsPerPageChange={(event) => {
+              const newQuery = {
+                ...querySubCategory,
+                page: 0,
+                items_per_page: Number(event.target.value),
+              };
+              onSearch(newQuery);
+            }}
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
@@ -206,34 +201,4 @@ export default function SubCategoryListView() {
       />
     </>
   );
-}
-
-function applyFilter({
-  inputData,
-  comparator,
-  filters,
-}: {
-  inputData?: ISubCategory[];
-  comparator: (a: any, b: any) => number;
-  filters: ICategoryTableFilters;
-}) {
-  const { name } = filters;
-
-  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
-
-  stabilizedThis?.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis?.map((el) => el[0]);
-
-  if (name) {
-    inputData = inputData?.filter(
-      (user) => user.name.toLowerCase().indexOf(name.toLowerCase()) !== -1
-    );
-  }
-
-  return inputData;
 }

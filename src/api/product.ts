@@ -8,7 +8,7 @@ import { IDevice, IQueryDevice } from 'src/types/product';
 export async function getListDevice(query?: IQueryDevice) {
   try {
     const res = await axiosInstance.get(endpoints.device.list, { params: query });
-    return res.data.dataRes;
+    return res.data;
   } catch (error) {
     return console.error(error);
   }

@@ -8,17 +8,19 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  MenuItem,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { format } from 'date-fns';
+import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
+import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
-import { RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { getListDevice } from 'src/api/product';
+import { RHFAutocomplete, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
 import { ICustomer } from 'src/types/customer';
@@ -40,7 +42,6 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   ],
   delivery: {
     shipBy: '',
-    trackingNumber: '',
   },
   note: '',
 });
@@ -49,26 +50,28 @@ export default function OrderDetailsInfo({
   currentOrder,
   open,
   onClose,
-  listCustomer,
-  listDevice,
   getAllOrder,
 }: {
   currentOrder?: IOrder;
   open: boolean;
   onClose: VoidFunction;
-  listCustomer: ICustomer[];
-  listDevice: IDevice[];
   getAllOrder: VoidFunction;
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
+  // const [state, setState] = useState<{
+  //   customers: ICustomer[];
+  // }>({
+  //   customers: [],
+  // });
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+  const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
 
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Delivery date is required'),
     totalAmount: Yup.number().required('Total amount is required'),
     delivery: Yup.object().shape({
       shipBy: Yup.string().required('ShipBy is required'),
-      trackingNumber: Yup.string().required('Tracking number is required'),
     }),
     customer: Yup.string().required('Customer is required'),
     items: Yup.array()
@@ -102,13 +105,29 @@ export default function OrderDetailsInfo({
     name: 'items',
   });
 
-  const totalAmount = watch('items')?.reduce((total, orderItem) => {
-    const device = listDevice?.find((d: IDevice) => d._id === orderItem.device);
-    if (device) {
-      return total + device.price * Number(orderItem.quantity);
-    }
-    return total;
-  }, 0);
+  const totalAmount = (): number => {
+    const listDevice = deviceOptions;
+    const deviceOption = watch('items');
+    const allDevices: IDevice[] = Object.values(listDevice).flat();
+
+    const deviceLookup: { [key: string]: IDevice } = {};
+    allDevices.forEach((device) => {
+      if (device._id) {
+        deviceLookup[device._id] = device;
+      }
+    });
+
+    let totalCost = 0;
+    deviceOption.forEach((item) => {
+      const device = deviceLookup[item.device];
+      if (device) {
+        const quantity = parseInt(Number(item?.quantity) as any, 10);
+        totalCost += device.price * quantity;
+      }
+    });
+
+    return totalCost;
+  };
 
   const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
     getAllOrder();
@@ -122,7 +141,7 @@ export default function OrderDetailsInfo({
     const newData: IOrderCreateOrUpdate = {
       ...data,
       delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
-      totalAmount,
+      totalAmount: totalAmount(),
     };
     if (newData?._id) {
       const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
@@ -137,9 +156,17 @@ export default function OrderDetailsInfo({
     }
   };
 
-  const handleRemove = (index: number) => {
-    remove(index);
-  };
+  const handleSearchDevice = debounce(async (index: number, searchQuery: string) => {
+    try {
+      const response = await getListDevice({ keyword: searchQuery });
+      setDeviceOptions((prevState) => ({
+        ...prevState,
+        [index]: response?.data,
+      }));
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
 
   const handleSetDataToForm = () => {
     if (currentOrder) {
@@ -147,18 +174,24 @@ export default function OrderDetailsInfo({
       setValue('totalAmount', Number(currentOrder?.totalAmount));
       setValue('delivery_date', currentOrder?.delivery_date);
       setValue('delivery.shipBy', String(currentOrder?.delivery?.shipBy));
-      setValue('delivery.trackingNumber', String(currentOrder?.delivery?.trackingNumber));
       setValue('customer', String(currentOrder?.customer?._id));
       setValue('note', currentOrder?.note);
 
       if (currentOrder?.items && currentOrder?.items?.length > 0) {
-        setValue(
-          'items',
-          currentOrder?.items?.map((item) => ({
-            device: item?.device?._id as string,
-            quantity: item?.quantity as number,
-          }))
-        );
+        const items = currentOrder?.items?.map((item) => ({
+          device: item?.device?._id as string,
+          quantity: item?.quantity as number,
+        }));
+
+        const deviceOption: { [key: number]: IDevice[] } = {};
+
+        currentOrder.items.forEach((item, index) => {
+          (deviceOption[index] as any) = [item.device];
+        });
+
+        setValue('items', items);
+        setDeviceOptions(deviceOption);
+        // update items here
       } else {
         setValue('items', [
           {
@@ -167,12 +200,12 @@ export default function OrderDetailsInfo({
           },
         ]);
       }
+      setCustomers([currentOrder?.customer as ICustomer]);
     } else {
       setValue('_id', undefined);
       setValue('totalAmount', 0);
       setValue('delivery_date', '');
       setValue('delivery.shipBy', '');
-      setValue('delivery.trackingNumber', '');
       setValue('customer', '');
       setValue('items', [
         {
@@ -183,6 +216,15 @@ export default function OrderDetailsInfo({
       setValue('note', '');
     }
   };
+
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
 
   useEffect(() => {
     handleSetDataToForm();
@@ -241,36 +283,46 @@ export default function OrderDetailsInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFSelect name="customer" label="Customer">
-                  {listCustomer?.map((item) => (
-                    <MenuItem key={item?._id} value={item?._id}>
-                      {item?.name}
-                    </MenuItem>
-                  ))}
-                </RHFSelect>
+                <RHFAutocomplete
+                  name="customer"
+                  label="Customer"
+                  options={customers.map((item) => item?._id)}
+                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                    if (reason === 'input') {
+                      handleInputChangeCustomer(value);
+                    }
+                  }}
+                  getOptionLabel={(option) =>
+                    (customers?.find((x) => x._id === option)?.name || '') as any
+                  }
+                />
               </Grid>
-              <Grid xs={6}>
+              <Grid xs={currentOrder ? 6 : 12}>
                 <RHFTextField name="delivery.shipBy" label="Ship By" />
               </Grid>
-              <Grid xs={6}>
-                <RHFTextField name="delivery.trackingNumber" label="Tracking Number" />
-              </Grid>
+              {currentOrder && (
+                <Grid xs={6}>
+                  <RHFTextField name="_id" label="Tracking Number" disabled />
+                </Grid>
+              )}
 
               {fields.map((item, index) => (
                 <Fragment key={item?.id}>
                   <Grid xs={5}>
-                    <Controller
+                    <RHFAutocomplete
+                      key={item?.id}
                       name={`items.${index}.device`}
-                      control={control}
-                      render={({ field }) => (
-                        <RHFSelect {...field} label="Device">
-                          {listDevice?.map((device) => (
-                            <MenuItem key={device._id} value={device._id}>
-                              {device.name}
-                            </MenuItem>
-                          ))}
-                        </RHFSelect>
-                      )}
+                      label="Device"
+                      options={deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []}
+                      onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                        if (reason === 'input') {
+                          handleSearchDevice(index, value);
+                        }
+                      }}
+                      getOptionLabel={(option) =>
+                        (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)?.name ||
+                          '') as any
+                      }
                     />
                   </Grid>
                   <Grid xs={4}>
@@ -292,7 +344,7 @@ export default function OrderDetailsInfo({
                   <Grid xs={1.5}>
                     <Button
                       variant="outlined"
-                      onClick={() => handleRemove(index)}
+                      onClick={() => remove(index)}
                       color="error"
                       sx={{ height: '55px' }}
                       disabled={fields?.length === 1}
@@ -320,7 +372,7 @@ export default function OrderDetailsInfo({
 
               <Grid xs={12} display="flex" justifyContent="space-between">
                 <Box>Tổng:</Box>
-                <Box>{renderMoney(String(totalAmount))}</Box>
+                <Box>{renderMoney(String(totalAmount()))}</Box>
               </Grid>
 
               <Grid xs={12}>

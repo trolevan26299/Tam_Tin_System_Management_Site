@@ -22,13 +22,13 @@ export default function OrderTableToolbar({
   const handleFilterFromDate = (value: any) => {
     const date = new Date(value);
     const formattedDate = format(date, 'yyyy/MM/dd');
-    onSearch({ ...query, from_date: formattedDate });
+    onSearch({ ...query, from_date: formattedDate, page: 0 });
   };
 
   const handleFilterToDate = (value: any) => {
     const date = new Date(value);
     const formattedDate = format(date, 'yyyy/MM/dd');
-    onSearch({ ...query, to_date: formattedDate });
+    onSearch({ ...query, to_date: formattedDate, page: 0 });
   };
   return (
     <Stack
@@ -78,7 +78,7 @@ export default function OrderTableToolbar({
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
         <SearchInputDebounce
           onSearch={(value: string) => {
-            onSearch({ ...query, keyword: value });
+            onSearch({ ...query, keyword: value, page: 0 });
           }}
           placeholder="Tìm kiếm theo khách hàng hoặc số đơn hàng..."
           fullWidth

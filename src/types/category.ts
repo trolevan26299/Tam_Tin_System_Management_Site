@@ -13,3 +13,27 @@ export type ISubCategory = {
 export type ICategoryTableFilters = {
   name: string;
 };
+
+export type IQueryCategory = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
+};
+
+export type IDataCategory = {
+  data: ICategory[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};
+
+export type IDataSubCategory = {
+  data: ISubCategory[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};

@@ -1,35 +1,22 @@
 'use client';
 
+import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-// @mui
-import Button from '@mui/material/Button';
-import Card from '@mui/material/Card';
-import Container from '@mui/material/Container';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableContainer from '@mui/material/TableContainer';
-// routes
-import { paths } from 'src/routes/paths';
-// _mock
-// hooks
-// components
+import { deleteUserById, getUserById, getUsers } from 'src/api/user';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import { useSettingsContext } from 'src/components/settings';
 import {
-  emptyRows,
-  getComparator,
   TableEmptyRows,
   TableHeadCustom,
   TableNoData,
   TablePaginationCustom,
+  emptyRows,
   useTable,
 } from 'src/components/table';
-// types
-import { IUserList, IUserTableFilters } from 'src/types/user';
-//
-import { deleteUserById, getUserById, getUsers } from 'src/api/user';
+import { paths } from 'src/routes/paths';
+import { IDataUser, IQueryUser, IUserList } from 'src/types/user';
 import UserInfo, { userInfo } from '../user-info';
 import UserTableRow from '../user-table-row';
 
@@ -39,35 +26,18 @@ const TABLE_HEAD = [
   { id: 'action', label: 'Action', width: 80 },
 ];
 
-const filtersData: IUserTableFilters = {
-  username: '',
-};
-
-// ----------------------------------------------------------------------
-
 export default function UserListView() {
   const table = useTable();
-
   const settings = useSettingsContext();
-
-  const [tableData, setTableData] = useState<IUserList[]>();
-
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-
-  const [selectedItem, setSelectedItem] = useState<userInfo | undefined>(undefined);
-
-  const dataFiltered = applyFilter({
-    inputData: tableData,
-    comparator: getComparator(table.order, table.orderBy),
-    filters: filtersData,
-  });
-
-  const dataInPage = dataFiltered?.slice(
-    table.page * table.rowsPerPage,
-    table.page * table.rowsPerPage + table.rowsPerPage
-  );
-
   const denseHeight = table.dense ? 52 : 72;
+
+  const [tableData, setTableData] = useState<IDataUser | undefined>(undefined);
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [selectedItem, setSelectedItem] = useState<userInfo | undefined>(undefined);
+  const [queryUser, setQueryUser] = useState<IQueryUser>({
+    page: 0,
+    items_per_page: 5,
+  });
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -81,12 +51,11 @@ export default function UserListView() {
   const handleDeleteRow = useCallback(
     (id: string) => {
       handleDeleteById(id);
-      const deleteRow = tableData?.filter((row) => row._id !== id);
-      setTableData(deleteRow);
-
-      table.onUpdatePageDeleteRow(dataInPage?.length || 0);
+      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IUserList[];
+      setTableData({ ...tableData, data: deleteRow });
     },
-    [dataInPage?.length, table, tableData]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [table, tableData]
   );
 
   const handleEditRow = async (id: string) => {
@@ -95,19 +64,20 @@ export default function UserListView() {
     setOpenDialog(true);
   };
 
-  const getUserList = async () => {
+  const getUserList = async (query: IQueryUser) => {
     try {
-      const userList = await getUsers();
-      setTableData(userList as IUserList[]);
+      const userList = await getUsers(query);
+      setQueryUser(query);
+      setTableData(userList);
     } catch (error) {
       console.log(error);
     }
   };
 
   useEffect(() => {
-    getUserList();
+    getUserList(queryUser);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
   return (
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
@@ -127,7 +97,7 @@ export default function UserListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Create User
+              Tạo người dùng
             </Button>
           }
           sx={{
@@ -139,48 +109,50 @@ export default function UserListView() {
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom
-                  order={table.order}
-                  orderBy={table.orderBy}
-                  headLabel={TABLE_HEAD}
-                  rowCount={tableData?.length}
-                  numSelected={table.selected.length}
-                  onSort={table.onSort}
-                />
+                <TableHeadCustom headLabel={TABLE_HEAD} />
                 <TableBody>
-                  {dataFiltered
-                    ?.slice(
-                      table.page * table.rowsPerPage,
-                      table.page * table.rowsPerPage + table.rowsPerPage
-                    )
-                    .map((row) => (
-                      <UserTableRow
-                        key={row._id}
-                        row={row}
-                        selected={table.selected.includes(row._id)}
-                        onSelectRow={() => table.onSelectRow(row._id)}
-                        onEditRow={() => handleEditRow(row._id)}
-                        onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      />
-                    ))}
+                  {tableData?.data?.map((row) => (
+                    <UserTableRow
+                      key={row._id}
+                      row={row}
+                      selected={table.selected.includes(row._id)}
+                      onSelectRow={() => table.onSelectRow(row._id)}
+                      onEditRow={() => handleEditRow(row._id)}
+                      onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                    />
+                  ))}
 
                   <TableEmptyRows
                     height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.length || 0)}
+                    emptyRows={emptyRows(
+                      table.page,
+                      table.rowsPerPage,
+                      tableData?.data?.length || 0
+                    )}
                   />
 
-                  <TableNoData notFound={false} />
+                  <TableNoData notFound={tableData?.data?.length === 0} />
                 </TableBody>
               </Table>
             </Scrollbar>
           </TableContainer>
 
           <TablePaginationCustom
-            count={dataFiltered?.length || 0}
-            page={table.page}
-            rowsPerPage={table.rowsPerPage}
-            onPageChange={table.onChangePage}
-            onRowsPerPageChange={table.onChangeRowsPerPage}
+            count={tableData?.totalCount || 0}
+            page={Number(queryUser?.page)}
+            rowsPerPage={Number(queryUser?.items_per_page)}
+            onPageChange={(event, page) => {
+              const newQuery = { ...queryUser, page };
+              getUserList(newQuery);
+            }}
+            onRowsPerPageChange={(event) => {
+              const newQuery = {
+                ...queryUser,
+                page: 0,
+                items_per_page: Number(event.target.value),
+              };
+              getUserList(newQuery);
+            }}
             dense={table.dense}
             onChangeDense={table.onChangeDense}
           />
@@ -191,40 +163,10 @@ export default function UserListView() {
         currentAccount={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
-        getUserList={getUserList}
+        getUserList={() => {
+          getUserList(queryUser);
+        }}
       />
     </>
   );
-}
-
-// ----------------------------------------------------------------------
-
-function applyFilter({
-  inputData,
-  comparator,
-  filters,
-}: {
-  inputData?: IUserList[];
-  comparator: (a: any, b: any) => number;
-  filters: IUserTableFilters;
-}) {
-  const { username } = filters;
-
-  const stabilizedThis = inputData?.map((el, index) => [el, index] as const);
-
-  stabilizedThis?.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  inputData = stabilizedThis?.map((el) => el[0]);
-
-  if (username) {
-    inputData = inputData?.filter(
-      (user) => user.username.toLowerCase().indexOf(username.toLowerCase()) !== -1
-    );
-  }
-
-  return inputData;
 }

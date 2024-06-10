@@ -25,7 +25,7 @@ export default function CustomerTableToolbar({
       <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 400 }}>
         <SearchInputDebounce
           onSearch={(value: string) => {
-            onSearch({ keyword: value });
+            onSearch({ ...query, keyword: value, page: 0 });
           }}
           placeholder="Search customer or phone number..."
           width={400}

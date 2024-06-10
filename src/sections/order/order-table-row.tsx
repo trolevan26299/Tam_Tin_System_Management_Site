@@ -96,21 +96,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: P
     <>
       <TableRow>
         <TableCell>
-          <Box
-            // onClick={onViewRow}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          >
-            {delivery?.trackingNumber}
-          </Box>
-          {/* <ListItemText
-          primary={delivery?.trackingNumber}
-          primaryTypographyProps={{ typography: 'body2' }}
-        /> */}
+          <ListItemText
+            primary={delivery?.shipBy}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           {customer?.avatarUrl && (

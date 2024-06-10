@@ -6,7 +6,7 @@ export async function getListOrder(query?: IQueryOrder) {
     const res = await axiosInstance.get(endpoints.order.list, {
       params: query,
     });
-    return res.data.data;
+    return res.data;
   } catch (error) {
     return console.error(error);
   }

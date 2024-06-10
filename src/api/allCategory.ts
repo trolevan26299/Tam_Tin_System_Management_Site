@@ -1,16 +1,15 @@
-import useSWR from 'swr';
-import { useMemo } from 'react';
 // utils
-import axiosInstance, { fetcher, endpoints } from 'src/utils/axios';
+import axiosInstance, { endpoints } from 'src/utils/axios';
 // types
-import { ICategory, ISubCategory } from 'src/types/category';
+import { ICategory, IQueryCategory, ISubCategory } from 'src/types/category';
 
 // ------category----------------------------------------------------------------
-
-export async function getListCategory() {
+export async function getListCategory(query?: IQueryCategory) {
   try {
-    const res = await axiosInstance.get(endpoints.category.list);
-    return res.data.data;
+    const res = await axiosInstance.get(endpoints.category.list, {
+      params: query,
+    });
+    return res.data;
   } catch (error) {
     return console.error(error);
   }
@@ -58,10 +57,12 @@ export async function deleteCategoryById(id: string) {
 }
 
 // ----sub category----------------------------------------------------------------
-export async function getListSubCategory() {
+export async function getListSubCategory(query?: IQueryCategory) {
   try {
-    const res = await axiosInstance.get(endpoints.subCategory.list);
-    return res.data.data;
+    const res = await axiosInstance.get(endpoints.subCategory.list, {
+      params: query,
+    });
+    return res.data;
   } catch (error) {
     return console.error(error);
   }
@@ -107,24 +108,3 @@ export async function deleteSubCategoryById(id: string) {
     return error.status;
   }
 }
-
-// export function useSearchPosts(query: string) {
-//   const URL = query ? [endpoints.post.search, { params: { query } }] : null;
-
-//   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, {
-//     keepPreviousData: true,
-//   });
-
-//   const memoizedValue = useMemo(
-//     () => ({
-//       searchResults: (data?.results as IPostItem[]) || [],
-//       searchLoading: isLoading,
-//       searchError: error,
-//       searchValidating: isValidating,
-//       searchEmpty: !isLoading && !data?.results.length,
-//     }),
-//     [data?.results, error, isLoading, isValidating]
-//   );
-
-//   return memoizedValue;
-// }
