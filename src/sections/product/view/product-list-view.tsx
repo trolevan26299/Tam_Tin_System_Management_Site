@@ -13,7 +13,6 @@ import {
 import { alpha, useTheme } from '@mui/material/styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import { getListSubCategory } from 'src/api/allCategory';
-import { getListCustomer } from 'src/api/customer';
 import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
@@ -30,7 +29,6 @@ import {
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
 import { ISubCategory } from 'src/types/category';
-import { ICustomer } from 'src/types/customer';
 import { IInvoiceTableFilterValue } from 'src/types/invoice';
 import {
   IDataDevice,
@@ -77,6 +75,7 @@ export default function ProductListView() {
     items_per_page: 5,
   });
   const [filters, setFilters] = useState(defaultFilters);
+
   const denseHeight = table.dense ? 52 : 72;
 
   const getInvoiceLength = (statusType: string) => {
@@ -115,7 +114,9 @@ export default function ProductListView() {
         ...prevState,
         [name]: value,
       }));
+      handleSearch({ ...queryDevice, status: value as string });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [table]
   );
 

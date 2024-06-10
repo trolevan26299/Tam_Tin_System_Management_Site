@@ -1,8 +1,7 @@
-import { Autocomplete, MenuItem, Stack, TextField } from '@mui/material';
+import { Autocomplete, Stack, TextField } from '@mui/material';
 import { debounce } from 'lodash';
-import { ChangeEvent, useState } from 'react';
+import { useState } from 'react';
 import { getListCustomer } from 'src/api/customer';
-import { RHFAutocomplete } from 'src/components/hook-form';
 import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
 import { ICustomer } from 'src/types/customer';
 import { IQueryDevice } from 'src/types/product';
@@ -15,11 +14,6 @@ export default function ProductTableToolbar({
   query: IQueryDevice;
 }) {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
-
-  const handleChangeBelongTo = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { value } = event.target;
-    onSearch({ ...query, belong_to: value });
-  };
 
   const handleInputChangeCustomer = (value: string) => {
     getCustomer(value, (results?: ICustomer[]) => {

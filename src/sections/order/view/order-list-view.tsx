@@ -3,7 +3,6 @@
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
 import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
-import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -18,7 +17,6 @@ import {
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
-import { IDevice } from 'src/types/product';
 import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
@@ -44,7 +42,6 @@ export default function OrderListView() {
     page: 0,
     items_per_page: 5,
   });
-  const [devices, setDevices] = useState<IDevice[]>([]);
 
   const denseHeight = table.dense ? 52 : 72;
 
@@ -86,19 +83,12 @@ export default function OrderListView() {
   const getList = async (query?: IQueryOrder) => {
     const orderList = await getListOrder(query);
     setQueryList(query || {});
-    return orderList;
-  };
-
-  const getDevices = async () => {
-    const listDevices = await getListDevice();
-    return listDevices;
+    setTableData(orderList);
   };
 
   const getAllData = async () => {
     try {
-      const [orderList, listDevices] = await Promise.all([getList(queryList), getDevices()]);
-      setTableData(orderList);
-      setDevices(listDevices?.data);
+      getList(queryList);
     } catch (error) {
       console.log(error);
     }
@@ -193,7 +183,6 @@ export default function OrderListView() {
         open={openDialog}
         onClose={handleCloseDialog}
         currentOrder={selectedItem}
-        listDevice={devices}
         getAllOrder={() => {
           handleSearch(queryList);
         }}

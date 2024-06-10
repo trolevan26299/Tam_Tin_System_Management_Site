@@ -8,7 +8,6 @@ import {
   DialogContent,
   DialogTitle,
   Divider,
-  MenuItem,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/system/Unstable_Grid/Grid';
@@ -21,7 +20,7 @@ import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-fo
 import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
-import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { RHFAutocomplete, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
 import { ICustomer } from 'src/types/customer';
@@ -47,33 +46,25 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   note: '',
 });
 
-export interface CustomerOption {
-  label?: string;
-  value?: string;
-  [key: string]: any;
-}
-
 export default function OrderDetailsInfo({
   currentOrder,
   open,
   onClose,
-  listDevice,
   getAllOrder,
 }: {
   currentOrder?: IOrder;
   open: boolean;
   onClose: VoidFunction;
-  listDevice: IDevice[];
   getAllOrder: VoidFunction;
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  const [state, setState] = useState<{
-    customers: ICustomer[];
-  }>({
-    customers: [],
-  });
-
+  // const [state, setState] = useState<{
+  //   customers: ICustomer[];
+  // }>({
+  //   customers: [],
+  // });
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
 
   const NewOrderSchema = Yup.object().shape({
@@ -114,13 +105,29 @@ export default function OrderDetailsInfo({
     name: 'items',
   });
 
-  const totalAmount = watch('items')?.reduce((total, orderItem) => {
-    const device = listDevice?.find((d: IDevice) => d._id === orderItem.device);
-    if (device) {
-      return total + device.price * Number(orderItem.quantity);
-    }
-    return total;
-  }, 0);
+  const totalAmount = (): number => {
+    const listDevice = deviceOptions;
+    const deviceOption = watch('items');
+    const allDevices: IDevice[] = Object.values(listDevice).flat();
+
+    const deviceLookup: { [key: string]: IDevice } = {};
+    allDevices.forEach((device) => {
+      if (device._id) {
+        deviceLookup[device._id] = device;
+      }
+    });
+
+    let totalCost = 0;
+    deviceOption.forEach((item) => {
+      const device = deviceLookup[item.device];
+      if (device) {
+        const quantity = parseInt(Number(item?.quantity) as any, 10);
+        totalCost += device.price * quantity;
+      }
+    });
+
+    return totalCost;
+  };
 
   const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
     getAllOrder();
@@ -134,7 +141,7 @@ export default function OrderDetailsInfo({
     const newData: IOrderCreateOrUpdate = {
       ...data,
       delivery_date: format(new Date(data.delivery_date), 'yyyy-MM-dd HH:mm'),
-      totalAmount,
+      totalAmount: totalAmount(),
     };
     if (newData?._id) {
       const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
@@ -161,10 +168,6 @@ export default function OrderDetailsInfo({
     }
   }, 300);
 
-  const handleRemove = (index: number) => {
-    remove(index);
-  };
-
   const handleSetDataToForm = () => {
     if (currentOrder) {
       setValue('_id', currentOrder?._id);
@@ -175,14 +178,19 @@ export default function OrderDetailsInfo({
       setValue('note', currentOrder?.note);
 
       if (currentOrder?.items && currentOrder?.items?.length > 0) {
-        setValue(
-          'items',
-          currentOrder?.items?.map((item) => ({
-            device: item?.device?._id as string,
-            quantity: item?.quantity as number,
-          }))
-        );
+        const items = currentOrder?.items?.map((item) => ({
+          device: item?.device?._id as string,
+          quantity: item?.quantity as number,
+        }));
 
+        const deviceOption: { [key: number]: IDevice[] } = {};
+
+        currentOrder.items.forEach((item, index) => {
+          (deviceOption[index] as any) = [item.device];
+        });
+
+        setValue('items', items);
+        setDeviceOptions(deviceOption);
         // update items here
       } else {
         setValue('items', [
@@ -192,7 +200,7 @@ export default function OrderDetailsInfo({
           },
         ]);
       }
-      handleInputChangeCustomer(currentOrder?.customer?.name as string);
+      setCustomers([currentOrder?.customer as ICustomer]);
     } else {
       setValue('_id', undefined);
       setValue('totalAmount', 0);
@@ -209,23 +217,14 @@ export default function OrderDetailsInfo({
     }
   };
 
-  const handleInputChangeCustomer = (value: string) => {
-    if (value !== '') {
-      getCustomer(value, (results?: ICustomer[]) => {
-        if (results) {
-          setState({ ...state, customers: results });
-        }
-      });
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
     }
-  };
-
-  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
-    const params = {
-      keyword: input,
-    };
-    const listCustomer = await getListCustomer(params);
-    callback(listCustomer?.data);
-  }, 200);
+  }, 300);
 
   useEffect(() => {
     handleSetDataToForm();
@@ -287,14 +286,14 @@ export default function OrderDetailsInfo({
                 <RHFAutocomplete
                   name="customer"
                   label="Customer"
-                  options={state.customers.map((item) => item?._id)}
+                  options={customers.map((item) => item?._id)}
                   onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
                     if (reason === 'input') {
                       handleInputChangeCustomer(value);
                     }
                   }}
                   getOptionLabel={(option) =>
-                    (state.customers?.find((x) => x._id === option)?.name || '') as any
+                    (customers?.find((x) => x._id === option)?.name || '') as any
                   }
                 />
               </Grid>
@@ -315,8 +314,10 @@ export default function OrderDetailsInfo({
                       name={`items.${index}.device`}
                       label="Device"
                       options={deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []}
-                      onInputChange={(_, value) => {
-                        handleSearchDevice(index, value);
+                      onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                        if (reason === 'input') {
+                          handleSearchDevice(index, value);
+                        }
                       }}
                       getOptionLabel={(option) =>
                         (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)?.name ||
@@ -343,7 +344,7 @@ export default function OrderDetailsInfo({
                   <Grid xs={1.5}>
                     <Button
                       variant="outlined"
-                      onClick={() => handleRemove(index)}
+                      onClick={() => remove(index)}
                       color="error"
                       sx={{ height: '55px' }}
                       disabled={fields?.length === 1}
@@ -371,7 +372,7 @@ export default function OrderDetailsInfo({
 
               <Grid xs={12} display="flex" justifyContent="space-between">
                 <Box>Tổng:</Box>
-                <Box>{renderMoney(String(totalAmount))}</Box>
+                <Box>{renderMoney(String(totalAmount()))}</Box>
               </Grid>
 
               <Grid xs={12}>
