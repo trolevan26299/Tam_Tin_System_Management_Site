@@ -126,32 +126,24 @@ export default function DeviceInfo({
     }
   });
 
-  const handleInputChangeCustomer = (value: string) => {
-    if (value !== '') {
-      getCustomer(value, (results?: ICustomer[]) => {
-        if (results) {
-          console.log('🚀 ~ getCustomer ~ results:', results);
-          setCustomers(results);
-        }
-      });
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
     }
-  };
-
-  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
-    const params = {
-      keyword: input,
-    };
-    const listCustomer = await getListCustomer(params);
-    callback(listCustomer?.data);
-  }, 200);
+  }, 300);
 
   useEffect(() => {
     if (currentDevice) {
-      Object.keys(currentDevice).forEach((key: any) => {
-        setValue(key, (currentDevice as any)?.[key]);
+      const temp = { ...(currentDevice as IDevice & { belong_to: ICustomer }) };
+      Object.keys(temp).forEach((key: any) => {
+        setValue(key, (temp as any)?.[key]);
       });
-      setValue('quantity', currentDevice?.status?.[0]?.quantity);
-      handleInputChangeCustomer((currentDevice?.belong_to as any).name as string);
+      setValue('quantity', temp?.status?.[0]?.quantity);
+      setValue('belong_to', (temp?.belong_to as any)?._id);
+      setCustomers([temp?.belong_to]);
     } else {
       const newDefaultValues = initializeDefaultValues();
       Object.keys(newDefaultValues).forEach((key: any) => {

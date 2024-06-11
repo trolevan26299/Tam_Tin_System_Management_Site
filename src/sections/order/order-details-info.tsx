@@ -59,11 +59,6 @@ export default function OrderDetailsInfo({
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  // const [state, setState] = useState<{
-  //   customers: ICustomer[];
-  // }>({
-  //   customers: [],
-  // });
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
 
