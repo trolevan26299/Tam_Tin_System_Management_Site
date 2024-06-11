@@ -107,7 +107,7 @@ export default function OrderTableToolbar({
           if (newValue) onSearch({ ...query, customerId: String(newValue) });
         }}
         renderInput={(params) => <TextField label="Customer" {...params} />}
-        value={query?.customerId}
+        value={query?.customerId || ''}
       />
 
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
@@ -120,7 +120,15 @@ export default function OrderTableToolbar({
           value={query.keyword || ''}
         />
       </Stack>
-      <Button variant="outlined" color="inherit" sx={{ height: '53px' }} onClick={onReset}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        sx={{ height: '53px' }}
+        onClick={() => {
+          onReset();
+          setCustomers([]);
+        }}
+      >
         Xóa
       </Button>
     </Stack>

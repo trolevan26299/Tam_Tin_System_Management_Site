@@ -51,6 +51,7 @@ export default function OrderListView() {
     setOpenDialog(false);
     setSelectedItem(undefined);
   };
+  console.log('🚀 ~ OrderListView ~ queryList:', queryList);
 
   const handleDeleteById = async (id: string) => {
     const deleteOrder = await deleteOrderById(id);
