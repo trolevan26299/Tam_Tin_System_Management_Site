@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useState } from 'react';
 import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
@@ -34,6 +35,7 @@ const TABLE_HEAD = [
 export default function OrderListView() {
   const table = useTable();
   const settings = useSettingsContext();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [tableData, setTableData] = useState<IDataOrder | undefined>(undefined);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -51,7 +53,12 @@ export default function OrderListView() {
   };
 
   const handleDeleteById = async (id: string) => {
-    await deleteOrderById(id);
+    const deleteOrder = await deleteOrderById(id);
+    if (deleteOrder) {
+      enqueueSnackbar('Delete success!', {
+        variant: 'success',
+      });
+    }
   };
 
   const handleDeleteRow = useCallback(

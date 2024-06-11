@@ -4,9 +4,13 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 // types
 import { IQueryOrder } from 'src/types/order';
 // components
-import { Button } from '@mui/material';
+import { Autocomplete, Button, TextField } from '@mui/material';
 import { format } from 'date-fns';
 import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
+import { ICustomer } from 'src/types/customer';
+import { useState } from 'react';
+import { debounce } from 'lodash';
+import { getListCustomer } from 'src/api/customer';
 
 // ----------------------------------------------------------------------
 
@@ -19,6 +23,17 @@ export default function OrderTableToolbar({
   query: IQueryOrder;
   onReset: VoidFunction;
 }) {
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
+
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
+
   const handleFilterFromDate = (value: any) => {
     const date = new Date(value);
     const formattedDate = format(date, 'yyyy/MM/dd');
@@ -74,6 +89,26 @@ export default function OrderTableToolbar({
         }}
         format="yyyy/MM/dd"
       />
+      <Autocomplete
+        sx={{ width: 700 }}
+        options={customers.map((item: ICustomer) => item?._id)}
+        onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+          if (reason === 'input') {
+            handleInputChangeCustomer(value);
+          }
+          if (reason === 'clear') {
+            onSearch({ ...query, customerId: undefined });
+          }
+        }}
+        getOptionLabel={(option) =>
+          (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
+        }
+        onChange={(event, newValue) => {
+          if (newValue) onSearch({ ...query, customerId: String(newValue) });
+        }}
+        renderInput={(params) => <TextField label="Customer" {...params} />}
+        value={query?.customerId || ''}
+      />
 
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
         <SearchInputDebounce
@@ -85,7 +120,15 @@ export default function OrderTableToolbar({
           value={query.keyword || ''}
         />
       </Stack>
-      <Button variant="outlined" color="inherit" sx={{ height: '53px' }} onClick={onReset}>
+      <Button
+        variant="outlined"
+        color="inherit"
+        sx={{ height: '53px' }}
+        onClick={() => {
+          onReset();
+          setCustomers([]);
+        }}
+      >
         Xóa
       </Button>
     </Stack>

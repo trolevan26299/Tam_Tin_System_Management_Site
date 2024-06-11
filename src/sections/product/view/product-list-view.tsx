@@ -97,13 +97,11 @@ export default function ProductListView() {
       value: 'inventory',
       label: 'Inventory',
       color: 'success',
-      count: getInvoiceLength('inventory'),
     },
     {
       value: 'sold',
       label: 'Sold',
       color: 'warning',
-      count: getInvoiceLength('sold'),
     },
   ] as const;
 
@@ -226,22 +224,7 @@ export default function ProductListView() {
             }}
           >
             {TABS.map((tab) => (
-              <Tab
-                key={tab.value}
-                value={tab.value}
-                label={tab.label}
-                iconPosition="end"
-                icon={
-                  <Label
-                    variant={
-                      ((tab.value === 'all' || tab.value === filters.status) && 'filled') || 'soft'
-                    }
-                    color={tab.color}
-                  >
-                    {tab?.count}
-                  </Label>
-                }
-              />
+              <Tab key={tab.value} value={tab.value} label={tab.label} iconPosition="end" />
             ))}
           </Tabs>
           <ProductTableToolbar

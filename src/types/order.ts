@@ -119,6 +119,7 @@ export type IQueryOrder = {
   keyword?: string;
   from_date?: string;
   to_date?: string;
+  customerId?: string;
 };
 
 export type IDataOrder = {

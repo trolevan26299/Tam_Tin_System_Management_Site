@@ -15,21 +15,14 @@ export default function ProductTableToolbar({
 }) {
   const [customers, setCustomers] = useState<ICustomer[]>([]);
 
-  const handleInputChangeCustomer = (value: string) => {
-    getCustomer(value, (results?: ICustomer[]) => {
-      if (results) {
-        setCustomers(results);
-      }
-    });
-  };
-
-  const getCustomer = debounce(async (input: string, callback: (results?: ICustomer[]) => void) => {
-    const params = {
-      keyword: input,
-    };
-    const listCustomer = await getListCustomer(params);
-    callback(listCustomer?.data);
-  }, 200);
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
 
   return (
     <Stack
