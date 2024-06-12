@@ -35,7 +35,7 @@ export default function ProductTableRow({
   onDeleteRow,
   onEditRow,
 }: Props) {
-  const { name, id_device, sub_category_id, belong_to, note, warranty, price, status } = row;
+  const { name, id_device, sub_category_id, note, warranty, price, status } = row;
 
   const confirm = useBoolean();
 
@@ -86,12 +86,6 @@ export default function ProductTableRow({
           />
         </TableCell>
 
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(belong_to)}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(renderMoney(String(price)))}

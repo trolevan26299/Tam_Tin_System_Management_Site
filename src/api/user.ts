@@ -34,14 +34,18 @@ export async function createUser(body: userInfo) {
   }
 }
 
-export async function updateUserById(id: string, body: userInfo) {
+export async function updateUserById(
+  id: string,
+  body: userInfo,
+  enqueueSnackbar: (message: string, options?: object) => void
+) {
   try {
     const url = endpoints.user.update(id);
     const res = await axiosInstance.put(url, body);
     return res.data;
   } catch (error) {
-    console.error(error);
-    return error.status;
+    enqueueSnackbar(error.error, { variant: 'error' });
+    return console.error(error);
   }
 }
 

@@ -339,7 +339,19 @@ export default function OrderDetailsInfo({
                   <Grid xs={1.5}>
                     <Button
                       variant="outlined"
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        remove(index);
+                        const clonedDeviceOptions = { ...deviceOptions };
+                        delete clonedDeviceOptions[index];
+                        const newData = Object.values(clonedDeviceOptions).reduce(
+                          (acc: any, value, indexData) => {
+                            acc[indexData] = value;
+                            return acc;
+                          },
+                          {}
+                        );
+                        setDeviceOptions(newData);
+                      }}
                       color="error"
                       sx={{ height: '55px' }}
                       disabled={fields?.length === 1}

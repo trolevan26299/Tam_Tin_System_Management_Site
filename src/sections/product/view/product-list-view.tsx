@@ -46,7 +46,6 @@ const TABLE_HEAD = [
   { id: 'id_device', label: 'ID Device', width: 160 },
   { id: 'category_name', label: 'Category', width: 160 },
   { id: 'warranty', label: 'Warranty', width: 140 },
-  { id: 'belong_to', label: 'Belong to', width: 180 },
   { id: 'price', label: 'Price', width: 160 },
   { id: 'inventory', label: 'Inventory', width: 100 },
   { id: 'sold', label: 'Sold', width: 10 },
@@ -247,7 +246,6 @@ export default function ProductListView() {
                         ...row,
                         sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
                           ?.name as string,
-                        belong_to: (row?.belong_to as unknown as { name: string })?.name as any,
                       }}
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-this-in-sfc */
 /* eslint-disable import/no-cycle */
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
@@ -27,7 +28,7 @@ import { useSnackbar } from '../../components/snackbar';
 
 export type userInfo = {
   username: string;
-  password: string;
+  password?: string;
   status?: string;
   oldPassword?: string;
   _id?: string;
@@ -64,15 +65,33 @@ export default function UserInfo({
   const theme = useTheme();
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
-    password: Yup.string().required('Password is required'),
-    oldPassword: Yup.string().test('oldPassword', 'Old Password is required', (value) => {
-      if (currentAccount) {
-        if (currentAccount && value) {
-          return true;
+    password: Yup.string().test({
+      name: 'password',
+      test(value) {
+        if (currentAccount) {
+          if (this.parent.oldPassword && !value) {
+            return this.createError({
+              path: 'password',
+              message: 'Password is required',
+            });
+          }
         }
-        return false;
-      }
-      return true;
+        return true;
+      },
+    }),
+    oldPassword: Yup.string().test({
+      name: 'oldPassword',
+      test(value) {
+        if (currentAccount) {
+          if (this.parent.password && !value) {
+            return this.createError({
+              path: 'oldPassword',
+              message: 'Old Password is required',
+            });
+          }
+        }
+        return true;
+      },
     }),
     status: Yup.string(),
   });
@@ -108,13 +127,13 @@ export default function UserInfo({
 
   const onSubmit = handleSubmit(async (data) => {
     if (currentAccount) {
-      const updateAccount = await updateUserById(String(currentAccount?._id), data);
-      if (updateAccount !== 'error') {
+      const updateAccount = await updateUserById(
+        String(currentAccount?._id),
+        data,
+        enqueueSnackbar
+      );
+      if (updateAccount) {
         handleGetWhenCreateAndUpdateSuccess(!!currentAccount);
-      } else {
-        enqueueSnackbar('Update fail!', {
-          variant: 'error',
-        });
       }
     } else {
       const newData: userInfo = {

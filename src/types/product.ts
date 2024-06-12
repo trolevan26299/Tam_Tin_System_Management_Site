@@ -82,7 +82,6 @@ export type IDevice = {
   name: string;
   id_device: string;
   sub_category_id: string;
-  belong_to: string;
   price: number;
   note?: string;
   warranty: number;

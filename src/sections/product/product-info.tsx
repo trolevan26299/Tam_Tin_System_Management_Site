@@ -11,16 +11,13 @@ import {
 } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useTheme } from '@mui/material/styles';
-import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
-import { getListCustomer } from 'src/api/customer';
 import { createDevice, updateDeviceById } from 'src/api/product';
-import { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
+import { RHFSelect, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import { ISubCategory } from 'src/types/category';
-import { ICustomer } from 'src/types/customer';
 import { IDevice } from 'src/types/product';
 import uuidv4 from 'src/utils/uuidv4';
 import * as Yup from 'yup';
@@ -34,7 +31,6 @@ export type deviceInfo = {
   quantity: number;
 
   id_device?: string;
-  belong_to?: string;
   note?: string;
 };
 
@@ -53,14 +49,12 @@ export default function DeviceInfo({
 }) {
   const theme = useTheme();
   const { enqueueSnackbar } = useSnackbar();
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
 
   const initializeDefaultValues = (): DefaultValues<deviceInfo> => ({
     _id: undefined,
     name: '',
     id_device: uuidv4() as string,
     warranty: undefined,
-    belong_to: '',
     note: '',
     sub_category_id: '',
     price: undefined,
@@ -102,7 +96,6 @@ export default function DeviceInfo({
       name: data?.name,
       id_device: data?.id_device as string,
       sub_category_id: data?.sub_category_id,
-      belong_to: data?.belong_to as string,
       price: data?.price,
       note: data?.note,
       warranty: data?.warranty,
@@ -126,24 +119,12 @@ export default function DeviceInfo({
     }
   });
 
-  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
-    try {
-      const response = await getListCustomer({ keyword: searchQuery });
-      setCustomers(response.data);
-    } catch (error) {
-      console.error('Failed to search devices:', error);
-    }
-  }, 300);
-
   useEffect(() => {
     if (currentDevice) {
-      const temp = { ...(currentDevice as IDevice & { belong_to: ICustomer }) };
-      Object.keys(temp).forEach((key: any) => {
-        setValue(key, (temp as any)?.[key]);
+      Object.keys(currentDevice).forEach((key: any) => {
+        setValue(key, (currentDevice as any)?.[key]);
       });
-      setValue('quantity', temp?.status?.[0]?.quantity);
-      setValue('belong_to', (temp?.belong_to as any)?._id);
-      setCustomers([temp?.belong_to]);
+      setValue('quantity', currentDevice?.status?.[0]?.quantity);
     } else {
       const newDefaultValues = initializeDefaultValues();
       Object.keys(newDefaultValues).forEach((key: any) => {
@@ -178,7 +159,7 @@ export default function DeviceInfo({
             sx={{
               p: 3,
               borderBottom: `solid 1px ${theme.palette.divider}`,
-              height: '600px',
+              height: '650px',
               overflow: 'auto',
             }}
           >
@@ -196,21 +177,6 @@ export default function DeviceInfo({
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                  }
-                />
-              </Grid>
-              <Grid xs={12}>
-                <RHFAutocomplete
-                  name="belong_to"
-                  label="Belong to"
-                  options={customers.map((item: ICustomer) => item?._id)}
-                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
-                    if (reason === 'input') {
-                      handleInputChangeCustomer(value);
-                    }
-                  }}
-                  getOptionLabel={(option) =>
-                    (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
                   }
                 />
               </Grid>
