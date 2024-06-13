@@ -244,7 +244,7 @@ export default function OrderDetailsInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-        <DialogTitle sx={{ pb: 2 }}>{!currentOrder ? 'Tạo mới' : 'Cập nhật'} đơn hàng</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentOrder ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -263,7 +263,7 @@ export default function OrderDetailsInfo({
                     <DatePicker
                       {...field}
                       value={new Date(String(field?.value) || '')}
-                      label="Delivery date"
+                      label="Ngày giao"
                       format="dd/MM/yyyy"
                       slotProps={{
                         textField: {
@@ -280,7 +280,7 @@ export default function OrderDetailsInfo({
               <Grid xs={12}>
                 <RHFAutocomplete
                   name="customer"
-                  label="Customer"
+                  label="Khách hàng"
                   options={customers.map((item) => item?._id)}
                   onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
                     if (reason === 'input') {
@@ -292,14 +292,9 @@ export default function OrderDetailsInfo({
                   }
                 />
               </Grid>
-              <Grid xs={currentOrder ? 6 : 12}>
+              <Grid xs={12}>
                 <RHFTextField name="delivery.shipBy" label="Ship By" />
               </Grid>
-              {currentOrder && (
-                <Grid xs={6}>
-                  <RHFTextField name="_id" label="Tracking Number" disabled />
-                </Grid>
-              )}
 
               {fields.map((item, index) => (
                 <Fragment key={item?.id}>
@@ -307,7 +302,7 @@ export default function OrderDetailsInfo({
                     <RHFAutocomplete
                       key={item?.id}
                       name={`items.${index}.device`}
-                      label="Device"
+                      label="Sản phẩm"
                       options={deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []}
                       onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
                         if (reason === 'input') {
@@ -327,7 +322,7 @@ export default function OrderDetailsInfo({
                       render={({ field }) => (
                         <RHFTextField
                           {...field}
-                          label="Quantity"
+                          label="Số lượng"
                           type="number"
                           onKeyDown={(evt) =>
                             ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
@@ -339,7 +334,19 @@ export default function OrderDetailsInfo({
                   <Grid xs={1.5}>
                     <Button
                       variant="outlined"
-                      onClick={() => remove(index)}
+                      onClick={() => {
+                        remove(index);
+                        const clonedDeviceOptions = { ...deviceOptions };
+                        delete clonedDeviceOptions[index];
+                        const newData = Object.values(clonedDeviceOptions).reduce(
+                          (acc: any, value, indexData) => {
+                            acc[indexData] = value;
+                            return acc;
+                          },
+                          {}
+                        );
+                        setDeviceOptions(newData);
+                      }}
                       color="error"
                       sx={{ height: '55px' }}
                       disabled={fields?.length === 1}
@@ -371,17 +378,17 @@ export default function OrderDetailsInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFTextField name="note" label="Note" multiline rows={4} />
+                <RHFTextField name="note" label="Ghi chú" multiline rows={4} />
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

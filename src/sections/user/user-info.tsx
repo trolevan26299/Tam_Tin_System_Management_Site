@@ -1,3 +1,4 @@
+/* eslint-disable react/no-this-in-sfc */
 /* eslint-disable import/no-cycle */
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
@@ -27,7 +28,7 @@ import { useSnackbar } from '../../components/snackbar';
 
 export type userInfo = {
   username: string;
-  password: string;
+  password?: string;
   status?: string;
   oldPassword?: string;
   _id?: string;
@@ -64,15 +65,33 @@ export default function UserInfo({
   const theme = useTheme();
   const NewAccount = Yup.object().shape({
     username: Yup.string().required('Name is required'),
-    password: Yup.string().required('Password is required'),
-    oldPassword: Yup.string().test('oldPassword', 'Old Password is required', (value) => {
-      if (currentAccount) {
-        if (currentAccount && value) {
-          return true;
+    password: Yup.string().test({
+      name: 'password',
+      test(value) {
+        if (currentAccount) {
+          if (this.parent.oldPassword && !value) {
+            return this.createError({
+              path: 'password',
+              message: 'Password is required',
+            });
+          }
         }
-        return false;
-      }
-      return true;
+        return true;
+      },
+    }),
+    oldPassword: Yup.string().test({
+      name: 'oldPassword',
+      test(value) {
+        if (currentAccount) {
+          if (this.parent.password && !value) {
+            return this.createError({
+              path: 'oldPassword',
+              message: 'Old Password is required',
+            });
+          }
+        }
+        return true;
+      },
     }),
     status: Yup.string(),
   });
@@ -108,13 +127,13 @@ export default function UserInfo({
 
   const onSubmit = handleSubmit(async (data) => {
     if (currentAccount) {
-      const updateAccount = await updateUserById(String(currentAccount?._id), data);
-      if (updateAccount !== 'error') {
+      const updateAccount = await updateUserById(
+        String(currentAccount?._id),
+        data,
+        enqueueSnackbar
+      );
+      if (updateAccount) {
         handleGetWhenCreateAndUpdateSuccess(!!currentAccount);
-      } else {
-        enqueueSnackbar('Update fail!', {
-          variant: 'error',
-        });
       }
     } else {
       const newData: userInfo = {
@@ -162,19 +181,19 @@ export default function UserInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>{!currentAccount ? 'Create User' : 'Update User'}</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentAccount ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="username" label="User Name" disabled={!!currentAccount} />
+                <RHFTextField name="username" label="Tên tài khoản" disabled={!!currentAccount} />
               </Grid>
               {currentAccount ? (
                 <>
                   <Grid xs={12}>
                     <RHFTextField
                       name="oldPassword"
-                      label="Old Password"
+                      label="Mật khẩu cũ"
                       type={state.useOldPwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
@@ -197,7 +216,7 @@ export default function UserInfo({
                   <Grid xs={12}>
                     <RHFTextField
                       name="password"
-                      label="Password"
+                      label="Mật khẩu mới"
                       type={state.usePwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
@@ -220,7 +239,7 @@ export default function UserInfo({
                   <Grid xs={12}>
                     <RHFSelect
                       name="status"
-                      label="Status"
+                      label="Trạng thái"
                       disabled={!(user?.role === ROLE.superadmin)}
                     >
                       {optionStatus?.map((item: option, index) => (
@@ -235,7 +254,7 @@ export default function UserInfo({
                 <Grid xs={12}>
                   <RHFTextField
                     name="password"
-                    label="Password"
+                    label="Mật khẩu"
                     type={state.usePwd ? 'text' : 'password'}
                     InputProps={{
                       endAdornment: (
@@ -261,10 +280,10 @@ export default function UserInfo({
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

@@ -26,10 +26,10 @@ import SubCategoryInfo from '../sub-category-info';
 import SubCategoryTableRow from '../sub-category-table-row';
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
-  { id: 'category', label: 'Category' },
-  { id: 'number_of_device', label: 'Number of device' },
-  { id: 'action', label: 'Action' },
+  { id: 'name', label: 'Tên' },
+  { id: 'category', label: 'Danh mục' },
+  { id: 'number_of_device', label: 'Số lượng thiết bị' },
+  { id: 'action', label: 'Hành động' },
 ];
 
 export default function SubCategoryListView() {
@@ -116,12 +116,12 @@ export default function SubCategoryListView() {
         <CustomBreadcrumbs
           heading="List"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Trang chủ', href: paths.dashboard.root },
             {
-              name: 'Sub Category',
+              name: 'Danh mục phụ',
               href: paths.dashboard.subCategory.root,
             },
-            { name: 'List' },
+            { name: 'Danh sách' },
           ]}
           action={
             <Button
@@ -132,7 +132,7 @@ export default function SubCategoryListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Tạo sub category
+              Tạo danh mục phụ
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}

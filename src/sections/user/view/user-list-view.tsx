@@ -21,9 +21,9 @@ import UserInfo, { userInfo } from '../user-info';
 import UserTableRow from '../user-table-row';
 
 const TABLE_HEAD = [
-  { id: 'username', label: 'User name' },
-  { id: 'status', label: 'Status', width: 180 },
-  { id: 'action', label: 'Action', width: 80 },
+  { id: 'username', label: 'Tên' },
+  { id: 'status', label: 'Trạng thái', width: 180 },
+  { id: 'action', label: 'Hành động', width: 120 },
 ];
 
 export default function UserListView() {
@@ -82,11 +82,11 @@ export default function UserListView() {
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <CustomBreadcrumbs
-          heading="List"
+          heading="Danh sách"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Trang chủ', href: paths.dashboard.root },
             { name: 'Quản lý tài khoản', href: paths.dashboard.user.root },
-            { name: 'Danh sách tài khoản' },
+            { name: 'Danh sách' },
           ]}
           action={
             <Button

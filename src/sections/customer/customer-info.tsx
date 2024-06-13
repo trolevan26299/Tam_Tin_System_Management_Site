@@ -124,9 +124,7 @@ function CustomerInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>
-          {!currentCustomer ? 'Create Customer' : 'Update Customer'}
-        </DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentCustomer ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -136,16 +134,16 @@ function CustomerInfo({
           >
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="name" label="Name" />
+                <RHFTextField name="name" label="Tên" />
               </Grid>
               <Grid xs={12}>
-                <RHFTextField name="address" label="Address" />
+                <RHFTextField name="address" label="Địa chỉ" />
               </Grid>
               <Grid xs={12}>
                 <RHFTextField name="phone" label="Phone" />
               </Grid>
               <Grid xs={12}>
-                <RHFSelect name="type" label="Type">
+                <RHFSelect name="type" label="Kiểu">
                   {optionStatus?.map((item: option, index: number) => (
                     <MenuItem value={item?.value} key={index}>
                       {item?.label}
@@ -157,17 +155,17 @@ function CustomerInfo({
                 <RHFTextField name="email" label="Email" />
               </Grid>
               <Grid xs={12}>
-                <RHFTextField name="note" label="Note" multiline rows={4} />
+                <RHFTextField name="note" label="Ghi chú" multiline rows={4} />
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

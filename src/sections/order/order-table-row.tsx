@@ -28,7 +28,7 @@ type Props = {
 };
 
 function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: Props) {
-  const { items, delivery, delivery_date, customer, totalAmount, note } = row;
+  const { items, delivery, delivery_date, customer, totalAmount, note, _id } = row;
 
   const totalQuantity = items?.reduce((total, item) => total + Number(item.quantity), 0);
 
@@ -95,6 +95,9 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: P
   return (
     <>
       <TableRow>
+        <TableCell>
+          <ListItemText primary={String(_id)} primaryTypographyProps={{ typography: 'body2' }} />
+        </TableCell>
         <TableCell>
           <ListItemText
             primary={delivery?.shipBy}

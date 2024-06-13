@@ -96,9 +96,7 @@ export default function CategoryInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>
-          {!currentCategory ? 'Create Category' : 'Update Category'}
-        </DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentCategory ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -108,17 +106,17 @@ export default function CategoryInfo({
           >
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="name" label="Name" />
+                <RHFTextField name="name" label="Tên" />
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

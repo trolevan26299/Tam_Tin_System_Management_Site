@@ -23,13 +23,14 @@ import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'delivery', label: 'Ship by' },
-  { id: 'customer', label: 'Customer' },
-  { id: 'delivery_date', label: 'Date' },
-  { id: 'items', label: 'Items' },
-  { id: 'price', label: 'Price' },
-  { id: 'note', label: 'Note' },
-  { id: 'action', label: 'Action' },
+  { id: 'id', label: 'ID', width: 80 },
+  { id: 'delivery', label: 'Ship by', width: 100 },
+  { id: 'customer', label: 'Khách hàng', width: 120 },
+  { id: 'delivery_date', label: 'Ngày giao', width: 100 },
+  { id: 'items', label: 'Sản phẩm', width: 100 },
+  { id: 'price', label: 'Giá', width: 100 },
+  { id: 'note', label: 'Ghi chú', width: 140 },
+  { id: 'action', label: 'Hành động' },
 ];
 
 export default function OrderListView() {

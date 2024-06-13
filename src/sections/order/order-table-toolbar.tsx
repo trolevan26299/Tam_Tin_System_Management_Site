@@ -106,7 +106,7 @@ export default function OrderTableToolbar({
         onChange={(event, newValue) => {
           if (newValue) onSearch({ ...query, customerId: String(newValue) });
         }}
-        renderInput={(params) => <TextField label="Customer" {...params} />}
+        renderInput={(params) => <TextField label="Khách hàng" {...params} />}
         value={query?.customerId || ''}
       />
 
