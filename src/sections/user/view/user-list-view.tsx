@@ -27,7 +27,7 @@ const TABLE_HEAD = [
 ];
 
 export default function UserListView() {
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const denseHeight = table.dense ? 52 : 72;
 
@@ -36,7 +36,7 @@ export default function UserListView() {
   const [selectedItem, setSelectedItem] = useState<userInfo | undefined>(undefined);
   const [queryUser, setQueryUser] = useState<IQueryUser>({
     page: 0,
-    items_per_page: 5,
+    items_per_page: 10,
   });
 
   const handleCloseDialog = () => {

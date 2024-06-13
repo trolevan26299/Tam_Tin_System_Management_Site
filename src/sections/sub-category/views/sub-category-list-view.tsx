@@ -33,7 +33,7 @@ const TABLE_HEAD = [
 ];
 
 export default function SubCategoryListView() {
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
 
   const [tableData, setTableData] = useState<IDataSubCategory | undefined>(undefined);
@@ -42,7 +42,7 @@ export default function SubCategoryListView() {
   const [selectedItem, setSelectedItem] = useState<ISubCategory | undefined>(undefined);
   const [querySubCategory, setQuerySubCategory] = useState<IQueryCategory>({
     page: 0,
-    items_per_page: 5,
+    items_per_page: 10,
   });
 
   const denseHeight = table.dense ? 52 : 72;

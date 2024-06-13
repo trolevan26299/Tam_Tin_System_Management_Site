@@ -34,7 +34,7 @@ const TABLE_HEAD = [
 ];
 
 export default function OrderListView() {
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -43,7 +43,7 @@ export default function OrderListView() {
   const [selectedItem, setSelectedItem] = useState<IOrder | undefined>(undefined);
   const [queryList, setQueryList] = useState<IQueryOrder>({
     page: 0,
-    items_per_page: 5,
+    items_per_page: 10,
   });
 
   const denseHeight = table.dense ? 52 : 72;

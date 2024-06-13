@@ -16,7 +16,6 @@ import { getListSubCategory } from 'src/api/allCategory';
 import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
-import Label from 'src/components/label';
 import Scrollbar from 'src/components/scrollbar';
 import { useSettingsContext } from 'src/components/settings';
 import {
@@ -62,7 +61,7 @@ const defaultFilters: IProductTableFilters = {
 
 export default function ProductListView() {
   const theme = useTheme();
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
 
   const [tableData, setTableData] = useState<IDataDevice | undefined>();
@@ -71,7 +70,7 @@ export default function ProductListView() {
   const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
   const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
     page: 0,
-    items_per_page: 5,
+    items_per_page: 10,
   });
   const [filters, setFilters] = useState(defaultFilters);
 

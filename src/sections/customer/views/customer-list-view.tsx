@@ -32,14 +32,14 @@ const TABLE_HEAD = [
 ];
 
 export default function CustomerListView() {
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const denseHeight = table.dense ? 52 : 72;
 
   const [tableData, setTableData] = useState<IDataCustomer | undefined>(undefined);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<ICustomer | undefined>(undefined);
-  const [queryList, setQueryList] = useState<IQueryCustomer>({ page: 0, items_per_page: 5 });
+  const [queryList, setQueryList] = useState<IQueryCustomer>({ page: 0, items_per_page: 10 });
 
   const handleCloseDialog = () => {
     setOpenDialog(false);

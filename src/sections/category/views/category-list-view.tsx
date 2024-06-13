@@ -26,7 +26,7 @@ const TABLE_HEAD = [
 ];
 
 export default function CategoryListView() {
-  const table = useTable();
+  const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const denseHeight = table.dense ? 52 : 72;
 
@@ -35,7 +35,7 @@ export default function CategoryListView() {
   const [selectedItem, setSelectedItem] = useState<ICategory | undefined>(undefined);
   const [queryCategory, setQueryCategory] = useState<IQueryCategory>({
     page: 0,
-    items_per_page: 5,
+    items_per_page: 10,
   });
 
   const handleCloseDialog = () => {
