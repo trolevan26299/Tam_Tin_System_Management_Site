@@ -151,9 +151,7 @@ export default function DeviceInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>
-          {!currentDevice ? 'Create Device' : 'Update Device'}
-        </DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentDevice ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -165,15 +163,15 @@ export default function DeviceInfo({
           >
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="name" label="Name" />
+                <RHFTextField name="name" label="Tên" />
               </Grid>
               <Grid xs={12}>
-                <RHFTextField name="id_device" label="Id Device" disabled />
+                <RHFTextField name="id_device" label="Id Sản phẩm" disabled />
               </Grid>
               <Grid xs={12}>
                 <RHFTextField
                   name="warranty"
-                  label="Warranty"
+                  label="Đảm bảo"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
@@ -182,7 +180,7 @@ export default function DeviceInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFSelect name="sub_category_id" label="Sub Category">
+                <RHFSelect name="sub_category_id" label="Danh mục phụ">
                   {listSubCategory?.map((item: ISubCategory) => (
                     <MenuItem value={item?._id} key={item?._id}>
                       {item?.name}
@@ -193,7 +191,7 @@ export default function DeviceInfo({
               <Grid xs={12}>
                 <RHFTextField
                   name="price"
-                  label="Price"
+                  label="Giá"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
@@ -203,7 +201,7 @@ export default function DeviceInfo({
               <Grid xs={12}>
                 <RHFTextField
                   name="quantity"
-                  label="Quantity"
+                  label="Trong kho"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
@@ -211,17 +209,17 @@ export default function DeviceInfo({
                 />
               </Grid>
               <Grid xs={12}>
-                <RHFTextField name="note" label="Note" multiline rows={4} />
+                <RHFTextField name="note" label="Ghi chú" multiline rows={4} />
               </Grid>
             </Grid>
           </Box>
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

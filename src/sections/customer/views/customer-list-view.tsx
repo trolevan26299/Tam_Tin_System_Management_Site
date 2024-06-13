@@ -22,13 +22,13 @@ import CustomerTableRow from '../customer-table-row';
 import CustomerTableToolbar from '../customer-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
-  { id: 'address', label: 'Address' },
+  { id: 'name', label: 'Tên' },
+  { id: 'address', label: 'Địa chỉ' },
   { id: 'phone', label: 'Phone' },
-  { id: 'type', label: 'Type' },
+  { id: 'type', label: 'Kiểu' },
   { id: 'email', label: 'Email' },
-  { id: 'note', label: 'Note' },
-  { id: 'action', label: 'Action' },
+  { id: 'note', label: 'Ghi chú' },
+  { id: 'action', label: 'Hành động', width: 120 },
 ];
 
 export default function CustomerListView() {
@@ -87,12 +87,12 @@ export default function CustomerListView() {
         <CustomBreadcrumbs
           heading="List"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Trang chủ', href: paths.dashboard.root },
             {
-              name: 'Customer',
+              name: 'Khách hàng',
               href: paths.dashboard.customer.root,
             },
-            { name: 'List' },
+            { name: 'Danh sách' },
           ]}
           action={
             <Button

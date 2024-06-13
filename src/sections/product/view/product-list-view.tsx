@@ -42,15 +42,15 @@ import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name', width: 160 },
-  { id: 'id_device', label: 'ID Device', width: 160 },
-  { id: 'category_name', label: 'Category', width: 160 },
-  { id: 'warranty', label: 'Warranty', width: 140 },
-  { id: 'price', label: 'Price', width: 160 },
-  { id: 'inventory', label: 'Inventory', width: 100 },
-  { id: 'sold', label: 'Sold', width: 10 },
-  { id: 'note', label: 'Note', width: 160 },
-  { id: 'action', label: 'Action', width: 80 },
+  { id: 'name', label: 'Tên', width: 160 },
+  { id: 'id_device', label: 'ID Sản phẩm', width: 160 },
+  { id: 'category_name', label: 'Danh mục phụ', width: 160 },
+  { id: 'warranty', label: 'Đảm bảo', width: 140 },
+  { id: 'price', label: 'Giá', width: 160 },
+  { id: 'inventory', label: 'Trong kho', width: 120 },
+  { id: 'sold', label: 'Đã bán', width: 120 },
+  { id: 'note', label: 'Ghi chú', width: 160 },
+  { id: 'action', label: 'Hành động', width: 120 },
 ];
 
 const defaultFilters: IProductTableFilters = {
@@ -91,15 +91,15 @@ export default function ProductListView() {
   };
 
   const TABS = [
-    { value: 'all', label: 'All', color: 'default', count: tableData?.totalCount },
+    { value: 'all', label: 'Tất cả', color: 'default', count: tableData?.totalCount },
     {
       value: 'inventory',
-      label: 'Inventory',
+      label: 'Trong kho',
       color: 'success',
     },
     {
       value: 'sold',
-      label: 'Sold',
+      label: 'Đã bán',
       color: 'warning',
     },
   ] as const;
@@ -191,12 +191,9 @@ export default function ProductListView() {
         <CustomBreadcrumbs
           heading="List"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            {
-              name: 'Product',
-              href: paths.dashboard.product.root,
-            },
-            { name: 'List' },
+            { name: 'Trang chủ', href: paths.dashboard.root },
+            { name: 'Sản phẩm', href: paths.dashboard.product.root },
+            { name: 'Danh sách' },
           ]}
           action={
             <Button

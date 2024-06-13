@@ -96,50 +96,46 @@ export function useNavData() {
         items: [
           // USER
           {
-            title: t('user'),
+            title: 'Người dùng',
             path: paths.dashboard.user.root,
             icon: ICONS.user,
-            children: [
-              { title: t('list'), path: paths.dashboard.user.list },
-              // { title: t('create'), path: paths.dashboard.user.new },
-              // { title: t('edit'), path: paths.dashboard.user.demo.edit },
-            ],
+            children: [{ title: 'Danh sách', path: paths.dashboard.user.list }],
           },
 
           // PRODUCT
           {
-            title: t('product'),
+            title: 'Sản phẩm',
             path: paths.dashboard.product.root,
             icon: ICONS.product,
-            children: [{ title: t('list'), path: paths.dashboard.product.root }],
+            children: [{ title: 'Danh sách', path: paths.dashboard.product.root }],
           },
           {
-            title: t('category'),
+            title: 'Danh mục',
             path: paths.dashboard.category.root,
             icon: ICONS.product,
-            children: [{ title: t('list'), path: paths.dashboard.category.root }],
+            children: [{ title: 'Danh sách', path: paths.dashboard.category.root }],
           },
           {
-            title: t('sub_category'),
+            title: 'Danh mục con',
             path: paths.dashboard.subCategory.root,
             icon: ICONS.product,
-            children: [{ title: t('list'), path: paths.dashboard.subCategory.root }],
+            children: [{ title: 'Danh sách', path: paths.dashboard.subCategory.root }],
           },
 
           // CUSTOMER
           {
-            title: t('customer'),
+            title: 'Khách hàng',
             path: paths.dashboard.customer.root,
             icon: ICONS.product,
-            children: [{ title: t('list'), path: paths.dashboard.customer.root }],
+            children: [{ title: 'Danh sách', path: paths.dashboard.customer.root }],
           },
 
           // ORDER
           {
-            title: t('order'),
+            title: 'Đặt hàng',
             path: paths.dashboard.order.root,
             icon: ICONS.order,
-            children: [{ title: t('list'), path: paths.dashboard.order.root }],
+            children: [{ title: 'Danh sách', path: paths.dashboard.order.root }],
           },
 
           // INVOICE

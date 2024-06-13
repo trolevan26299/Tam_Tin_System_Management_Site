@@ -181,19 +181,19 @@ export default function UserInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>{!currentAccount ? 'Create User' : 'Update User'}</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentAccount ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box sx={{ p: 3, borderBottom: `solid 1px ${theme.palette.divider}` }}>
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="username" label="User Name" disabled={!!currentAccount} />
+                <RHFTextField name="username" label="Tên tài khoản" disabled={!!currentAccount} />
               </Grid>
               {currentAccount ? (
                 <>
                   <Grid xs={12}>
                     <RHFTextField
                       name="oldPassword"
-                      label="Old Password"
+                      label="Mật khẩu cũ"
                       type={state.useOldPwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
@@ -216,7 +216,7 @@ export default function UserInfo({
                   <Grid xs={12}>
                     <RHFTextField
                       name="password"
-                      label="Password"
+                      label="Mật khẩu mới"
                       type={state.usePwd ? 'text' : 'password'}
                       InputProps={{
                         endAdornment: (
@@ -239,7 +239,7 @@ export default function UserInfo({
                   <Grid xs={12}>
                     <RHFSelect
                       name="status"
-                      label="Status"
+                      label="Trạng thái"
                       disabled={!(user?.role === ROLE.superadmin)}
                     >
                       {optionStatus?.map((item: option, index) => (
@@ -254,7 +254,7 @@ export default function UserInfo({
                 <Grid xs={12}>
                   <RHFTextField
                     name="password"
-                    label="Password"
+                    label="Mật khẩu"
                     type={state.usePwd ? 'text' : 'password'}
                     InputProps={{
                       endAdornment: (
@@ -280,10 +280,10 @@ export default function UserInfo({
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

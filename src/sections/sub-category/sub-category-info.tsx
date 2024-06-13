@@ -114,9 +114,7 @@ export default function SubCategoryInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>
-          {!currentSubCategory ? 'Create Sub Category' : 'Update Sub Category'}
-        </DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{!currentSubCategory ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -126,12 +124,12 @@ export default function SubCategoryInfo({
           >
             <Grid container spacing={3}>
               <Grid xs={12}>
-                <RHFTextField name="name" label="Name" />
+                <RHFTextField name="name" label="Tên" />
               </Grid>
               <Grid xs={12}>
                 <RHFTextField
                   name="number_of_device"
-                  label="Number of device"
+                  label="Số lượng thiết bị"
                   type="number"
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
@@ -139,7 +137,7 @@ export default function SubCategoryInfo({
                 />
               </Grid>
               <Grid xs={12}>
-                <RHFSelect name="category_id" label="Category">
+                <RHFSelect name="category_id" label="Danh mục">
                   {listCategory?.map((item: option, index) => (
                     <MenuItem value={item?._id} key={index}>
                       {item?.name}
@@ -152,10 +150,10 @@ export default function SubCategoryInfo({
         </DialogContent>
         <DialogActions>
           <LoadingButton color="inherit" type="submit" variant="contained" loading={isSubmitting}>
-            Save
+            Lưu
           </LoadingButton>
           <Button variant="outlined" color="inherit" onClick={onClose}>
-            Cancel
+            Hủy
           </Button>
         </DialogActions>
       </FormProvider>

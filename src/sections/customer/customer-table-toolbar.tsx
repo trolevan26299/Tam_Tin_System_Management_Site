@@ -27,7 +27,7 @@ export default function CustomerTableToolbar({
           onSearch={(value: string) => {
             onSearch({ ...query, keyword: value, page: 0 });
           }}
-          placeholder="Search customer or phone number..."
+          placeholder="Tìm kiếm khách hàng hoặc số điện thoại..."
           width={400}
           value={query.keyword || ''}
           useIconClear

@@ -21,8 +21,8 @@ import CategoryInfo from '../category-info';
 import CategoryTableRow from '../category-table-row';
 
 const TABLE_HEAD = [
-  { id: 'name', label: 'Name' },
-  { id: 'action', label: 'Action' },
+  { id: 'name', label: 'Tên' },
+  { id: 'action', label: 'Hành động' },
 ];
 
 export default function CategoryListView() {
@@ -83,12 +83,12 @@ export default function CategoryListView() {
         <CustomBreadcrumbs
           heading="List"
           links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
+            { name: 'Trang chủ', href: paths.dashboard.root },
             {
-              name: 'Category',
+              name: 'Danh mục',
               href: paths.dashboard.category.root,
             },
-            { name: 'List' },
+            { name: 'Danh sách' },
           ]}
           action={
             <Button
