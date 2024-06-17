@@ -6,7 +6,7 @@ export type ICategory = {
 export type ISubCategory = {
   _id?: string;
   name: string;
-  number_of_device: number;
+  number_of_device?: number;
   category_id: string;
 };
 

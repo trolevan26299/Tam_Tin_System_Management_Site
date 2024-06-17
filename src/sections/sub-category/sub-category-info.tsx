@@ -40,14 +40,12 @@ export default function SubCategoryInfo({
   const NewSubCategory = Yup.object().shape({
     name: Yup.string().required('Name is required !'),
     category_id: Yup.string().required('Category is required !'),
-    number_of_device: Yup.number().required('Number of device is required !'),
   });
 
   const initializeDefaultValues = (): DefaultValues<ISubCategory> => ({
     _id: undefined,
     name: '',
     category_id: '',
-    number_of_device: undefined,
   });
   const methods = useForm<ISubCategory>({
     resolver: yupResolver(NewSubCategory),
@@ -126,16 +124,7 @@ export default function SubCategoryInfo({
               <Grid xs={12}>
                 <RHFTextField name="name" label="Tên" />
               </Grid>
-              <Grid xs={12}>
-                <RHFTextField
-                  name="number_of_device"
-                  label="Số lượng thiết bị"
-                  type="number"
-                  onKeyDown={(evt) =>
-                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                  }
-                />
-              </Grid>
+
               <Grid xs={12}>
                 <RHFSelect name="category_id" label="Danh mục">
                   {listCategory?.map((item: option, index) => (
