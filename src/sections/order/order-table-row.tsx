@@ -68,7 +68,6 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: P
 
                 <ListItemText
                   primary={item?.device?.name}
-                  secondary={item?.device?.id_device}
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
