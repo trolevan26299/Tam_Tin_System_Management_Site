@@ -115,6 +115,12 @@ export function useNavData() {
             icon: ICONS.user,
             children: [{ title: 'Danh sách', path: paths.dashboard.user.list }],
           },
+          // KANBAN
+          {
+            title: t('kanban'),
+            path: paths.dashboard.kanban,
+            icon: ICONS.kanban,
+          },
         ],
       },
       {
