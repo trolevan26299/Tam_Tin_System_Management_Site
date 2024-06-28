@@ -80,7 +80,7 @@ export type IOrderItem = {
 };
 
 export type Items = {
-  device?: IDevice;
+  device?: IDevice & { coverUrl?: string; sku?: string };
   quantity?: number;
 };
 
@@ -95,6 +95,8 @@ export type IOrder = {
   };
   customer?: ICustomer;
   items?: Items[];
+
+  regDt?: string;
 };
 
 export type IOrderCreateOrUpdate = {

@@ -97,7 +97,10 @@ export function useNavData() {
             title: 'Đơn Hàng',
             path: paths.dashboard.order.root,
             icon: ICONS.order,
-            children: [{ title: 'Danh sách', path: paths.dashboard.order.root }],
+            children: [
+              { title: 'Danh sách', path: paths.dashboard.order.root },
+              // { title: 'Thông tin', path: paths.dashboard.order.demo.details },
+            ],
           },
 
           // CUSTOMER

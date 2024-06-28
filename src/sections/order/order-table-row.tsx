@@ -10,6 +10,7 @@ import {
   Stack,
   TableCell,
   TableRow,
+  Tooltip,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { ConfirmDialog } from 'src/components/custom-dialog';
@@ -25,9 +26,10 @@ type Props = {
   onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
   onEditRow: VoidFunction;
+  onViewRow: VoidFunction;
 };
 
-function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: Props) {
+function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onViewRow }: Props) {
   const { items, delivery, delivery_date, customer, totalAmount, note, _id } = row;
 
   const totalQuantity = items?.reduce((total, item) => total + Number(item.quantity), 0);
@@ -91,11 +93,42 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: P
     </TableRow>
   );
 
+  const renderCellWithTooltip = (text: string) => (
+    <Tooltip title={text} arrow>
+      <div
+        style={{
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          maxHeight: '3.6em', // 2 lines * line-height (1.8em)
+        }}
+      >
+        {text}
+      </div>
+    </Tooltip>
+  );
+
   return (
     <>
-      <TableRow>
-        <TableCell>
-          <ListItemText primary={String(_id)} primaryTypographyProps={{ typography: 'body2' }} />
+      <TableRow hover selected={selected}>
+        <TableCell
+          sx={{
+            maxWidth: '100px',
+          }}
+        >
+          <ListItemText
+            primary={renderCellWithTooltip(String(_id))}
+            primaryTypographyProps={{ typography: 'body2' }}
+            onClick={onViewRow}
+            sx={{
+              cursor: 'pointer',
+              '&:hover': {
+                textDecoration: 'underline',
+              },
+            }}
+          />
         </TableCell>
         <TableCell>
           <ListItemText
@@ -137,7 +170,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow }: P
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
         <TableCell>
-          <ListItemText primary={note} primaryTypographyProps={{ typography: 'body2' }} />
+          <ListItemText
+            primary={renderCellWithTooltip(String(note))}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         </TableCell>
 
         <TableCell align="left">

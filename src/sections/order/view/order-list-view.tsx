@@ -1,6 +1,7 @@
 'use client';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { useRouter } from 'next/navigation';
 import { useSnackbar } from 'notistack';
 import { useCallback, useEffect, useState } from 'react';
 import { deleteOrderById, getListOrder, getOrderById } from 'src/api/order';
@@ -23,17 +24,18 @@ import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'id', label: 'ID', width: 80 },
+  { id: 'id', label: 'ID Order', width: 100 },
   { id: 'delivery', label: 'Ship by', width: 100 },
   { id: 'customer', label: 'Khách hàng', width: 120 },
   { id: 'delivery_date', label: 'Ngày giao', width: 100 },
   { id: 'items', label: 'Sản phẩm', width: 100 },
-  { id: 'price', label: 'Giá', width: 100 },
+  { id: 'price', label: 'Giá', width: 140 },
   { id: 'note', label: 'Ghi chú', width: 140 },
-  { id: 'action', label: 'Hành động' },
+  { id: 'action', label: 'Hành động', width: 120 },
 ];
 
 export default function OrderListView() {
+  const router = useRouter();
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const { enqueueSnackbar } = useSnackbar();
@@ -52,6 +54,13 @@ export default function OrderListView() {
     setOpenDialog(false);
     setSelectedItem(undefined);
   };
+
+  const handleViewRow = useCallback(
+    (id: string) => {
+      router.push(paths.dashboard.order.details(id));
+    },
+    [router]
+  );
 
   const handleDeleteById = async (id: string) => {
     const deleteOrder = await deleteOrderById(id);
@@ -154,6 +163,7 @@ export default function OrderListView() {
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
                       onEditRow={() => handleEditRow(row?._id as string)}
+                      onViewRow={() => handleViewRow(row?._id as string)}
                     />
                   ))}
                   <TableEmptyRows
