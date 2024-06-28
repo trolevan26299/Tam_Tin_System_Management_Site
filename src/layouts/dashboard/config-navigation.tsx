@@ -97,7 +97,10 @@ export function useNavData() {
             title: 'Đơn Hàng',
             path: paths.dashboard.order.root,
             icon: ICONS.order,
-            children: [{ title: 'Danh sách', path: paths.dashboard.order.root }],
+            children: [
+              { title: 'Danh sách', path: paths.dashboard.order.root },
+              // { title: 'Thông tin', path: paths.dashboard.order.demo.details },
+            ],
           },
 
           // CUSTOMER
@@ -114,6 +117,13 @@ export function useNavData() {
             path: paths.dashboard.user.root,
             icon: ICONS.user,
             children: [{ title: 'Danh sách', path: paths.dashboard.user.list }],
+          },
+          // STAFF
+          {
+            title: 'Nhân viên',
+            path: paths.dashboard.staff.root,
+            icon: ICONS.user,
+            children: [{ title: 'Danh sách', path: paths.dashboard.staff.root }],
           },
           // KANBAN
           {
