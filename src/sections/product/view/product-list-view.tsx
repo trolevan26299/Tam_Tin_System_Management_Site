@@ -1,18 +1,8 @@
 'use client';
 
-import {
-  Button,
-  Card,
-  Container,
-  Tab,
-  Table,
-  TableBody,
-  TableContainer,
-  Tabs,
-} from '@mui/material';
-import { alpha, useTheme } from '@mui/material/styles';
-import React, { useCallback, useEffect, useState } from 'react';
-import { getListSubCategory } from 'src/api/allCategory';
+import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
+import { useCallback, useEffect, useState } from 'react';
 import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
@@ -27,101 +17,37 @@ import {
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import { ISubCategory } from 'src/types/category';
-import { IInvoiceTableFilterValue } from 'src/types/invoice';
-import {
-  IDataDevice,
-  IDevice,
-  IProductTableFilters,
-  IQueryDevice,
-  IStatusDevice,
-} from 'src/types/product';
+import { useGetSubCategory } from 'src/store/context/sub-category-context';
+import { IDataDevice, IDevice, IQueryDevice } from 'src/types/product';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
 
 const TABLE_HEAD = [
+  { id: 'id_device', label: 'ID', width: 160 },
   { id: 'name', label: 'Tên', width: 160 },
-  { id: 'id_device', label: 'ID Sản phẩm', width: 160 },
-  { id: 'category_name', label: 'Danh mục phụ', width: 160 },
-  { id: 'warranty', label: 'Đảm bảo', width: 140 },
-  { id: 'price', label: 'Giá', width: 160 },
-  { id: 'inventory', label: 'Trong kho', width: 120 },
+  { id: 'category_name', label: 'Thuộc', width: 160 },
+  { id: 'price', label: 'Giá nhập', width: 160 },
+  { id: 'inventory', label: 'Tồn kho', width: 120 },
   { id: 'sold', label: 'Đã bán', width: 120 },
   { id: 'note', label: 'Ghi chú', width: 160 },
-  { id: 'action', label: 'Hành động', width: 120 },
+  { id: 'action', label: '', width: 120 },
 ];
-
-const defaultFilters: IProductTableFilters = {
-  name: '',
-  publish: [],
-  stock: [],
-  status: 'all',
-};
 
 export default function ProductListView() {
   const theme = useTheme();
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
-
+  const { subCategoryList } = useGetSubCategory();
   const [tableData, setTableData] = useState<IDataDevice | undefined>();
-  const [subCategories, setSubCategories] = useState<ISubCategory[]>([]);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
   const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
     page: 0,
     items_per_page: 10,
   });
-  const [filters, setFilters] = useState(defaultFilters);
 
   const denseHeight = table.dense ? 52 : 72;
-
-  const getInvoiceLength = (statusType: string) => {
-    let count = 0;
-    tableData?.data.forEach((data) => {
-      data.status.forEach((status: IStatusDevice) => {
-        if (status.status === statusType && status?.quantity > 0) {
-          // eslint-disable-next-line no-plusplus
-          count++;
-        }
-      });
-    });
-    return count;
-  };
-
-  const TABS = [
-    { value: 'all', label: 'Tất cả', color: 'default', count: tableData?.totalCount },
-    {
-      value: 'inventory',
-      label: 'Trong kho',
-      color: 'success',
-    },
-    {
-      value: 'sold',
-      label: 'Đã bán',
-      color: 'warning',
-    },
-  ] as const;
-
-  const handleFilters = useCallback(
-    (name: string, value: IInvoiceTableFilterValue) => {
-      table.onResetPage();
-      setFilters((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-      handleSearch({ ...queryDevice, status: value as string });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [table]
-  );
-
-  const handleFilterStatus = useCallback(
-    (event: React.SyntheticEvent, newValue: string) => {
-      handleFilters('status', newValue);
-    },
-    [handleFilters]
-  );
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
@@ -163,19 +89,10 @@ export default function ProductListView() {
     [table, tableData]
   );
 
-  const getSubCategoryList = async () => {
-    const subCategoryList = await getListSubCategory();
-    return subCategoryList;
-  };
-
   const getAllData = async () => {
     try {
-      const [deviceList, subCategoryList] = await Promise.all([
-        getDeviceList(queryDevice),
-        getSubCategoryList(),
-      ]);
+      const deviceList = await getDeviceList(queryDevice);
       setTableData(deviceList);
-      setSubCategories(subCategoryList?.data);
     } catch (error) {
       console.log(error);
     }
@@ -188,7 +105,7 @@ export default function ProductListView() {
     <>
       <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <CustomBreadcrumbs
-          heading="List"
+          heading="Danh sách sản phẩm"
           links={[
             { name: 'Trang chủ', href: paths.dashboard.root },
             { name: 'Sản phẩm', href: paths.dashboard.product.root },
@@ -203,25 +120,13 @@ export default function ProductListView() {
                 setSelectedItem(undefined);
               }}
             >
-              Tạo sản phẩm
+              Tạo mới sản phẩm
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}
         />
 
         <Card>
-          <Tabs
-            value={filters.status}
-            onChange={handleFilterStatus}
-            sx={{
-              px: 2.5,
-              boxShadow: `inset 0 -2px 0 0 ${alpha(theme.palette.grey[500], 0.08)}`,
-            }}
-          >
-            {TABS.map((tab) => (
-              <Tab key={tab.value} value={tab.value} label={tab.label} iconPosition="end" />
-            ))}
-          </Tabs>
           <ProductTableToolbar
             onSearch={(query) => {
               const newQuery = { ...query, page: 0 };
@@ -240,7 +145,7 @@ export default function ProductListView() {
                       key={row._id}
                       row={{
                         ...row,
-                        sub_category_id: subCategories?.find((x) => x._id === row.sub_category_id)
+                        sub_category_id: subCategoryList?.find((x) => x._id === row.sub_category_id)
                           ?.name as string,
                       }}
                       selected={table.selected.includes(row?._id as string)}
@@ -289,7 +194,7 @@ export default function ProductListView() {
         getDeviceList={() => {
           handleSearch(queryDevice);
         }}
-        listSubCategory={subCategories}
+        listSubCategory={subCategoryList}
       />
     </>
   );

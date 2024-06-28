@@ -37,6 +37,7 @@ import { SettingsProvider, SettingsDrawer } from 'src/components/settings';
 
 // auth
 import { AuthProvider, AuthConsumer } from 'src/auth/context/jwt';
+import { SubCategoryProvider } from 'src/store/provider/sub-category-provider';
 
 // ----------------------------------------------------------------------
 
@@ -94,7 +95,7 @@ export default function RootLayout({ children }: Props) {
                 themeContrast: 'default', // 'default' | 'bold'
                 themeLayout: 'vertical', // 'vertical' | 'horizontal' | 'mini'
                 themeColorPresets: 'default', // 'default' | 'cyan' | 'purple' | 'blue' | 'orange' | 'red'
-                themeStretch: false,
+                themeStretch: true,
               }}
             >
               <ThemeProvider>
@@ -102,7 +103,9 @@ export default function RootLayout({ children }: Props) {
                   <SnackbarProvider>
                     <SettingsDrawer />
                     <ProgressBar />
-                    <AuthConsumer>{children}</AuthConsumer>
+                    <AuthConsumer>
+                      <SubCategoryProvider>{children}</SubCategoryProvider>
+                    </AuthConsumer>
                   </SnackbarProvider>
                 </MotionLazy>
               </ThemeProvider>

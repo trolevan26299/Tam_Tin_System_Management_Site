@@ -1,4 +1,3 @@
-import { format } from 'date-fns';
 // @mui
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -35,7 +34,7 @@ export default function ProductTableRow({
   onDeleteRow,
   onEditRow,
 }: Props) {
-  const { name, id_device, sub_category_id, note, warranty, price, status } = row;
+  const { _id, name, sub_category_id, note, cost, detail } = row;
 
   const confirm = useBoolean();
 
@@ -50,7 +49,7 @@ export default function ProductTableRow({
           WebkitBoxOrient: 'vertical',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          maxHeight: '3.6em', // 2 lines * line-height (1.8em)
+          maxHeight: '3.6em',
         }}
       >
         {text}
@@ -61,15 +60,10 @@ export default function ProductTableRow({
   return (
     <>
       <TableRow hover selected={selected}>
+        <TableCell>{_id}</TableCell>
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(name)}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(id_device)}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
@@ -79,35 +73,10 @@ export default function ProductTableRow({
             primaryTypographyProps={{ typography: 'body2' }}
           />
         </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(String(warranty))}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
 
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(renderMoney(String(price)))}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(
-              String(status?.find((x) => x.status === 'inventory')?.quantity || '')
-            )}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
-        <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(
-              String(status?.find((x) => x.status === 'sold')?.quantity || 0)
-            )}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
-        </TableCell>
+        <TableCell>{renderMoney(String(cost))}</TableCell>
+        <TableCell>{detail.filter((x) => x.status === 'inventory').length}</TableCell>
+        <TableCell>{detail.filter((x) => x.status === 'sold').length}</TableCell>
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(String(note))}

@@ -55,7 +55,7 @@ export default function ProductTableToolbar({
           onChange={(event, newValue) => {
             if (newValue) onSearch({ ...query, belong_to: String(newValue) });
           }}
-          renderInput={(params) => <TextField label="Thuộc về" {...params} />}
+          renderInput={(params) => <TextField label="Thuộc danh mục" {...params} />}
           value={query?.belong_to}
         />
 
