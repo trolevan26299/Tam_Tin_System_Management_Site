@@ -22,7 +22,7 @@ import { renderMoney } from 'src/utils/format-number';
 type Props = {
   row: IDevice;
   selected: boolean;
-  onEditRow: VoidFunction;
+  // onEditRow: VoidFunction;
   onSelectRow: VoidFunction;
   onDeleteRow: VoidFunction;
 };
@@ -31,8 +31,7 @@ export default function ProductTableRow({
   row,
   selected,
   onSelectRow,
-  onDeleteRow,
-  onEditRow,
+  onDeleteRow, // onEditRow,
 }: Props) {
   const { _id, name, sub_category_id, note, cost, detail } = row;
 
@@ -75,8 +74,8 @@ export default function ProductTableRow({
         </TableCell>
 
         <TableCell>{renderMoney(String(cost))}</TableCell>
-        <TableCell>{detail.filter((x) => x.status === 'inventory').length}</TableCell>
-        <TableCell>{detail.filter((x) => x.status === 'sold').length}</TableCell>
+        <TableCell>{detail?.filter((x) => x.status === 'inventory').length}</TableCell>
+        <TableCell>{detail?.filter((x) => x.status === 'sold').length}</TableCell>
         <TableCell>
           <ListItemText
             primary={renderCellWithTooltip(String(note))}
@@ -99,7 +98,7 @@ export default function ProductTableRow({
       >
         <MenuItem
           onClick={() => {
-            onEditRow();
+            // onEditRow();
             popover.onClose();
           }}
         >

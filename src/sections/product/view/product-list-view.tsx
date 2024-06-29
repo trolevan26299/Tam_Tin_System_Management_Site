@@ -41,7 +41,6 @@ export default function ProductListView() {
   const { subCategoryList } = useGetSubCategory();
   const [tableData, setTableData] = useState<IDataDevice | undefined>();
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<IDevice | undefined>(undefined);
   const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
     page: 0,
     items_per_page: 10,
@@ -51,7 +50,6 @@ export default function ProductListView() {
 
   const handleCloseDialog = () => {
     setOpenDialog(false);
-    setSelectedItem(undefined);
   };
 
   const handleSearch = async (query: IQueryDevice) => {
@@ -63,16 +61,6 @@ export default function ProductListView() {
   const getDeviceList = async (query?: IQueryDevice) => {
     const deviceList = await getListDevice(query);
     return deviceList;
-  };
-
-  const handleEditRow = async (id: string) => {
-    try {
-      const currentDevice = await getDeviceById(id);
-      setSelectedItem(currentDevice.data);
-      setOpenDialog(true);
-    } catch (error) {
-      console.log(error);
-    }
   };
 
   const handleDeleteById = async (id: string) => {
@@ -117,7 +105,6 @@ export default function ProductListView() {
               startIcon={<Iconify icon="mingcute:add-line" />}
               onClick={() => {
                 setOpenDialog(true);
-                setSelectedItem(undefined);
               }}
             >
               Tạo mới sản phẩm
@@ -151,7 +138,7 @@ export default function ProductListView() {
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      onEditRow={() => handleEditRow(row?._id as string)}
+                      // onEditRow={() => handleEditRow(row?._id as string)}
                     />
                   ))}
 
@@ -188,7 +175,6 @@ export default function ProductListView() {
         </Card>
       </Container>
       <DeviceInfo
-        currentDevice={selectedItem}
         open={openDialog}
         onClose={handleCloseDialog}
         getDeviceList={() => {

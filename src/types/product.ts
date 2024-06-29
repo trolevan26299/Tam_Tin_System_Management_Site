@@ -7,9 +7,10 @@ export type IDevice = {
   _id?: string;
   name: string;
   sub_category_id: string;
+  quantity: number;
   cost: number;
   note?: string;
-  detail: IDetailDevice[];
+  detail?: IDetailDevice[];
 };
 
 export type IProductTableFilterValue = string | string[];
