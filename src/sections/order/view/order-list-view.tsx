@@ -22,6 +22,7 @@ import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
 import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
+import { RouterLink } from 'src/routes/components';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID Order', width: 100 },
@@ -130,12 +131,10 @@ export default function OrderListView() {
           ]}
           action={
             <Button
+              component={RouterLink}
+              href={paths.dashboard.order.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() => {
-                setOpenDialog(true);
-                setSelectedItem(undefined);
-              }}
             >
               Tạo order
             </Button>
@@ -197,14 +196,14 @@ export default function OrderListView() {
           />
         </Card>
       </Container>
-      <OrderDetailsInfo
+      {/* <OrderDetailsInfo
         open={openDialog}
         onClose={handleCloseDialog}
         currentOrder={selectedItem}
         getAllOrder={() => {
           handleSearch(queryList);
         }}
-      />
+      /> */}
     </>
   );
 }

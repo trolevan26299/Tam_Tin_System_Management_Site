@@ -72,7 +72,7 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder: IOrder }) {
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
             Ship by
           </Box>
-          {currentOrder?.delivery?.shipBy}
+          {currentOrder?.shipBy}
         </Stack>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>

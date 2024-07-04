@@ -56,7 +56,7 @@ function OrderDetailsView({ id }: { id: string }) {
         </Grid>
 
         <Grid xs={12} md={4}>
-          <OrderDetailsInfoView currentOrder={selectedItem} />
+          {/* <OrderDetailsInfoView currentOrder={selectedItem} /> */}
         </Grid>
       </Grid>
     </Container>

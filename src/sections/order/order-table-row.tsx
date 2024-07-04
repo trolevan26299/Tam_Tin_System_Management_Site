@@ -30,9 +30,7 @@ type Props = {
 };
 
 function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onViewRow }: Props) {
-  const { items, delivery, delivery_date, customer, totalAmount, note, _id } = row;
-
-  const totalQuantity = items?.reduce((total, item) => total + Number(item.quantity), 0);
+  const { items, shipBy, delivery_date, customer, totalAmount, note, _id } = row;
 
   const confirm = useBoolean();
   const collapse = useBoolean();
@@ -48,7 +46,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           sx={{ bgcolor: 'background.neutral' }}
         >
           <Stack component={Paper} sx={{ m: 1.5 }}>
-            {items?.map((item) => (
+            {items?.map((item, index) => (
               <Stack
                 key={item?.device?._id}
                 direction="row"
@@ -69,7 +67,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                 )}
 
                 <ListItemText
-                  primary={item?.device?.name}
+                  primary={item?.details?.[index]}
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
@@ -80,10 +78,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                   }}
                 />
 
-                <Box>x{item.quantity}</Box>
+                <Box>x{items?.length}</Box>
 
                 <Box sx={{ width: 110, textAlign: 'right' }}>
-                  {renderMoney(String(item?.device?.price))}
+                  {renderMoney(String(item?.device?.cost))}
                 </Box>
               </Stack>
             ))}
@@ -131,10 +129,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
         <TableCell>
-          <ListItemText
-            primary={delivery?.shipBy}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
+          <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           {customer?.avatarUrl && (
@@ -165,7 +160,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
 
-        <TableCell align="center">{totalQuantity}</TableCell>
+        <TableCell align="center">{items?.length}</TableCell>
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 

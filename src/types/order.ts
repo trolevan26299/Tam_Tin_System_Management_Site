@@ -81,7 +81,7 @@ export type IOrderItem = {
 
 export type Items = {
   device?: IDevice & { coverUrl?: string; sku?: string };
-  quantity?: number;
+  details?: string[];
 };
 
 export type IOrder = {
@@ -90,9 +90,7 @@ export type IOrder = {
   totalAmount?: number;
 
   delivery_date: string;
-  delivery?: {
-    shipBy: string;
-  };
+  shipBy?: string;
   customer?: ICustomer;
   items?: Items[];
 
@@ -106,12 +104,10 @@ export type IOrderCreateOrUpdate = {
 
   delivery_date: string;
   customer: string;
-  delivery: {
-    shipBy: string;
-  };
+  shipBy: string;
   items: {
     device: string;
-    quantity: number;
+    details: string[];
   }[];
 };
 

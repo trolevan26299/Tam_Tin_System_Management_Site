@@ -118,10 +118,10 @@ export default function OrderDetailsItems({
                 }}
               />
 
-              <Box sx={{ typography: 'body2' }}>x{item.quantity}</Box>
+              <Box sx={{ typography: 'body2' }}>x{item.details?.length}</Box>
 
               <Box sx={{ width: 110, textAlign: 'right', typography: 'subtitle2' }}>
-                {renderMoney(String(item.device?.price))}
+                {renderMoney(String(item.device?.cost))}
               </Box>
             </Stack>
           ))}

@@ -99,7 +99,10 @@ export function useNavData() {
             icon: ICONS.order,
             children: [
               { title: 'Danh sách', path: paths.dashboard.order.root },
-              // { title: 'Thông tin', path: paths.dashboard.order.demo.details },
+              {
+                title: 'Tạo mới',
+                path: paths.dashboard.order.new,
+              },
             ],
           },
 
