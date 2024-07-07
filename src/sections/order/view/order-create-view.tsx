@@ -2,19 +2,7 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
-import {
-  AutocompleteGetTagProps,
-  Box,
-  Button,
-  Card,
-  Chip,
-  Container,
-  InputAdornment,
-  Stack,
-  SxProps,
-  Theme,
-  Typography,
-} from '@mui/material';
+import { Box, Button, Card, Container, InputAdornment, Stack, Typography } from '@mui/material';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
@@ -32,8 +20,14 @@ import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import { ICustomer } from 'src/types/customer';
 import { IOrderCreateOrUpdate } from 'src/types/order';
-import { IDevice } from 'src/types/product';
+import { IDetailDevice, IDevice } from 'src/types/product';
 import * as Yup from 'yup';
+
+type IItems = {
+  device: string;
+  details?: string[];
+  quantity?: number;
+};
 
 const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   _id: undefined,
@@ -49,20 +43,6 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   shipBy: '',
   note: '',
 });
-
-const styles: { [key: string]: SxProps<Theme> } = {
-  tag: {
-    cursor: 'pointer',
-    height: '26px',
-    borderRadius: '6px',
-
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    '& span': {
-      maxWidth: '220px',
-    },
-  },
-};
 
 export default function OrderCreateView() {
   const settings = useSettingsContext();
@@ -84,9 +64,7 @@ export default function OrderCreateView() {
       .of(
         Yup.object().shape({
           device: Yup.string().required('Device is required'),
-          details: Yup.array()
-            .min(1, 'At least one detail is required')
-            .required('Details are required'),
+          details: Yup.array(),
         })
       )
       .required(),
@@ -101,6 +79,7 @@ export default function OrderCreateView() {
     setValue,
     handleSubmit,
     clearErrors,
+    setError,
     control,
     watch,
     formState: { isSubmitting },
@@ -135,12 +114,6 @@ export default function OrderCreateView() {
       console.error('Failed to search devices:', error);
     }
   }, 300);
-
-  const renderTags = (value: string[], getTagProps: AutocompleteGetTagProps) => {
-    return value.map((option, index) => (
-      <Chip variant="outlined" label={option} {...getTagProps({ index })} sx={styles.tag} />
-    ));
-  };
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -200,7 +173,7 @@ export default function OrderCreateView() {
                       }
                     }}
                     getOptionLabel={(option) =>
-                      (customers?.find((x) => x._id === option)?.name || '') as any
+                      customers?.find((x) => x._id === option)?.name || ''
                     }
                   />
                 </Grid>
@@ -216,89 +189,105 @@ export default function OrderCreateView() {
                       Chức năng và thuộc tính
                     </Typography>
 
-                    {fields?.map((item, index) => {
-                      return (
-                        <Fragment key={item?.id}>
-                          <Grid container spacing={2}>
-                            <Grid xs={4}>
-                              <RHFAutocomplete
-                                key={item?.id}
-                                name={`items.${index}.device`}
-                                label="Sản phẩm"
-                                options={
-                                  deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
+                    {fields?.map((item, index) => (
+                      <Fragment key={item?.id}>
+                        <Grid container spacing={2}>
+                          <Grid xs={3}>
+                            <RHFAutocomplete
+                              key={item?.id}
+                              name={`items.${index}.device`}
+                              label="Sản phẩm"
+                              options={
+                                deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
+                              }
+                              onInputChange={(
+                                _e: React.SyntheticEvent,
+                                value: string,
+                                reason: string
+                              ) => {
+                                if (reason === 'input') {
+                                  handleSearchDevice(index, value);
                                 }
-                                onInputChange={(
-                                  _e: React.SyntheticEvent,
-                                  value: string,
-                                  reason: string
-                                ) => {
-                                  if (reason === 'input') {
-                                    handleSearchDevice(index, value);
-                                  }
-                                }}
-                                getOptionLabel={(option) =>
-                                  (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
-                                    ?.name || '') as any
-                                }
-                              />
-                            </Grid>
-                            <Grid xs={6}>
-                              <RHFAutocomplete
-                                key={item?.id}
-                                multiple
-                                name={`items.${index}.details`}
-                                label="Chi tiết"
-                                options={
-                                  (deviceOptions?.[index]?.[0]?.detail
-                                    ?.filter((x) => x.status === 'inventory')
-                                    ?.map((y) => y.id_device) as string[]) || []
-                                }
-                                noOptionsText="Vui lòng nhập cụm từ tìm kiếm của bạn."
-                                renderTags={renderTags}
-                              />
-                            </Grid>
+                              }}
+                              getOptionLabel={(option) =>
+                                (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
+                                  ?.name || '') as any
+                              }
+                            />
+                          </Grid>
 
+                          <Grid xs={3}>
+                            <RHFTextField
+                              name={`items.${index}.quantity`}
+                              label="Số lượng"
+                              type="number"
+                              onKeyDown={(evt) =>
+                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                              }
+                              onChange={(e) => {
+                                const value = Number(e.target.value);
+                                const device = deviceOptions?.[index]?.find(
+                                  (x: IDevice) => x._id === item.device
+                                );
+                                setValue(`items.${index}.quantity`, value);
+
+                                const checkInventoryInDevice = device?.detail?.filter(
+                                  (x: IDetailDevice) => x.status === 'inventory'
+                                ).length;
+                                if (value > Number(checkInventoryInDevice)) {
+                                  setError(`items.${index}.quantity`, {
+                                    message: `Product ${device?.name} only has ${checkInventoryInDevice} left in stock, enter quantity <= ${checkInventoryInDevice}`,
+                                  });
+                                } else {
+                                  clearErrors(`items.${index}.quantity`);
+                                }
+                              }}
+                            />
+                          </Grid>
+
+                          <Grid xs={3}>
+                            <RHFTextField name="" label="Tổng tiền" />
+                          </Grid>
+
+                          <Grid xs={1}>
+                            <Button
+                              variant="outlined"
+                              onClick={() => {
+                                remove(index);
+                                const clonedDeviceOptions = { ...deviceOptions };
+                                delete clonedDeviceOptions[index];
+                                const newData = Object.values(clonedDeviceOptions).reduce(
+                                  (acc: any, value, indexData) => {
+                                    acc[indexData] = value;
+                                    return acc;
+                                  },
+                                  {}
+                                );
+                                setDeviceOptions(newData);
+                              }}
+                              color="error"
+                              sx={{ height: '55px' }}
+                              disabled={fields?.length === 1}
+                            >
+                              <Iconify icon="eva:trash-2-outline" />
+                            </Button>
+                          </Grid>
+
+                          {index === 0 && (
                             <Grid xs={1}>
                               <Button
                                 variant="outlined"
-                                onClick={() => {
-                                  remove(index);
-                                  const clonedDeviceOptions = { ...deviceOptions };
-                                  delete clonedDeviceOptions[index];
-                                  const newData = Object.values(clonedDeviceOptions).reduce(
-                                    (acc: any, value, indexData) => {
-                                      acc[indexData] = value;
-                                      return acc;
-                                    },
-                                    {}
-                                  );
-                                  setDeviceOptions(newData);
-                                }}
-                                color="error"
+                                color="inherit"
+                                onClick={() => append({ device: '', details: [] })}
                                 sx={{ height: '55px' }}
-                                disabled={fields?.length === 1}
                               >
-                                <Iconify icon="eva:trash-2-outline" />
+                                <Iconify icon="mingcute:add-line" />
                               </Button>
                             </Grid>
-
-                            {index === 0 && (
-                              <Grid xs={1}>
-                                <Button
-                                  variant="outlined"
-                                  color="inherit"
-                                  onClick={() => append({ device: '', details: [] })}
-                                  sx={{ height: '55px' }}
-                                >
-                                  <Iconify icon="mingcute:add-line" />
-                                </Button>
-                              </Grid>
-                            )}
-                          </Grid>
-                        </Fragment>
-                      );
-                    })}
+                          )}
+                        </Grid>
+                      </Fragment>
+                    ))}
                   </Stack>
                 </Grid>
 
@@ -377,7 +366,7 @@ export default function OrderCreateView() {
               loading={isSubmitting}
               sx={{ height: '36px' }}
             >
-              {'Tạo mới'}
+              Tạo mới
             </LoadingButton>
             <Button component={RouterLink} href={paths.dashboard.order.new} variant="contained">
               Hủy

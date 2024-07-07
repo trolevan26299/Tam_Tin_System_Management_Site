@@ -19,10 +19,10 @@ import {
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
+import { RouterLink } from 'src/routes/components';
 import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
-import { RouterLink } from 'src/routes/components';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID Order', width: 100 },

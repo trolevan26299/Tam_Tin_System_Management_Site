@@ -107,7 +107,9 @@ export type IOrderCreateOrUpdate = {
   shipBy: string;
   items: {
     device: string;
-    details: string[];
+    details?: string[];
+
+    quantity?: number;
   }[];
 };
 
