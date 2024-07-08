@@ -32,6 +32,8 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
     {
       device: '',
       details: [],
+      quantity: undefined,
+      price: undefined,
     },
   ],
   shipBy: '',
@@ -59,6 +61,8 @@ export default function OrderCreateView() {
         Yup.object().shape({
           device: Yup.string().required('Device is required'),
           details: Yup.array(),
+          quantity: Yup.number().required('quantity is required').min(1, 'quantity is required'),
+          price: Yup.number().required('price is required').min(1, 'price is required'),
         })
       )
       .required(),
@@ -183,105 +187,126 @@ export default function OrderCreateView() {
                       Chức năng và thuộc tính
                     </Typography>
 
-                    {fields?.map((item, index) => (
-                      <Fragment key={item?.id}>
-                        <Grid container spacing={2}>
-                          <Grid xs={3}>
-                            <RHFAutocomplete
-                              key={item?.id}
-                              name={`items.${index}.device`}
-                              label="Sản phẩm"
-                              options={
-                                deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
-                              }
-                              onInputChange={(
-                                _e: React.SyntheticEvent,
-                                value: string,
-                                reason: string
-                              ) => {
-                                if (reason === 'input') {
-                                  handleSearchDevice(index, value);
+                    {fields?.map((item, index) => {
+                      return (
+                        <Fragment key={item?.id}>
+                          <Grid container spacing={2}>
+                            <Grid xs={3}>
+                              <RHFAutocomplete
+                                key={item?.id}
+                                name={`items.${index}.device`}
+                                label="Sản phẩm"
+                                options={
+                                  deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
                                 }
-                              }}
-                              getOptionLabel={(option) =>
-                                (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
-                                  ?.name || '') as any
-                              }
-                            />
-                          </Grid>
-
-                          <Grid xs={3}>
-                            <RHFTextField
-                              name={`items.${index}.quantity`}
-                              label="Số lượng"
-                              type="number"
-                              onKeyDown={(evt) =>
-                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                              }
-                              onChange={(e) => {
-                                const value = Number(e.target.value);
-                                const device = deviceOptions?.[index]?.find(
-                                  (x: IDevice) => x._id === item.device
-                                );
-                                setValue(`items.${index}.quantity`, value);
-
-                                const checkInventoryInDevice = device?.detail?.filter(
-                                  (x: IDetailDevice) => x.status === 'inventory'
-                                ).length;
-                                if (value > Number(checkInventoryInDevice)) {
-                                  setError(`items.${index}.quantity`, {
-                                    message: `Product ${device?.name} only has ${checkInventoryInDevice} left in stock, enter quantity <= ${checkInventoryInDevice}`,
-                                  });
-                                } else {
-                                  clearErrors(`items.${index}.quantity`);
+                                onInputChange={(
+                                  _e: React.SyntheticEvent,
+                                  value: string,
+                                  reason: string
+                                ) => {
+                                  if (reason === 'input') {
+                                    handleSearchDevice(index, value);
+                                  }
+                                }}
+                                getOptionLabel={(option) =>
+                                  (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
+                                    ?.name || '') as any
                                 }
-                              }}
-                            />
-                          </Grid>
+                              />
+                            </Grid>
 
-                          <Grid xs={3}>
-                            <RHFTextField name="" label="Tổng tiền" />
-                          </Grid>
+                            <Grid xs={3}>
+                              <RHFTextField
+                                name={`items.${index}.price`}
+                                label="Giá tiền"
+                                onKeyDown={(evt) =>
+                                  ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                                }
+                              />
+                            </Grid>
 
-                          <Grid xs={1}>
-                            <Button
-                              variant="outlined"
-                              onClick={() => {
-                                remove(index);
-                                const clonedDeviceOptions = { ...deviceOptions };
-                                delete clonedDeviceOptions[index];
-                                const newData = Object.values(clonedDeviceOptions).reduce(
-                                  (acc: any, value, indexData) => {
-                                    acc[indexData] = value;
-                                    return acc;
-                                  },
-                                  {}
-                                );
-                                setDeviceOptions(newData);
-                              }}
-                              color="error"
-                              sx={{ height: '55px' }}
-                              disabled={fields?.length === 1}
-                            >
-                              <Iconify icon="eva:trash-2-outline" />
-                            </Button>
-                          </Grid>
+                            <Grid xs={3}>
+                              <RHFTextField
+                                name={`items.${index}.quantity`}
+                                label="Số lượng"
+                                type="number"
+                                onKeyDown={(evt) =>
+                                  ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                                }
+                                onChange={(e) => {
+                                  const value = Number(e.target.value) || 0;
+                                  const device = deviceOptions?.[index]?.find(
+                                    (x: IDevice) => x._id === watch(`items.${index}.device`)
+                                  );
+                                  const totalAmount =
+                                    (watch('totalAmount') || 0) +
+                                    (watch(`items.${index}.price`) || 0) * value;
 
-                          {index === 0 && (
+                                  setValue(`items.${index}.quantity`, value);
+                                  setValue('totalAmount', totalAmount);
+
+                                  const checkInventoryInDevice = device?.detail?.filter(
+                                    (x: IDetailDevice) => x.status === 'inventory'
+                                  ).length;
+
+                                  if (value > Number(checkInventoryInDevice)) {
+                                    setError(`items.${index}.quantity`, {
+                                      message: `Product ${device?.name} only has ${checkInventoryInDevice} left in stock, enter quantity <= ${checkInventoryInDevice}`,
+                                    });
+                                  } else {
+                                    clearErrors(`items.${index}.quantity`);
+                                  }
+                                }}
+                              />
+                            </Grid>
+
                             <Grid xs={1}>
                               <Button
                                 variant="outlined"
-                                color="inherit"
-                                onClick={() => append({ device: '', details: [] })}
+                                onClick={() => {
+                                  remove(index);
+                                  const clonedDeviceOptions = { ...deviceOptions };
+                                  delete clonedDeviceOptions[index];
+                                  const newData = Object.values(clonedDeviceOptions).reduce(
+                                    (acc: any, value, indexData) => {
+                                      acc[indexData] = value;
+                                      return acc;
+                                    },
+                                    {}
+                                  );
+                                  setDeviceOptions(newData);
+                                }}
+                                color="error"
                                 sx={{ height: '55px' }}
+                                disabled={fields?.length === 1}
                               >
-                                <Iconify icon="mingcute:add-line" />
+                                <Iconify icon="eva:trash-2-outline" />
                               </Button>
                             </Grid>
-                          )}
-                        </Grid>
-                      </Fragment>
-                    ))}
+
+                            {index === 0 && (
+                              <Grid xs={1}>
+                                <Button
+                                  variant="outlined"
+                                  color="inherit"
+                                  onClick={() =>
+                                    append({
+                                      device: '',
+                                      details: [],
+                                      quantity: 0,
+                                      price: 0,
+                                    })
+                                  }
+                                  sx={{ height: '55px' }}
+                                >
+                                  <Iconify icon="mingcute:add-line" />
+                                </Button>
+                              </Grid>
+                            )}
+                          </Grid>
+                        </Fragment>
+                      );
+                    })}
                   </Stack>
                 </Grid>
 
@@ -300,7 +325,14 @@ export default function OrderCreateView() {
               <Stack spacing={3} sx={{ p: 3 }}>
                 <Typography variant="subtitle2">Định giá</Typography>
                 <Grid xs={12}>
-                  <RHFTextField name="totalAmount" label="Tổng tiền" type="number" />
+                  <RHFTextField
+                    name="totalAmount"
+                    label="Tổng tiền"
+                    type="number"
+                    onKeyDown={(evt) =>
+                      ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                    }
+                  />
                 </Grid>
                 <Grid xs={12}>
                   <RHFTextField
@@ -311,29 +343,6 @@ export default function OrderCreateView() {
                     value={price.priceSale || ''}
                     onChange={(e) => {
                       setPrice({ ...price, priceSale: Number(e.target.value) });
-                    }}
-                  />
-                </Grid>
-                <Grid xs={12}>
-                  <RHFTextField
-                    name=""
-                    label="Thuế (%)"
-                    placeholder="0.00"
-                    type="number"
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      endAdornment: (
-                        <InputAdornment position="start">
-                          <Box component="span" sx={{ color: 'text.disabled' }}>
-                            %
-                          </Box>
-                        </InputAdornment>
-                      ),
-                    }}
-                    value={price?.priceTax || ''}
-                    onChange={(e) => {
-                      const value = Number(e.target.value);
-                      setPrice({ ...price, priceTax: value });
                     }}
                   />
                 </Grid>

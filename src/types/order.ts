@@ -110,6 +110,7 @@ export type IOrderCreateOrUpdate = {
     details?: string[];
 
     quantity?: number;
+    price?: number;
   }[];
 };
 
