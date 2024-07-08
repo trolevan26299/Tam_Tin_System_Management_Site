@@ -23,12 +23,6 @@ import { IOrderCreateOrUpdate } from 'src/types/order';
 import { IDetailDevice, IDevice } from 'src/types/product';
 import * as Yup from 'yup';
 
-type IItems = {
-  device: string;
-  details?: string[];
-  quantity?: number;
-};
-
 const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   _id: undefined,
   delivery_date: '',

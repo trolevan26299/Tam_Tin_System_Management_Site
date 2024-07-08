@@ -10,7 +10,6 @@ import { paths } from 'src/routes/paths';
 import { IOrder, Items } from 'src/types/order';
 import OrderDetailsItems from '../order-details-item';
 import OrderDetailsToolbar from '../order-details-toolbar';
-import OrderDetailsInfo from '../order-details-info';
 import OrderDetailsInfoView from '../order-details-info-view';
 
 function OrderDetailsView({ id }: { id: string }) {

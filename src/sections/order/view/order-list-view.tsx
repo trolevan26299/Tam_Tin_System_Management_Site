@@ -17,10 +17,9 @@ import {
   emptyRows,
   useTable,
 } from 'src/components/table';
+import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
-import { RouterLink } from 'src/routes/components';
-import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
