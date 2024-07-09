@@ -41,19 +41,12 @@ export default function OrderListView() {
   const { enqueueSnackbar } = useSnackbar();
 
   const [tableData, setTableData] = useState<IDataOrder | undefined>(undefined);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<IOrder | undefined>(undefined);
   const [queryList, setQueryList] = useState<IQueryOrder>({
     page: 0,
     items_per_page: 10,
   });
 
   const denseHeight = table.dense ? 52 : 72;
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedItem(undefined);
-  };
 
   const handleViewRow = useCallback(
     (id: string) => {
@@ -82,13 +75,7 @@ export default function OrderListView() {
   );
 
   const handleEditRow = async (id: string) => {
-    try {
-      const currentOrder = await getOrderById(id);
-      setSelectedItem(currentOrder);
-      setOpenDialog(true);
-    } catch (error) {
-      console.log(error);
-    }
+    //
   };
 
   const handleSearch = async (query?: IQueryOrder) => {
@@ -195,14 +182,6 @@ export default function OrderListView() {
           />
         </Card>
       </Container>
-      {/* <OrderDetailsInfo
-        open={openDialog}
-        onClose={handleCloseDialog}
-        currentOrder={selectedItem}
-        getAllOrder={() => {
-          handleSearch(queryList);
-        }}
-      /> */}
     </>
   );
 }

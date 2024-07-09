@@ -2,14 +2,15 @@
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
-import { Box, Button, Card, Container, InputAdornment, Stack, Typography } from '@mui/material';
+import { Button, Card, Container, Stack, Typography } from '@mui/material';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
-import React, { Fragment, useState } from 'react';
-import { Controller, DefaultValues, useFieldArray, useForm } from 'react-hook-form';
+import React, { Fragment, useEffect, useState } from 'react';
+import { Controller, DefaultValues, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { getListCustomer } from 'src/api/customer';
+import { createOrder } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import { RHFAutocomplete, RHFEditor, RHFTextField } from 'src/components/hook-form';
@@ -19,9 +20,19 @@ import { useSettingsContext } from 'src/components/settings';
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import { ICustomer } from 'src/types/customer';
-import { IOrderCreateOrUpdate } from 'src/types/order';
+import { IOrder, IOrderCreateOrUpdate } from 'src/types/order';
 import { IDetailDevice, IDevice } from 'src/types/product';
+import { renderMoney } from 'src/utils/format-number';
+import { fDateTime } from 'src/utils/format-time';
 import * as Yup from 'yup';
+import { useRouter } from 'src/routes/hooks';
+
+interface IItems {
+  device: string;
+  details: string[];
+  quantity: number;
+  price: number;
+}
 
 const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   _id: undefined,
@@ -38,18 +49,15 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   ],
   shipBy: '',
   note: '',
+  priceSaleOff: 0,
 });
 
-export default function OrderCreateView() {
+export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrder }) {
+  const router = useRouter();
   const settings = useSettingsContext();
   const { enqueueSnackbar } = useSnackbar();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
   const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
-  const [price, setPrice] = useState<{ priceTotal: number; priceSale: number; priceTax: number }>({
-    priceTotal: 0,
-    priceSale: 0,
-    priceTax: 0,
-  });
 
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Delivery date is required'),
@@ -88,8 +96,42 @@ export default function OrderCreateView() {
     name: 'items',
   });
 
+  const watchedItems = useWatch({
+    control,
+    name: 'items',
+  });
+
+  const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
+    enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
+      variant: 'success',
+    });
+    router.push(paths.dashboard.order.root);
+  };
+
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
-    console.log('🚀 ~ onSubmit ~ data:', data);
+    const newData: IOrderCreateOrUpdate = {
+      ...data,
+      delivery_date: fDateTime(data?.delivery_date, 'yyyy-MM-dd HH:mm'),
+      items: data?.items.map((item) => ({
+        details: item.details,
+        device: item.device,
+        price: item.price,
+      })) as any,
+      totalAmount: watch('totalAmount') - (watch('priceSaleOff') || 0),
+    };
+
+    if (newData?._id) {
+      console.log('🚀 ~ onSubmit ~ newData:', newData);
+      // const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+      // if (updateOrder) {
+      //   handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+      // }
+    } else {
+      const newOrder = await createOrder(newData, enqueueSnackbar);
+      if (newOrder) {
+        handleGetWhenCreateAndUpdateSuccess(false);
+      }
+    }
   };
 
   const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
@@ -113,10 +155,71 @@ export default function OrderCreateView() {
     }
   }, 300);
 
+  const calculateTotalAmount = (
+    items: {
+      device: string;
+      details?: string[];
+
+      quantity: number;
+      price: number;
+    }[]
+  ) => {
+    return items.reduce((acc, item) => {
+      if (item.price && item.quantity) {
+        return acc + item.price * item.quantity;
+      }
+      return acc;
+    }, 0);
+  };
+
+  const handleSetDataToForm = () => {
+    if (currentOrder?._id) {
+      setValue('_id', currentOrder?._id);
+      setValue('totalAmount', Number(currentOrder?.totalAmount));
+      setValue('delivery_date', currentOrder?.delivery_date);
+      setValue('shipBy', String(currentOrder?.shipBy));
+      setValue('customer', String(currentOrder?.customer?._id));
+      setValue('note', currentOrder?.note);
+
+      const items = currentOrder?.items?.map((item) => ({
+        device: item.device?._id as string,
+        details: item.details,
+
+        quantity: item.details?.length,
+        price: item?.price as number,
+      }));
+
+      const deviceOption: { [key: number]: IDevice[] } = {};
+
+      currentOrder?.items?.forEach((item, index) => {
+        (deviceOption[index] as any) = [item.device];
+      });
+
+      setValue('items', items as IItems[]);
+      setDeviceOptions(deviceOption);
+      setCustomers([currentOrder?.customer as ICustomer]);
+    } else {
+      const newDflValues = initializeDefaultValues();
+      Object.keys(newDflValues).forEach((key: any) => {
+        setValue(key, (newDflValues as any)?.[key]);
+      });
+      setValue('_id', undefined);
+    }
+  };
+
+  useEffect(() => {
+    const totalAmount = calculateTotalAmount(watchedItems);
+    setValue('totalAmount', totalAmount);
+  }, [watchedItems, setValue]);
+
+  useEffect(() => {
+    handleSetDataToForm();
+    clearErrors();
+  }, [currentOrder?._id]);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
-        heading="Tạo order"
+        heading={currentOrder ? 'Chỉnh sửa' : 'Tạo mới'}
         links={[
           {
             name: 'Dashboard',
@@ -238,23 +341,36 @@ export default function OrderCreateView() {
                                   const device = deviceOptions?.[index]?.find(
                                     (x: IDevice) => x._id === watch(`items.${index}.device`)
                                   );
-                                  const totalAmount =
-                                    (watch('totalAmount') || 0) +
-                                    (watch(`items.${index}.price`) || 0) * value;
+                                  const checkInventoryInDevice =
+                                    device?.detail?.filter(
+                                      (x: IDetailDevice) => x.status === 'inventory'
+                                    ) || [];
 
                                   setValue(`items.${index}.quantity`, value);
-                                  setValue('totalAmount', totalAmount);
 
-                                  const checkInventoryInDevice = device?.detail?.filter(
-                                    (x: IDetailDevice) => x.status === 'inventory'
-                                  ).length;
+                                  if (currentOrder) {
+                                    const id_deviceIncludedInOrder =
+                                      currentOrder?.items?.[index]?.details || [];
+                                    let newDetails = [];
 
-                                  if (value > Number(checkInventoryInDevice)) {
-                                    setError(`items.${index}.quantity`, {
-                                      message: `Product ${device?.name} only has ${checkInventoryInDevice} left in stock, enter quantity <= ${checkInventoryInDevice}`,
-                                    });
+                                    if (value < id_deviceIncludedInOrder.length) {
+                                      newDetails = id_deviceIncludedInOrder.splice(0, value);
+                                    } else {
+                                      newDetails = [
+                                        ...id_deviceIncludedInOrder,
+                                        ...checkInventoryInDevice.splice(
+                                          0,
+                                          value - id_deviceIncludedInOrder.length
+                                        ),
+                                      ];
+                                    }
+                                    setValue(`items.${index}.details`, newDetails as string[]);
                                   } else {
-                                    clearErrors(`items.${index}.quantity`);
+                                    const details = checkInventoryInDevice
+                                      ?.splice(0, value)
+                                      ?.map((x: IDetailDevice) => x.id_device);
+
+                                    setValue(`items.${index}.details`, details);
                                   }
                                 }}
                               />
@@ -336,14 +452,13 @@ export default function OrderCreateView() {
                 </Grid>
                 <Grid xs={12}>
                   <RHFTextField
-                    name=""
+                    name="priceSaleOff"
                     label="Giảm giá"
                     placeholder="Nhập giá giảm"
                     type="number"
-                    value={price.priceSale || ''}
-                    onChange={(e) => {
-                      setPrice({ ...price, priceSale: Number(e.target.value) });
-                    }}
+                    onKeyDown={(evt) =>
+                      ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                    }
                   />
                 </Grid>
 
@@ -351,7 +466,9 @@ export default function OrderCreateView() {
                   xs={12}
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right' }}
                 >
-                  <Typography>Tổng: {watch('totalAmount')}</Typography>
+                  <Typography>
+                    Tổng: {renderMoney(String(watch('totalAmount') - (watch('priceSaleOff') || 0)))}
+                  </Typography>
                 </Grid>
               </Stack>
             </Card>
@@ -369,7 +486,7 @@ export default function OrderCreateView() {
               loading={isSubmitting}
               sx={{ height: '36px' }}
             >
-              Tạo mới
+              Lưu
             </LoadingButton>
             <Button component={RouterLink} href={paths.dashboard.order.new} variant="contained">
               Hủy
@@ -377,6 +494,66 @@ export default function OrderCreateView() {
           </Grid>
         </Grid>
       </FormProvider>
+
+      {/* <RHFTextField
+        name={`items.${index}.quantity`}
+        label="Số lượng"
+        type="number"
+        onKeyDown={(evt) => ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()}
+        onChange={(e) => {
+          const value = Number(e.target.value) || 0;
+          const device = deviceOptions?.[index]?.find(
+            (x: IDevice) => x._id === watch(`items.${index}.device`)
+          );
+          const checkInventoryInDevice =
+            device?.detail?.filter((x: IDetailDevice) => x.status === 'inventory') || [];
+
+          setValue(`items.${index}.quantity`, value);
+
+          if (currentOrder) {
+            const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
+            const remainingNeeded = value - id_deviceIncludedInOrder.length;
+
+            if (remainingNeeded > checkInventoryInDevice.length) {
+              setError(`items.${index}.quantity`, {
+                message: `Product ${device?.name} only has ${
+                  checkInventoryInDevice.length
+                } left in stock, enter quantity <= ${
+                  id_deviceIncludedInOrder.length + checkInventoryInDevice.length
+                }`,
+              });
+            } else {
+              let newDetails = [];
+
+              if (value < id_deviceIncludedInOrder.length) {
+                // Xóa bớt phần tử
+                newDetails = id_deviceIncludedInOrder.slice(0, value);
+              } else {
+                // Giữ lại các phần tử của id_deviceIncludedInOrder và thêm các phần tử từ checkInventoryInDevice
+                newDetails = [
+                  ...id_deviceIncludedInOrder,
+                  ...checkInventoryInDevice.slice(0, remainingNeeded),
+                ];
+              }
+              setValue(`items.${index}.details`, newDetails);
+              clearErrors(`items.${index}.quantity`);
+            }
+          } else {
+            // Tạo mới: kiểm tra số lượng tồn kho
+            if (value > checkInventoryInDevice.length) {
+              setError(`items.${index}.quantity`, {
+                message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
+              });
+            } else {
+              const details = checkInventoryInDevice
+                ?.splice(0, value)
+                ?.map((x: IDetailDevice) => x.id_device);
+              setValue(`items.${index}.details`, details as string[]);
+              clearErrors(`items.${index}.quantity`);
+            }
+          }
+        }}
+      /> */}
     </Container>
   );
 }

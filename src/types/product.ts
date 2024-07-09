@@ -1,8 +1,6 @@
 export type IDetailDevice = {
   status: string;
   id_device: string;
-
-  quantity?: number;
 };
 
 export type IDevice = {

@@ -82,6 +82,7 @@ export type IOrderItem = {
 export type Items = {
   device?: IDevice & { coverUrl?: string; sku?: string };
   details?: string[];
+  price?: number;
 };
 
 export type IOrder = {
@@ -112,6 +113,8 @@ export type IOrderCreateOrUpdate = {
     quantity: number;
     price: number;
   }[];
+
+  priceSaleOff?: number;
 };
 
 export type IQueryOrder = {

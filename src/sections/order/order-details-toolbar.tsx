@@ -25,6 +25,7 @@ type Props = {
     value: string;
     label: string;
   }[];
+  onEdit?: VoidFunction;
 };
 
 export default function OrderDetailsToolbar({
@@ -34,6 +35,7 @@ export default function OrderDetailsToolbar({
   orderNumber,
   statusOptions,
   onChangeStatus,
+  onEdit,
 }: Props) {
   const popover = usePopover();
 
@@ -98,7 +100,12 @@ export default function OrderDetailsToolbar({
             Print
           </Button>
 
-          <Button color="inherit" variant="contained" startIcon={<Iconify icon="solar:pen-bold" />}>
+          <Button
+            color="inherit"
+            variant="contained"
+            startIcon={<Iconify icon="solar:pen-bold" />}
+            onClick={() => onEdit?.()}
+          >
             Edit
           </Button>
         </Stack>

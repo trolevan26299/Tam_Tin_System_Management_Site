@@ -36,6 +36,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
   const collapse = useBoolean();
   const popover = usePopover();
 
+  const itemCounts = items?.map((item: any) => ({
+    numberOfDetails: item.details.length,
+  }));
+
   const renderSecondary = (
     <TableRow>
       <TableCell sx={{ p: 0, border: 'none' }} colSpan={8}>
@@ -160,7 +164,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
 
-        <TableCell align="center">{items?.length}</TableCell>
+        <TableCell align="center">{itemCounts?.[0]?.numberOfDetails}</TableCell>
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 

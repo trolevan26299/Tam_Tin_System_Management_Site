@@ -1,5 +1,5 @@
 // sections
-import { OrderCreateView } from 'src/sections/order/view';
+import { OrderCreateUpdateView } from 'src/sections/order/view';
 
 // ----------------------------------------------------------------------
 
@@ -8,5 +8,5 @@ export const metadata = {
 };
 
 export default function OrderCreatePage() {
-  return <OrderCreateView />;
+  return <OrderCreateUpdateView />;
 }

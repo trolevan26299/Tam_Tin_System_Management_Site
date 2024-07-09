@@ -14,7 +14,7 @@ import React from 'react';
 import Iconify from 'src/components/iconify';
 import { IOrder } from 'src/types/order';
 
-function OrderDetailsInfoView({ currentOrder }: { currentOrder: IOrder }) {
+function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
   const renderCustomer = (
     <>
       <CardHeader
