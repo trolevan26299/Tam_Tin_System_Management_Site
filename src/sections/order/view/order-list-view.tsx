@@ -74,10 +74,6 @@ export default function OrderListView() {
     [table, tableData]
   );
 
-  const handleEditRow = async (id: string) => {
-    //
-  };
-
   const handleSearch = async (query?: IQueryOrder) => {
     const orderList = await getListOrder(query);
     if (query) setQueryList(query);
@@ -147,7 +143,7 @@ export default function OrderListView() {
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      onEditRow={() => handleEditRow(row?._id as string)}
+                      onEditRow={() => handleViewRow(row?._id as string)}
                       onViewRow={() => handleViewRow(row?._id as string)}
                     />
                   ))}

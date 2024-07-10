@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { format } from 'date-fns';
+import { sumBy } from 'lodash';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
@@ -36,9 +37,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
   const collapse = useBoolean();
   const popover = usePopover();
 
-  const itemCounts = items?.map((item: any) => ({
-    numberOfDetails: item.details.length,
-  }));
+  const itemCounts = sumBy(items, (item) => (item.details as string[]).length);
 
   const renderSecondary = (
     <TableRow>
@@ -82,10 +81,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                   }}
                 />
 
-                <Box>x{items?.length}</Box>
+                <Box>x{item.details?.length}</Box>
 
                 <Box sx={{ width: 110, textAlign: 'right' }}>
-                  {renderMoney(String(item?.device?.cost))}
+                  {renderMoney(String(Number(item?.price) * Number(item.details?.length)))}
                 </Box>
               </Stack>
             ))}
@@ -164,12 +163,22 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
 
-        <TableCell align="center">{itemCounts?.[0]?.numberOfDetails}</TableCell>
+        <TableCell align="center">{itemCounts}</TableCell>
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
         <TableCell>
-          <div dangerouslySetInnerHTML={{ __html: String(note) }} />
+          <div
+            dangerouslySetInnerHTML={{ __html: String(note) }}
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxHeight: '3.6em',
+            }}
+          />
         </TableCell>
 
         <TableCell align="left">
