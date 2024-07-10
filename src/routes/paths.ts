@@ -141,6 +141,7 @@ export const paths = {
     },
     order: {
       root: `${ROOTS.DASHBOARD}/order`,
+      new: `${ROOTS.DASHBOARD}/order/new`,
       list: `${ROOTS.DASHBOARD}/order/list`,
       details: (id: string) => `${ROOTS.DASHBOARD}/order/${id}`,
       demo: {

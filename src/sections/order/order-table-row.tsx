@@ -13,6 +13,7 @@ import {
   Tooltip,
 } from '@mui/material';
 import { format } from 'date-fns';
+import { sumBy } from 'lodash';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
@@ -30,13 +31,13 @@ type Props = {
 };
 
 function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onViewRow }: Props) {
-  const { items, delivery, delivery_date, customer, totalAmount, note, _id } = row;
-
-  const totalQuantity = items?.reduce((total, item) => total + Number(item.quantity), 0);
+  const { items, shipBy, delivery_date, customer, totalAmount, note, _id } = row;
 
   const confirm = useBoolean();
   const collapse = useBoolean();
   const popover = usePopover();
+
+  const itemCounts = sumBy(items, (item) => (item.details as string[]).length);
 
   const renderSecondary = (
     <TableRow>
@@ -48,7 +49,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           sx={{ bgcolor: 'background.neutral' }}
         >
           <Stack component={Paper} sx={{ m: 1.5 }}>
-            {items?.map((item) => (
+            {items?.map((item, index) => (
               <Stack
                 key={item?.device?._id}
                 direction="row"
@@ -69,7 +70,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                 )}
 
                 <ListItemText
-                  primary={item?.device?.name}
+                  primary={item?.details?.[index]}
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
@@ -80,10 +81,10 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                   }}
                 />
 
-                <Box>x{item.quantity}</Box>
+                <Box>x{item.details?.length}</Box>
 
                 <Box sx={{ width: 110, textAlign: 'right' }}>
-                  {renderMoney(String(item?.device?.price))}
+                  {renderMoney(String(Number(item?.price) * Number(item.details?.length)))}
                 </Box>
               </Stack>
             ))}
@@ -131,10 +132,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
         <TableCell>
-          <ListItemText
-            primary={delivery?.shipBy}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
+          <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           {customer?.avatarUrl && (
@@ -165,14 +163,21 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
 
-        <TableCell align="center">{totalQuantity}</TableCell>
+        <TableCell align="center">{itemCounts}</TableCell>
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
         <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(String(note))}
-            primaryTypographyProps={{ typography: 'body2' }}
+          <div
+            dangerouslySetInnerHTML={{ __html: String(note) }}
+            style={{
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              maxHeight: '3.6em',
+            }}
           />
         </TableCell>
 

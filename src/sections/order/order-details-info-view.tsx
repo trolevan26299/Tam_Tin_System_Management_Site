@@ -14,7 +14,7 @@ import React from 'react';
 import Iconify from 'src/components/iconify';
 import { IOrder } from 'src/types/order';
 
-function OrderDetailsInfoView({ currentOrder }: { currentOrder: IOrder }) {
+function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
   const renderCustomer = (
     <>
       <CardHeader
@@ -72,7 +72,7 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder: IOrder }) {
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
             Ship by
           </Box>
-          {currentOrder?.delivery?.shipBy}
+          {currentOrder?.shipBy}
         </Stack>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>

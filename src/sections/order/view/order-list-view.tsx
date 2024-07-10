@@ -17,9 +17,9 @@ import {
   emptyRows,
   useTable,
 } from 'src/components/table';
+import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
-import OrderDetailsInfo from '../order-details-info';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
@@ -41,19 +41,12 @@ export default function OrderListView() {
   const { enqueueSnackbar } = useSnackbar();
 
   const [tableData, setTableData] = useState<IDataOrder | undefined>(undefined);
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [selectedItem, setSelectedItem] = useState<IOrder | undefined>(undefined);
   const [queryList, setQueryList] = useState<IQueryOrder>({
     page: 0,
     items_per_page: 10,
   });
 
   const denseHeight = table.dense ? 52 : 72;
-
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-    setSelectedItem(undefined);
-  };
 
   const handleViewRow = useCallback(
     (id: string) => {
@@ -80,16 +73,6 @@ export default function OrderListView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [table, tableData]
   );
-
-  const handleEditRow = async (id: string) => {
-    try {
-      const currentOrder = await getOrderById(id);
-      setSelectedItem(currentOrder);
-      setOpenDialog(true);
-    } catch (error) {
-      console.log(error);
-    }
-  };
 
   const handleSearch = async (query?: IQueryOrder) => {
     const orderList = await getListOrder(query);
@@ -130,12 +113,10 @@ export default function OrderListView() {
           ]}
           action={
             <Button
+              component={RouterLink}
+              href={paths.dashboard.order.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() => {
-                setOpenDialog(true);
-                setSelectedItem(undefined);
-              }}
             >
               Tạo order
             </Button>
@@ -162,7 +143,7 @@ export default function OrderListView() {
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      onEditRow={() => handleEditRow(row?._id as string)}
+                      onEditRow={() => handleViewRow(row?._id as string)}
                       onViewRow={() => handleViewRow(row?._id as string)}
                     />
                   ))}
@@ -197,14 +178,6 @@ export default function OrderListView() {
           />
         </Card>
       </Container>
-      <OrderDetailsInfo
-        open={openDialog}
-        onClose={handleCloseDialog}
-        currentOrder={selectedItem}
-        getAllOrder={() => {
-          handleSearch(queryList);
-        }}
-      />
     </>
   );
 }
