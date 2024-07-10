@@ -169,10 +169,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
         <TableCell>
-          <ListItemText
-            primary={renderCellWithTooltip(String(note))}
-            primaryTypographyProps={{ typography: 'body2' }}
-          />
+          <div dangerouslySetInnerHTML={{ __html: String(note) }} />
         </TableCell>
 
         <TableCell align="left">

@@ -10,7 +10,7 @@ import { useSnackbar } from 'notistack';
 import React, { Fragment, useEffect, useState } from 'react';
 import { Controller, DefaultValues, useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { getListCustomer } from 'src/api/customer';
-import { createOrder } from 'src/api/order';
+import { createOrder, updateOrderById } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import { RHFAutocomplete, RHFEditor, RHFTextField } from 'src/components/hook-form';
@@ -121,11 +121,10 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     };
 
     if (newData?._id) {
-      console.log('🚀 ~ onSubmit ~ newData:', newData);
-      // const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
-      // if (updateOrder) {
-      //   handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
-      // }
+      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+      if (updateOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+      }
     } else {
       const newOrder = await createOrder(newData, enqueueSnackbar);
       if (newOrder) {
@@ -351,26 +350,44 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                                   if (currentOrder) {
                                     const id_deviceIncludedInOrder =
                                       currentOrder?.items?.[index]?.details || [];
-                                    let newDetails = [];
-
-                                    if (value < id_deviceIncludedInOrder.length) {
-                                      newDetails = id_deviceIncludedInOrder.splice(0, value);
+                                    const remainingNeeded = value - id_deviceIncludedInOrder.length;
+                                    if (remainingNeeded > checkInventoryInDevice.length) {
+                                      setError(`items.${index}.quantity`, {
+                                        message: `Product ${device?.name} only has ${
+                                          checkInventoryInDevice.length
+                                        } left in stock, enter quantity <= ${
+                                          id_deviceIncludedInOrder.length +
+                                          checkInventoryInDevice.length
+                                        }`,
+                                      });
                                     } else {
-                                      newDetails = [
-                                        ...id_deviceIncludedInOrder,
-                                        ...checkInventoryInDevice.splice(
-                                          0,
-                                          value - id_deviceIncludedInOrder.length
-                                        ),
-                                      ];
-                                    }
-                                    setValue(`items.${index}.details`, newDetails as string[]);
-                                  } else {
-                                    const details = checkInventoryInDevice
-                                      ?.splice(0, value)
-                                      ?.map((x: IDetailDevice) => x.id_device);
+                                      let newDetails = [];
 
-                                    setValue(`items.${index}.details`, details);
+                                      if (value < id_deviceIncludedInOrder.length) {
+                                        newDetails = id_deviceIncludedInOrder.splice(0, value);
+                                      } else {
+                                        newDetails = [
+                                          ...id_deviceIncludedInOrder,
+                                          ...checkInventoryInDevice
+                                            .splice(0, value - id_deviceIncludedInOrder.length)
+                                            .map((x) => x.id_device),
+                                        ];
+                                      }
+                                      setValue(`items.${index}.details`, newDetails as string[]);
+                                      clearErrors(`items.${index}.quantity`);
+                                    }
+                                  } else {
+                                    if (value > checkInventoryInDevice.length) {
+                                      setError(`items.${index}.quantity`, {
+                                        message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
+                                      });
+                                    } else {
+                                      const details = checkInventoryInDevice
+                                        ?.splice(0, value)
+                                        ?.map((x: IDetailDevice) => x.id_device);
+
+                                      setValue(`items.${index}.details`, details);
+                                    }
                                   }
                                 }}
                               />
@@ -488,72 +505,12 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
             >
               Lưu
             </LoadingButton>
-            <Button component={RouterLink} href={paths.dashboard.order.new} variant="contained">
+            <Button component={RouterLink} href={paths.dashboard.order.root} variant="contained">
               Hủy
             </Button>
           </Grid>
         </Grid>
       </FormProvider>
-
-      {/* <RHFTextField
-        name={`items.${index}.quantity`}
-        label="Số lượng"
-        type="number"
-        onKeyDown={(evt) => ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()}
-        onChange={(e) => {
-          const value = Number(e.target.value) || 0;
-          const device = deviceOptions?.[index]?.find(
-            (x: IDevice) => x._id === watch(`items.${index}.device`)
-          );
-          const checkInventoryInDevice =
-            device?.detail?.filter((x: IDetailDevice) => x.status === 'inventory') || [];
-
-          setValue(`items.${index}.quantity`, value);
-
-          if (currentOrder) {
-            const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
-            const remainingNeeded = value - id_deviceIncludedInOrder.length;
-
-            if (remainingNeeded > checkInventoryInDevice.length) {
-              setError(`items.${index}.quantity`, {
-                message: `Product ${device?.name} only has ${
-                  checkInventoryInDevice.length
-                } left in stock, enter quantity <= ${
-                  id_deviceIncludedInOrder.length + checkInventoryInDevice.length
-                }`,
-              });
-            } else {
-              let newDetails = [];
-
-              if (value < id_deviceIncludedInOrder.length) {
-                // Xóa bớt phần tử
-                newDetails = id_deviceIncludedInOrder.slice(0, value);
-              } else {
-                // Giữ lại các phần tử của id_deviceIncludedInOrder và thêm các phần tử từ checkInventoryInDevice
-                newDetails = [
-                  ...id_deviceIncludedInOrder,
-                  ...checkInventoryInDevice.slice(0, remainingNeeded),
-                ];
-              }
-              setValue(`items.${index}.details`, newDetails);
-              clearErrors(`items.${index}.quantity`);
-            }
-          } else {
-            // Tạo mới: kiểm tra số lượng tồn kho
-            if (value > checkInventoryInDevice.length) {
-              setError(`items.${index}.quantity`, {
-                message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
-              });
-            } else {
-              const details = checkInventoryInDevice
-                ?.splice(0, value)
-                ?.map((x: IDetailDevice) => x.id_device);
-              setValue(`items.${index}.details`, details as string[]);
-              clearErrors(`items.${index}.quantity`);
-            }
-          }
-        }}
-      /> */}
     </Container>
   );
 }
