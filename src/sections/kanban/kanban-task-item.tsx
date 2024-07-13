@@ -22,7 +22,7 @@ import KanbanDetails from './kanban-details';
 
 type Props = PaperProps & {
   index: number;
-  task: IKanbanTask;
+  task?: IKanbanTask;
   onUpdateTask: (updateTask: IKanbanTask) => void;
   onDeleteTask: VoidFunction;
 };
@@ -36,27 +36,27 @@ export default function KanbanTaskItem({
   ...other
 }: Props) {
   const theme = useTheme();
-
+  console.log('task - KanbanTaskItem:', task);
   const openDetails = useBoolean();
 
   const renderPriority = (
     <Iconify
       icon={
-        (task.priority === 'low' && 'solar:double-alt-arrow-down-bold-duotone') ||
-        (task.priority === 'medium' && 'solar:double-alt-arrow-right-bold-duotone') ||
+        (task?.priority === 'low' && 'solar:double-alt-arrow-down-bold-duotone') ||
+        (task?.priority === 'medium' && 'solar:double-alt-arrow-right-bold-duotone') ||
         'solar:double-alt-arrow-up-bold-duotone'
       }
       sx={{
         position: 'absolute',
         top: 4,
         right: 4,
-        ...(task.priority === 'low' && {
+        ...(task?.priority === 'low' && {
           color: 'info.main',
         }),
-        ...(task.priority === 'medium' && {
+        ...(task?.priority === 'medium' && {
           color: 'warning.main',
         }),
-        ...(task.priority === 'hight' && {
+        ...(task?.priority === 'hight' && {
           color: 'error.main',
         }),
       }}
@@ -71,8 +71,8 @@ export default function KanbanTaskItem({
     >
       <Box
         component="img"
-        alt={task.attachments[0]}
-        src={task.attachments[0]}
+        alt={task?.attachments[0]}
+        src={task?.attachments[0]}
         sx={{
           borderRadius: 1.5,
           ...(openDetails.value && {
@@ -96,11 +96,11 @@ export default function KanbanTaskItem({
       >
         <Iconify width={16} icon="solar:chat-round-dots-bold" sx={{ mr: 0.25 }} />
         <Box component="span" sx={{ mr: 1 }}>
-          {task.comments.length}
+          {task?.comments?.length}
         </Box>
 
         <Iconify width={16} icon="eva:attach-2-fill" sx={{ mr: 0.25 }} />
-        <Box component="span">{task.attachments.length}</Box>
+        <Box component="span">{task?.attachments?.length}</Box>
       </Stack>
 
       <AvatarGroup
@@ -111,8 +111,8 @@ export default function KanbanTaskItem({
           },
         }}
       >
-        {task.assignee.map((user) => (
-          <Avatar key={user.id} alt={user.name} src={user.avatarUrl} />
+        {task?.assignee?.map((user) => (
+          <Avatar key={user?.id} alt={user?.name} src={user?.avatarUrl} />
         ))}
       </AvatarGroup>
     </Stack>
@@ -120,7 +120,7 @@ export default function KanbanTaskItem({
 
   return (
     <>
-      <Draggable draggableId={task.id} index={index}>
+      <Draggable draggableId={task?.id || ''} index={index}>
         {(provided, snapshot) => (
           <Paper
             ref={provided.innerRef}
@@ -151,12 +151,12 @@ export default function KanbanTaskItem({
             }}
             {...other}
           >
-            {!!task.attachments.length && renderImg}
+            {!!task?.attachments?.length && renderImg}
 
             <Stack spacing={2} sx={{ px: 2, py: 2.5, position: 'relative' }}>
               {renderPriority}
 
-              <Typography variant="subtitle2">{task.name}</Typography>
+              <Typography variant="subtitle2">{task?.name}</Typography>
 
               {renderInfo}
             </Stack>
@@ -165,7 +165,7 @@ export default function KanbanTaskItem({
       </Draggable>
 
       <KanbanDetails
-        task={task}
+        task={task as IKanbanTask}
         openDetails={openDetails.value}
         onCloseDetails={openDetails.onFalse}
         onUpdateTask={onUpdateTask}

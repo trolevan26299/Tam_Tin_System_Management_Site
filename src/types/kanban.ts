@@ -46,7 +46,7 @@ export type IKanbanColumn = {
 };
 
 export type IKanban = {
-  tasks: Record<string, IKanbanTask>;
-  columns: Record<string, IKanbanColumn>;
+  tasks: Record<string, IKanbanTask[]>;
+  columns: any;
   ordered: string[];
 };

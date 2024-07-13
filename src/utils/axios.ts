@@ -1,11 +1,10 @@
 import axios, { AxiosRequestConfig } from 'axios';
 // config
-import { HOST_API, HOST_API2 } from 'src/config-global';
+import { HOST_API } from 'src/config-global';
 
 // ----------------------------------------------------------------------
 
 const axiosInstance = axios.create({ baseURL: HOST_API });
-const axiosInstance2 = axios.create({ baseURL: HOST_API2 });
 
 axiosInstance.interceptors.response.use(
   (res) => res,
@@ -19,7 +18,7 @@ export default axiosInstance;
 export const fetcher = async (args: string | [string, AxiosRequestConfig]) => {
   const [url, config] = Array.isArray(args) ? args : [args];
 
-  const res = await axiosInstance2.get(url, { ...config });
+  const res = await axiosInstance.get(url, { ...config });
 
   return res.data;
 };

@@ -30,7 +30,7 @@ import KanbanColumnToolBar from './kanban-column-tool-bar';
 
 type Props = {
   column: IKanbanColumn;
-  tasks: Record<string, IKanbanTask>;
+  tasks: IKanbanTask[];
   index: number;
 };
 
@@ -53,7 +53,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         console.error(error);
       }
     },
-    [column.id, column.name, enqueueSnackbar]
+    [column?.id, column?.name, enqueueSnackbar]
   );
 
   const handleClearColumn = useCallback(async () => {
@@ -62,7 +62,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     } catch (error) {
       console.error(error);
     }
-  }, [column.id]);
+  }, [column?.id]);
 
   const handleDeleteColumn = useCallback(async () => {
     try {
@@ -74,7 +74,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     } catch (error) {
       console.error(error);
     }
-  }, [column.id, enqueueSnackbar]);
+  }, [column?.id, enqueueSnackbar]);
 
   const handleAddTask = useCallback(
     async (taskData: IKanbanTask) => {
@@ -86,7 +86,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         console.error(error);
       }
     },
-    [column.id, openAddTask]
+    [column?.id, openAddTask]
   );
 
   const handleUpdateTask = useCallback(async (taskData: IKanbanTask) => {
@@ -109,7 +109,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         console.error(error);
       }
     },
-    [column.id, enqueueSnackbar]
+    [column?.id, enqueueSnackbar]
   );
 
   const renderAddTask = (
@@ -121,7 +121,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     >
       {openAddTask.value && (
         <KanbanTaskAdd
-          status={column.name}
+          status={column?.name}
           onAddTask={handleAddTask}
           onCloseAddTask={openAddTask.onFalse}
         />
@@ -147,7 +147,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
   );
 
   return (
-    <Draggable draggableId={column.id} index={index}>
+    <Draggable draggableId={column?.id} index={index}>
       {(provided, snapshot) => (
         <Paper
           ref={provided.innerRef}
@@ -163,13 +163,13 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         >
           <Stack {...provided.dragHandleProps}>
             <KanbanColumnToolBar
-              columnName={column.name}
+              columnName={column?.name}
               onUpdateColumn={handleUpdateColumn}
               onClearColumn={handleClearColumn}
               onDeleteColumn={handleDeleteColumn}
             />
 
-            <Droppable droppableId={column.id} type="TASK">
+            <Droppable droppableId={column?.id} type="TASK">
               {(dropProvided) => (
                 <Stack
                   ref={dropProvided.innerRef}
@@ -180,11 +180,11 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
                     width: 280,
                   }}
                 >
-                  {column.taskIds.map((taskId, taskIndex) => (
+                  {column?.taskIds?.map((taskId, taskIndex) => (
                     <KanbanTaskItem
                       key={taskId}
                       index={taskIndex}
-                      task={tasks[taskId]}
+                      task={tasks.find((task) => task.id === taskId)}
                       onUpdateTask={handleUpdateTask}
                       onDeleteTask={() => handleDeleteTask(taskId)}
                     />
