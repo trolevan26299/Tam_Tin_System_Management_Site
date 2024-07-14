@@ -20,7 +20,7 @@ import {
 import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 // types
-import { IKanbanColumn, IKanbanTask } from 'src/types/kanban';
+import { IKanbanColumn, IKanbanTask, ITask } from 'src/types/kanban';
 //
 import KanbanTaskAdd from './kanban-task-add';
 import KanbanTaskItem from './kanban-task-item';
@@ -30,7 +30,7 @@ import KanbanColumnToolBar from './kanban-column-tool-bar';
 
 type Props = {
   column: IKanbanColumn;
-  tasks: IKanbanTask[];
+  tasks: ITask[];
   index: number;
 };
 
@@ -184,7 +184,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
                     <KanbanTaskItem
                       key={taskId}
                       index={taskIndex}
-                      task={tasks.find((task) => task.id === taskId)}
+                      task={tasks.find((task) => task.task_id === taskId)?.detail}
                       onUpdateTask={handleUpdateTask}
                       onDeleteTask={() => handleDeleteTask(taskId)}
                     />

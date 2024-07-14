@@ -167,7 +167,7 @@ export default function KanbanView() {
                       index={index}
                       key={columnId}
                       column={board?.columns.find((column: any) => column.id === columnId)}
-                      tasks={board?.tasks[columnId] || []}
+                      tasks={board?.tasks}
                     />
                   ))}
 

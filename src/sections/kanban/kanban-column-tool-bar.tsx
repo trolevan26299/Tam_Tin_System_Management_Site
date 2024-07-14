@@ -33,7 +33,8 @@ export default function KanbanColumnToolBar({
 
   const popover = usePopover();
 
-  const confirmDialog = useBoolean();
+  const confirmDialogDelete = useBoolean();
+  const confirmDialogClear = useBoolean();
 
   const [name, setName] = useState(columnName);
 
@@ -93,40 +94,41 @@ export default function KanbanColumnToolBar({
       >
         <MenuItem onClick={popover.onClose}>
           <Iconify icon="solar:pen-bold" />
-          Rename
+          Đổi tên cột
         </MenuItem>
 
         <MenuItem
           onClick={() => {
+            confirmDialogClear.onTrue();
             onClearColumn();
             popover.onClose();
           }}
         >
           <Iconify icon="solar:eraser-bold" />
-          Clear
+          Clear nhiệm vụ
         </MenuItem>
 
         <MenuItem
           onClick={() => {
-            confirmDialog.onTrue();
+            confirmDialogDelete.onTrue();
             popover.onClose();
           }}
           sx={{ color: 'error.main' }}
         >
           <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
+          Xóa
         </MenuItem>
       </CustomPopover>
 
       <ConfirmDialog
-        open={confirmDialog.value}
-        onClose={confirmDialog.onFalse}
+        open={confirmDialogDelete.value}
+        onClose={confirmDialogDelete.onFalse}
         title="Delete"
         content={
           <>
-            Are you sure want to delete column?
+            Bạn có muốn xóa cột này ?
             <Box sx={{ typography: 'caption', color: 'error.main', mt: 2 }}>
-              <strong> NOTE: </strong> All tasks related to this category will also be deleted.
+              <strong> Lưu ý: </strong>Tất cả nội dung và nhiệm vụ trong cột này sẽ bị xóa.
             </Box>
           </>
         }
@@ -136,7 +138,7 @@ export default function KanbanColumnToolBar({
             color="error"
             onClick={() => {
               onDeleteColumn();
-              confirmDialog.onFalse();
+              confirmDialogDelete.onFalse();
             }}
           >
             Delete

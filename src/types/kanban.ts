@@ -38,6 +38,10 @@ export type IKanbanTask = {
     avatarUrl: string;
   };
 };
+export type ITask = {
+  task_id: string;
+  detail: IKanbanTask;
+};
 
 export type IKanbanColumn = {
   id: string;
@@ -46,7 +50,7 @@ export type IKanbanColumn = {
 };
 
 export type IKanban = {
-  tasks: Record<string, IKanbanTask[]>;
+  tasks: ITask[];
   columns: any;
   ordered: string[];
 };
