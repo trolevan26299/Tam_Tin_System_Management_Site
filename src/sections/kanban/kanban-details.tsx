@@ -19,7 +19,7 @@ import Scrollbar from 'src/components/scrollbar';
 //
 import { Typography } from '@mui/material';
 import { getStaffs } from 'src/api/staff';
-import { IDataStaff, IStaff } from 'src/types/staff';
+import { IStaff } from 'src/types/staff';
 import KanbanContactsDialog from './kanban-contacts-dialog';
 import KanbanDetailsAttachments from './kanban-details-attachments';
 import KanbanDetailsCommentInput from './kanban-details-comment-input';
