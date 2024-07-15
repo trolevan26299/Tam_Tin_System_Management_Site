@@ -14,6 +14,7 @@ export type IKanbanAssignee = {
   name: string;
   role: string;
   email: string;
+  telegram: string;
   status: string;
   address: string;
   avatarUrl: string;
@@ -26,7 +27,6 @@ export type IKanbanTask = {
   name: string;
   status: string;
   priority: string;
-  labels: string[];
   description?: string;
   attachments: string[];
   comments: IKanbanComment[];

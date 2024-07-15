@@ -29,6 +29,7 @@ const TABLE_HEAD = [
   { id: 'position', label: 'Vị trí' },
   { id: 'exp', label: 'Kinh nghiệm' },
   { id: 'phone', label: 'Phone' },
+  { id: 'username_tg', label: 'Telegram' },
   { id: 'note', label: 'Note' },
   { id: 'action', label: 'Hành động', width: 120 },
 ];
@@ -83,6 +84,7 @@ function StaffListView() {
 
   useEffect(() => {
     getStaffList(queryStaff);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <>

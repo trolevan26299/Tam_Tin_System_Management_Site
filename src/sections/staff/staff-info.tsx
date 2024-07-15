@@ -28,6 +28,7 @@ const initializeDefaultValues = (): DefaultValues<IStaff> => ({
   position: '',
   exp: undefined,
   phone: '',
+  telegram: '',
   note: '',
 });
 
@@ -53,6 +54,7 @@ function StaffInfo({
     position: Yup.string().required('Position is required'),
     exp: Yup.number().required('Exp is required'),
     phone: Yup.string().required('Phone is required'),
+    telegram: Yup.string().required('Telegram is required'),
     note: Yup.string(),
   });
 
@@ -102,6 +104,7 @@ function StaffInfo({
       });
     }
     clearErrors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStaff, open]);
   return (
     <Dialog
@@ -180,6 +183,10 @@ function StaffInfo({
 
               <Grid xs={12}>
                 <RHFTextField name="phone" label="Phone" />
+              </Grid>
+
+              <Grid xs={12}>
+                <RHFTextField name="telegram" label="Username Telegram" />
               </Grid>
 
               <Grid xs={12}>

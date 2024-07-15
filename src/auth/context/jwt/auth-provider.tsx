@@ -84,6 +84,7 @@ export function AuthProvider({ children }: Props) {
             user: {
               ...user,
               role: res.data?.data?.role,
+              username: res.data?.data.username,
               access_token,
             },
           },

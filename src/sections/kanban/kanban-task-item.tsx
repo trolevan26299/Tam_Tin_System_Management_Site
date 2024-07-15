@@ -36,7 +36,6 @@ export default function KanbanTaskItem({
   ...other
 }: Props) {
   const theme = useTheme();
-  console.log('task - KanbanTaskItem:', task);
   const openDetails = useBoolean();
 
   const renderPriority = (

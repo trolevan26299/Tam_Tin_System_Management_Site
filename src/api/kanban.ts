@@ -124,10 +124,7 @@ export async function moveTask(updateColumns: Record<string, IKanbanColumn>) {
 
 export async function deleteTask(columnId: string, taskId: string) {
   try {
-    // Gửi yêu cầu DELETE để xóa task
     await axiosInstance.delete(`${URL}/task/${columnId}/${taskId}`);
-
-    // Cập nhật lại dữ liệu cục bộ từ server
     mutate(URL);
   } catch (error) {
     console.error('Failed to delete task:', error);

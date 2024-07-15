@@ -7,6 +7,7 @@ export type IStaff = {
   position: string;
   exp: number;
   phone: string;
+  telegram: string;
   note?: string;
 };
 

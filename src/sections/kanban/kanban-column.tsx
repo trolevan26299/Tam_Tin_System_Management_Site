@@ -45,7 +45,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         if (column.name !== columnName) {
           updateColumn(column.id, columnName);
 
-          enqueueSnackbar('Update success!', {
+          enqueueSnackbar('Thay đổi thành công !', {
             anchorOrigin: { vertical: 'top', horizontal: 'center' },
           });
         }
@@ -68,7 +68,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     try {
       deleteColumn(column.id);
 
-      enqueueSnackbar('Delete success!', {
+      enqueueSnackbar('Xóa cột thành công!', {
         anchorOrigin: { vertical: 'top', horizontal: 'center' },
       });
     } catch (error) {
@@ -102,7 +102,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
       try {
         deleteTask(column.id, taskId);
 
-        enqueueSnackbar('Delete success!', {
+        enqueueSnackbar('Xóa công việc thành công!', {
           anchorOrigin: { vertical: 'top', horizontal: 'center' },
         });
       } catch (error) {

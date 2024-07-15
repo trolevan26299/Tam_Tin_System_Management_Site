@@ -7,7 +7,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { IPropRow } from 'src/types/staff';
 
 function StaffTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: IPropRow) {
-  const { name, address, age, salary, position, exp, phone, note } = row;
+  const { name, address, age, salary, position, exp, phone, telegram, note } = row;
 
   const confirm = useBoolean();
 
@@ -36,6 +36,9 @@ function StaffTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: I
       </TableCell>
       <TableCell>
         <ListItemText primary={phone} primaryTypographyProps={{ typography: 'body2' }} />
+      </TableCell>
+      <TableCell>
+        <ListItemText primary={telegram} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
       <TableCell>
         <ListItemText primary={note} primaryTypographyProps={{ typography: 'body2' }} />

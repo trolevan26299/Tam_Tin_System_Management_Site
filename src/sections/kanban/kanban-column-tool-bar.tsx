@@ -100,7 +100,6 @@ export default function KanbanColumnToolBar({
         <MenuItem
           onClick={() => {
             confirmDialogClear.onTrue();
-            onClearColumn();
             popover.onClose();
           }}
         >
@@ -128,7 +127,7 @@ export default function KanbanColumnToolBar({
           <>
             Bạn có muốn xóa cột này ?
             <Box sx={{ typography: 'caption', color: 'error.main', mt: 2 }}>
-              <strong> Lưu ý: </strong>Tất cả nội dung và nhiệm vụ trong cột này sẽ bị xóa.
+              <strong> Lưu ý: </strong>Tất cả nội dung và công việc trong cột này sẽ bị xóa.
             </Box>
           </>
         }
@@ -141,7 +140,25 @@ export default function KanbanColumnToolBar({
               confirmDialogDelete.onFalse();
             }}
           >
-            Delete
+            Xóa
+          </Button>
+        }
+      />
+      <ConfirmDialog
+        open={confirmDialogClear.value}
+        onClose={confirmDialogClear.onFalse}
+        title=""
+        content={<>Bạn có muốn xóa tất cả công việc trong cột này ?</>}
+        action={
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onClearColumn();
+              confirmDialogClear.onFalse();
+            }}
+          >
+            Xóa
           </Button>
         }
       />
