@@ -13,7 +13,12 @@ import { getListCustomer } from 'src/api/customer';
 import { createOrder, updateOrderById } from 'src/api/order';
 import { getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
-import { RHFAutocomplete, RHFEditor, RHFTextField } from 'src/components/hook-form';
+import {
+  RHFAutocomplete,
+  RHFEditor,
+  RHFTextField,
+  RHFTextFieldFormatVnd,
+} from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import Iconify from 'src/components/iconify';
 import { useSettingsContext } from 'src/components/settings';
@@ -162,14 +167,13 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
       quantity: number;
       price: number;
     }[]
-  ) => {
-    return items.reduce((acc, item) => {
+  ) =>
+    items.reduce((acc, item) => {
       if (item.price && item.quantity) {
         return acc + item.price * item.quantity;
       }
       return acc;
     }, 0);
-  };
 
   const handleSetDataToForm = () => {
     if (currentOrder?._id) {
@@ -214,6 +218,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
   useEffect(() => {
     handleSetDataToForm();
     clearErrors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder?._id]);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -289,157 +294,154 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                       Chức năng và thuộc tính
                     </Typography>
 
-                    {fields?.map((item, index) => {
-                      return (
-                        <Fragment key={item?.id}>
-                          <Grid container spacing={2}>
-                            <Grid xs={3}>
-                              <RHFAutocomplete
-                                key={item?.id}
-                                name={`items.${index}.device`}
-                                label="Sản phẩm"
-                                options={
-                                  deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
+                    {fields?.map((item, index) => (
+                      <Fragment key={item?.id}>
+                        <Grid container spacing={2}>
+                          <Grid xs={3}>
+                            <RHFAutocomplete
+                              key={item?.id}
+                              name={`items.${index}.device`}
+                              label="Sản phẩm"
+                              options={
+                                deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
+                              }
+                              onInputChange={(
+                                _e: React.SyntheticEvent,
+                                value: string,
+                                reason: string
+                              ) => {
+                                if (reason === 'input') {
+                                  handleSearchDevice(index, value);
                                 }
-                                onInputChange={(
-                                  _e: React.SyntheticEvent,
-                                  value: string,
-                                  reason: string
-                                ) => {
-                                  if (reason === 'input') {
-                                    handleSearchDevice(index, value);
-                                  }
-                                }}
-                                getOptionLabel={(option) =>
-                                  (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
-                                    ?.name || '') as any
-                                }
-                              />
-                            </Grid>
+                              }}
+                              getOptionLabel={(option) =>
+                                (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
+                                  ?.name || '') as any
+                              }
+                            />
+                          </Grid>
 
-                            <Grid xs={3}>
-                              <RHFTextField
-                                name={`items.${index}.price`}
-                                label="Giá tiền"
-                                onKeyDown={(evt) =>
-                                  ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                                }
-                              />
-                            </Grid>
+                          <Grid xs={3}>
+                            <RHFTextFieldFormatVnd
+                              name={`items.${index}.price`}
+                              label="Giá tiền"
+                              onChange={(e) => {
+                                const value = Number(e.target.value) || 0;
+                                setValue(`items.${index}.price`, value);
+                              }}
+                            />
+                          </Grid>
 
-                            <Grid xs={3}>
-                              <RHFTextField
-                                name={`items.${index}.quantity`}
-                                label="Số lượng"
-                                type="number"
-                                onKeyDown={(evt) =>
-                                  ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                                }
-                                onChange={(e) => {
-                                  const value = Number(e.target.value) || 0;
-                                  const device = deviceOptions?.[index]?.find(
-                                    (x: IDevice) => x._id === watch(`items.${index}.device`)
-                                  );
-                                  const checkInventoryInDevice =
-                                    device?.detail?.filter(
-                                      (x: IDetailDevice) => x.status === 'inventory'
-                                    ) || [];
+                          <Grid xs={3}>
+                            <RHFTextField
+                              name={`items.${index}.quantity`}
+                              label="Số lượng"
+                              type="number"
+                              onKeyDown={(evt) =>
+                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                              }
+                              onChange={(e) => {
+                                const value = Number(e.target.value) || 0;
+                                const device = deviceOptions?.[index]?.find(
+                                  (x: IDevice) => x._id === watch(`items.${index}.device`)
+                                );
+                                const checkInventoryInDevice =
+                                  device?.detail?.filter(
+                                    (x: IDetailDevice) => x.status === 'inventory'
+                                  ) || [];
 
-                                  setValue(`items.${index}.quantity`, value);
+                                setValue(`items.${index}.quantity`, value);
 
-                                  if (currentOrder) {
-                                    const id_deviceIncludedInOrder =
-                                      currentOrder?.items?.[index]?.details || [];
-                                    const remainingNeeded = value - id_deviceIncludedInOrder.length;
-                                    if (remainingNeeded > checkInventoryInDevice.length) {
-                                      setError(`items.${index}.quantity`, {
-                                        message: `Product ${device?.name} only has ${
-                                          checkInventoryInDevice.length
-                                        } left in stock, enter quantity <= ${
-                                          id_deviceIncludedInOrder.length +
-                                          checkInventoryInDevice.length
-                                        }`,
-                                      });
-                                    } else {
-                                      let newDetails = [];
-
-                                      if (value < id_deviceIncludedInOrder.length) {
-                                        newDetails = id_deviceIncludedInOrder.splice(0, value);
-                                      } else {
-                                        newDetails = [
-                                          ...id_deviceIncludedInOrder,
-                                          ...checkInventoryInDevice
-                                            .splice(0, value - id_deviceIncludedInOrder.length)
-                                            .map((x) => x.id_device),
-                                        ];
-                                      }
-                                      setValue(`items.${index}.details`, newDetails as string[]);
-                                      clearErrors(`items.${index}.quantity`);
-                                    }
+                                if (currentOrder) {
+                                  const id_deviceIncludedInOrder =
+                                    currentOrder?.items?.[index]?.details || [];
+                                  const remainingNeeded = value - id_deviceIncludedInOrder.length;
+                                  if (remainingNeeded > checkInventoryInDevice.length) {
+                                    setError(`items.${index}.quantity`, {
+                                      message: `Product ${device?.name} only has ${
+                                        checkInventoryInDevice.length
+                                      } left in stock, enter quantity <= ${
+                                        id_deviceIncludedInOrder.length +
+                                        checkInventoryInDevice.length
+                                      }`,
+                                    });
                                   } else {
-                                    if (value > checkInventoryInDevice.length) {
-                                      setError(`items.${index}.quantity`, {
-                                        message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
-                                      });
+                                    let newDetails = [];
+
+                                    if (value < id_deviceIncludedInOrder.length) {
+                                      newDetails = id_deviceIncludedInOrder.splice(0, value);
                                     } else {
-                                      const details = checkInventoryInDevice
-                                        ?.splice(0, value)
-                                        ?.map((x: IDetailDevice) => x.id_device);
-
-                                      setValue(`items.${index}.details`, details);
+                                      newDetails = [
+                                        ...id_deviceIncludedInOrder,
+                                        ...checkInventoryInDevice
+                                          .splice(0, value - id_deviceIncludedInOrder.length)
+                                          .map((x) => x.id_device),
+                                      ];
                                     }
+                                    setValue(`items.${index}.details`, newDetails as string[]);
+                                    clearErrors(`items.${index}.quantity`);
                                   }
-                                }}
-                              />
-                            </Grid>
+                                } else if (value > checkInventoryInDevice.length) {
+                                  setError(`items.${index}.quantity`, {
+                                    message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
+                                  });
+                                } else {
+                                  const details = checkInventoryInDevice
+                                    ?.splice(0, value)
+                                    ?.map((x: IDetailDevice) => x.id_device);
 
+                                  setValue(`items.${index}.details`, details);
+                                }
+                              }}
+                            />
+                          </Grid>
+
+                          <Grid xs={1}>
+                            <Button
+                              variant="outlined"
+                              onClick={() => {
+                                remove(index);
+                                const clonedDeviceOptions = { ...deviceOptions };
+                                delete clonedDeviceOptions[index];
+                                const newData = Object.values(clonedDeviceOptions).reduce(
+                                  (acc: any, value, indexData) => {
+                                    acc[indexData] = value;
+                                    return acc;
+                                  },
+                                  {}
+                                );
+                                setDeviceOptions(newData);
+                              }}
+                              color="error"
+                              sx={{ height: '55px' }}
+                              disabled={fields?.length === 1}
+                            >
+                              <Iconify icon="eva:trash-2-outline" />
+                            </Button>
+                          </Grid>
+
+                          {index === 0 && (
                             <Grid xs={1}>
                               <Button
                                 variant="outlined"
-                                onClick={() => {
-                                  remove(index);
-                                  const clonedDeviceOptions = { ...deviceOptions };
-                                  delete clonedDeviceOptions[index];
-                                  const newData = Object.values(clonedDeviceOptions).reduce(
-                                    (acc: any, value, indexData) => {
-                                      acc[indexData] = value;
-                                      return acc;
-                                    },
-                                    {}
-                                  );
-                                  setDeviceOptions(newData);
-                                }}
-                                color="error"
+                                color="inherit"
+                                onClick={() =>
+                                  append({
+                                    device: '',
+                                    details: [],
+                                    quantity: 0,
+                                    price: 0,
+                                  })
+                                }
                                 sx={{ height: '55px' }}
-                                disabled={fields?.length === 1}
                               >
-                                <Iconify icon="eva:trash-2-outline" />
+                                <Iconify icon="mingcute:add-line" />
                               </Button>
                             </Grid>
-
-                            {index === 0 && (
-                              <Grid xs={1}>
-                                <Button
-                                  variant="outlined"
-                                  color="inherit"
-                                  onClick={() =>
-                                    append({
-                                      device: '',
-                                      details: [],
-                                      quantity: 0,
-                                      price: 0,
-                                    })
-                                  }
-                                  sx={{ height: '55px' }}
-                                >
-                                  <Iconify icon="mingcute:add-line" />
-                                </Button>
-                              </Grid>
-                            )}
-                          </Grid>
-                        </Fragment>
-                      );
-                    })}
+                          )}
+                        </Grid>
+                      </Fragment>
+                    ))}
                   </Stack>
                 </Grid>
 
