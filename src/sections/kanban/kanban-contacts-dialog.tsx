@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-expressions */
 import { useCallback, useState } from 'react';
 // @mui
 import Avatar from '@mui/material/Avatar';
@@ -30,11 +31,32 @@ type Props = {
   staffs?: IStaff[];
   open: boolean;
   onClose: VoidFunction;
-  assignee?: IKanbanAssignee[];
+  assignee: IKanbanAssignee[];
+  handleChangeSetAssignee?: (assignee: any[]) => void;
 };
 
-export default function KanbanContactsDialog({ staffs, assignee = [], open, onClose }: Props) {
+export default function KanbanContactsDialog({
+  staffs,
+  assignee,
+  open,
+  onClose,
+  handleChangeSetAssignee,
+}: Props) {
   const notFound = !staffs;
+
+  const toggleAssignee = useCallback(
+    (contact: any) => {
+      const isAssigned = assignee?.some((person) => person.telegram === contact.telegram);
+      let updatedAssignees;
+      if (isAssigned) {
+        updatedAssignees = assignee?.filter((person) => person.telegram !== contact.telegram);
+      } else {
+        updatedAssignees = [...assignee, contact];
+      }
+      handleChangeSetAssignee && handleChangeSetAssignee(updatedAssignees);
+    },
+    [assignee, handleChangeSetAssignee]
+  );
 
   return (
     <Dialog fullWidth maxWidth="xs" open={open} onClose={onClose}>
@@ -70,6 +92,7 @@ export default function KanbanContactsDialog({ staffs, assignee = [], open, onCl
                           sx={{ mr: -0.5 }}
                         />
                       }
+                      onClick={() => toggleAssignee(contact)}
                     >
                       {checked ? 'Hủy' : 'Thêm'}
                     </Button>

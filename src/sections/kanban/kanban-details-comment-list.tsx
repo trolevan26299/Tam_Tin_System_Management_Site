@@ -26,11 +26,10 @@ export default function KanbanDetailsCommentList({ comments }: Props) {
   return (
     <>
       <Stack
-        spacing={3}
         flexGrow={1}
         sx={{
           py: 3,
-          px: 2.5,
+
           bgcolor: 'background.neutral',
         }}
       >
