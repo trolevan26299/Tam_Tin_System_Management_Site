@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import useSWR, { mutate } from 'swr';
 // utils
-import { fetcher, endpoints } from 'src/utils/axios';
+import axiosInstance, { endpoints, fetcher } from 'src/utils/axios';
 // types
 import { ICalendarEvent } from 'src/types/calendar';
 
@@ -19,7 +19,7 @@ export function useGetEvents() {
   const { data, isLoading, error, isValidating } = useSWR(URL, fetcher, options);
 
   const memoizedValue = useMemo(() => {
-    const events = data?.events.map((event: ICalendarEvent) => ({
+    const events = data?.map((event: ICalendarEvent) => ({
       ...event,
       textColor: event.color,
     }));
@@ -29,9 +29,9 @@ export function useGetEvents() {
       eventsLoading: isLoading,
       eventsError: error,
       eventsValidating: isValidating,
-      eventsEmpty: !isLoading && !data?.events.length,
+      eventsEmpty: !isLoading && !data?.length,
     };
-  }, [data?.events, error, isLoading, isValidating]);
+  }, [data, error, isLoading, isValidating]);
 
   return memoizedValue;
 }
@@ -39,81 +39,25 @@ export function useGetEvents() {
 // ----------------------------------------------------------------------
 
 export async function createEvent(eventData: ICalendarEvent) {
-  /**
-   * Work on server
-   */
-  // const data = { eventData };
-  // await axios.post(URL, data);
-
-  /**
-   * Work in local
-   */
-  mutate(
-    URL,
-    (currentData: any) => {
-      const events: ICalendarEvent[] = [...currentData.events, eventData];
-
-      return {
-        ...currentData,
-        events,
-      };
-    },
-    false
-  );
+  await axiosInstance.post(URL, eventData);
+  mutate(URL);
 }
 
 // ----------------------------------------------------------------------
 
 export async function updateEvent(eventData: Partial<ICalendarEvent>) {
-  /**
-   * Work on server
-   */
-  // const data = { eventData };
-  // await axios.put(endpoints.calendar, data);
-
-  /**
-   * Work in local
-   */
-  mutate(
-    URL,
-    (currentData: any) => {
-      const events: ICalendarEvent[] = currentData.events.map((event: ICalendarEvent) =>
-        event.id === eventData.id ? { ...event, ...eventData } : event
-      );
-
-      return {
-        ...currentData,
-        events,
-      };
-    },
-    false
-  );
+  if (!eventData.id) {
+    throw new Error('Event ID is required for updating.');
+  }
+  const updateUrl = `${endpoints.calendar}/${eventData.id}`;
+  await axiosInstance.put(updateUrl, eventData);
+  mutate(URL);
 }
 
 // ----------------------------------------------------------------------
 
 export async function deleteEvent(eventId: string) {
-  /**
-   * Work on server
-   */
-  // const data = { eventId };
-  // await axios.patch(endpoints.calendar, data);
-
-  /**
-   * Work in local
-   */
-  mutate(
-    URL,
-    (currentData: any) => {
-      const events: ICalendarEvent[] = currentData.events.filter(
-        (event: ICalendarEvent) => event.id !== eventId
-      );
-
-      return {
-        ...currentData,
-        events,
-      };
-    },
-    false
-  );
+  const deleteUrl = `${endpoints.calendar}/${eventId}`;
+  await axiosInstance.delete(deleteUrl);
+  mutate(URL);
 }
