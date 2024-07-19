@@ -74,7 +74,15 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
         Yup.object().shape({
           device: Yup.string().required('Device is required'),
           details: Yup.array(),
-          quantity: Yup.number().required('quantity is required').min(1, 'quantity is required'),
+          quantity: Yup.number()
+            .min(1, 'Quantity is required')
+            .test('check-inventory', 'Quantity exceeds inventory', function (value) {
+              const index = this.path.split('.')[1]; // Get the index of the item in the array
+              const deviceId = this.parent.device;
+              console.log('🚀 ~ deviceId:', deviceId);
+              console.log('🚀 ~ index:', index);
+              return false;
+            }),
           price: Yup.number().required('price is required').min(1, 'price is required'),
         })
       )
@@ -106,6 +114,52 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     name: 'items',
   });
 
+  const handleWatchQuantityForItems = (
+    items: {
+      device: string;
+      details?: string[];
+
+      quantity: number;
+      price: number;
+    }[]
+  ) => {
+    let hasError = false;
+
+    items.forEach((item, index) => {
+      const value = item.quantity;
+      const device = deviceOptions?.[index]?.find((x) => x._id === watch(`items.${index}.device`));
+      const checkInventoryInDevice = device?.detail?.filter((x) => x.status === 'inventory') || [];
+
+      if (currentOrder) {
+        const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
+        const remainingNeeded = value - id_deviceIncludedInOrder.length;
+        if (remainingNeeded > checkInventoryInDevice.length) {
+          setError(`items.${index}.quantity`, {
+            message: `Product ${device?.name} only has ${
+              checkInventoryInDevice.length
+            } left in stock, enter quantity <= ${
+              id_deviceIncludedInOrder.length + checkInventoryInDevice.length
+            }`,
+          });
+          hasError = true;
+        } else {
+          clearErrors(`items.${index}.quantity`);
+        }
+      } else if (value > checkInventoryInDevice.length) {
+        setError(`items.${index}.quantity`, {
+          message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
+        });
+        hasError = true;
+      } else if (value) {
+        clearErrors(`items.${index}.quantity`);
+      } else {
+        setError(`items.${index}.quantity`, { message: 'quantity is required' });
+      }
+    });
+
+    return hasError;
+  };
+
   const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
     enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
       variant: 'success',
@@ -125,17 +179,17 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
       totalAmount: watch('totalAmount') - (watch('priceSaleOff') || 0),
     };
 
-    if (newData?._id) {
-      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
-      if (updateOrder) {
-        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
-      }
-    } else {
-      const newOrder = await createOrder(newData, enqueueSnackbar);
-      if (newOrder) {
-        handleGetWhenCreateAndUpdateSuccess(false);
-      }
-    }
+    // if (newData?._id) {
+    //   const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+    //   if (updateOrder) {
+    //     handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+    //   }
+    // } else {
+    //   const newOrder = await createOrder(newData, enqueueSnackbar);
+    //   if (newOrder) {
+    //     handleGetWhenCreateAndUpdateSuccess(false);
+    //   }
+    // }
   };
 
   const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
@@ -329,6 +383,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                                 const value = Number(e.target.value) || 0;
                                 setValue(`items.${index}.price`, value);
                               }}
+                              disabled={!watch(`items.${index}.device`)}
                             />
                           </Grid>
 
@@ -337,62 +392,10 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                               name={`items.${index}.quantity`}
                               label="Số lượng"
                               type="number"
+                              disabled={!watch(`items.${index}.price`)}
                               onKeyDown={(evt) =>
                                 ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
                               }
-                              onChange={(e) => {
-                                const value = Number(e.target.value) || 0;
-                                const device = deviceOptions?.[index]?.find(
-                                  (x: IDevice) => x._id === watch(`items.${index}.device`)
-                                );
-                                const checkInventoryInDevice =
-                                  device?.detail?.filter(
-                                    (x: IDetailDevice) => x.status === 'inventory'
-                                  ) || [];
-
-                                setValue(`items.${index}.quantity`, value);
-
-                                if (currentOrder) {
-                                  const id_deviceIncludedInOrder =
-                                    currentOrder?.items?.[index]?.details || [];
-                                  const remainingNeeded = value - id_deviceIncludedInOrder.length;
-                                  if (remainingNeeded > checkInventoryInDevice.length) {
-                                    setError(`items.${index}.quantity`, {
-                                      message: `Product ${device?.name} only has ${
-                                        checkInventoryInDevice.length
-                                      } left in stock, enter quantity <= ${
-                                        id_deviceIncludedInOrder.length +
-                                        checkInventoryInDevice.length
-                                      }`,
-                                    });
-                                  } else {
-                                    let newDetails = [];
-
-                                    if (value < id_deviceIncludedInOrder.length) {
-                                      newDetails = id_deviceIncludedInOrder.splice(0, value);
-                                    } else {
-                                      newDetails = [
-                                        ...id_deviceIncludedInOrder,
-                                        ...checkInventoryInDevice
-                                          .splice(0, value - id_deviceIncludedInOrder.length)
-                                          .map((x) => x.id_device),
-                                      ];
-                                    }
-                                    setValue(`items.${index}.details`, newDetails as string[]);
-                                    clearErrors(`items.${index}.quantity`);
-                                  }
-                                } else if (value > checkInventoryInDevice.length) {
-                                  setError(`items.${index}.quantity`, {
-                                    message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
-                                  });
-                                } else {
-                                  const details = checkInventoryInDevice
-                                    ?.splice(0, value)
-                                    ?.map((x: IDetailDevice) => x.id_device);
-
-                                  setValue(`items.${index}.details`, details);
-                                }
-                              }}
                             />
                           </Grid>
 

@@ -17,22 +17,32 @@ const NumberFormatCustom: React.FC<NumberFormatCustomProps> = ({
   inputRef,
   onChange,
   ...other
-}) => (
-  <NumericFormat
-    {...other}
-    getInputRef={inputRef}
-    onValueChange={(values) => {
-      onChange({
-        target: {
-          name: other.name,
-          value: values.floatValue ? values.floatValue.toString() : '',
-        },
-      });
-    }}
-    thousandSeparator
-    suffix="₫"
-  />
-);
+}) => {
+  const { clearErrors, setError } = useFormContext();
+
+  return (
+    <NumericFormat
+      {...other}
+      getInputRef={inputRef}
+      onValueChange={(values) => {
+        onChange({
+          target: {
+            name: other.name,
+            value: values.floatValue ? values.floatValue.toString() : '',
+          },
+        });
+
+        if (values.floatValue) {
+          clearErrors(other.name);
+        } else {
+          setError(other.name, { message: 'price is required' });
+        }
+      }}
+      thousandSeparator
+      suffix="₫"
+    />
+  );
+};
 
 export default function RHFTextFieldFormatVnd({ name, helperText, type, ...other }: Props) {
   const { control } = useFormContext();
@@ -51,6 +61,7 @@ export default function RHFTextFieldFormatVnd({ name, helperText, type, ...other
           InputProps={{
             inputComponent: NumberFormatCustom as any,
           }}
+          value={field.value === 0 ? '' : field.value}
           {...other}
         />
       )}
