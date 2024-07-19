@@ -21,7 +21,6 @@ export default function KanbanDetailsCommentInput() {
       spacing={2}
       sx={{
         py: 3,
-        px: 2.5,
       }}
     >
       <Avatar src={user?.photoURL} alt={user?.displayName} />

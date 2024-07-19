@@ -17,7 +17,8 @@ import CustomDateRangePicker, { useDateRangePicker } from 'src/components/custom
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 //
-import { Typography } from '@mui/material';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Tab, Typography } from '@mui/material';
 import { getStaffs } from 'src/api/staff';
 import { IStaff } from 'src/types/staff';
 import KanbanContactsDialog from './kanban-contacts-dialog';
@@ -55,18 +56,27 @@ export default function KanbanDetails({
   onUpdateTask,
   onDeleteTask,
 }: Props) {
+  const [tabValue, setTabValue] = React.useState('1');
   const [staffList, setStaffList] = useState<IStaff[] | undefined>(undefined);
 
   const [priority, setPriority] = useState(task?.priority);
 
   const [taskName, setTaskName] = useState(task?.name);
+  const [userAssigneeList, setUserAssigneeList] = useState(task.assignee);
+  console.log('userAssigneeList', userAssigneeList);
 
   const contacts = useBoolean();
 
   const [taskDescription, setTaskDescription] = useState(task?.description);
 
   const rangePicker = useDateRangePicker(task?.due[0], task?.due[1]);
-  console.log('staffList', staffList);
+
+  const handleChangeTab = (event: any, newValue: string) => {
+    setTabValue(newValue);
+  };
+  const handleChangeSetAssignee = (assignee: any) => {
+    setUserAssigneeList(assignee);
+  };
   const handleChangeTaskName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskName(event.target.value);
   }, []);
@@ -127,8 +137,8 @@ export default function KanbanDetails({
       <StyledLabel sx={{ height: 40, lineHeight: '40px' }}>Người thực hiện</StyledLabel>
 
       <Stack direction="row" flexWrap="wrap" alignItems="center" spacing={1}>
-        {task?.assignee.map((userAssignee: any, index: number) => (
-          <React.Fragment key={userAssignee.id}>
+        {userAssigneeList.map((userAssignee: any, index: number) => (
+          <React.Fragment key={index}>
             {index > 0 && ', '}
             <Typography sx={{ fontSize: '14px', fontWeight: 600 }}>{userAssignee.name}</Typography>
           </React.Fragment>
@@ -147,7 +157,8 @@ export default function KanbanDetails({
         </Tooltip>
 
         <KanbanContactsDialog
-          assignee={task?.assignee}
+          handleChangeSetAssignee={handleChangeSetAssignee}
+          assignee={userAssigneeList || []}
           open={contacts.value}
           onClose={contacts.onFalse}
           staffs={staffList}
@@ -225,9 +236,22 @@ export default function KanbanDetails({
     </Stack>
   );
   const renderConfirmEdit = (
-    <Button variant="contained" size="small" sx={{ width: '100%' }}>
-      Chỉnh sửa
-    </Button>
+    <Box
+      sx={{
+        marginTop: '20%',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        borderTop: '1px dashed gray',
+      }}
+    >
+      <Button
+        sx={{ marginTop: '10px', width: '100%', marginX: 'auto' }}
+        variant="contained"
+        size="medium"
+      >
+        Chỉnh sửa
+      </Button>
+    </Box>
   );
 
   const renderComments = <KanbanDetailsCommentList comments={task?.comments} />;
@@ -265,45 +289,62 @@ export default function KanbanDetails({
 
       <Divider />
 
-      <Scrollbar
-        sx={{
-          height: 1,
-          '& .simplebar-content': {
-            height: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          },
-        }}
-      >
-        <Stack
-          spacing={3}
-          sx={{
-            pt: 3,
-            pb: 5,
-            px: 2.5,
-          }}
-        >
-          {renderName}
+      <TabContext value={tabValue}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <TabList
+            aria-label="lab API tabs example"
+            sx={{ width: '100%' }}
+            onChange={handleChangeTab}
+          >
+            <Tab label="Tổng quan" value="1" sx={{ width: '45%' }} />
+            <Tab label="Bình luận" value="2" sx={{ width: '45%' }} />
+          </TabList>
+        </Box>
+        <TabPanel value="1">
+          <Scrollbar
+            sx={{
+              height: 1,
+              '& .simplebar-content': {
+                height: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              },
+            }}
+          >
+            <Stack spacing={3}>
+              {renderName}
 
-          {renderReporter}
+              {renderReporter}
 
-          {renderAssignee}
+              {renderAssignee}
 
-          {renderDueDate}
+              {renderDueDate}
 
-          {renderPriority}
+              {renderPriority}
 
-          {renderDescription}
+              {renderDescription}
 
-          {renderAttachments}
+              {renderAttachments}
 
-          {renderConfirmEdit}
-        </Stack>
-
-        {!!task?.comments.length && renderComments}
-      </Scrollbar>
-
-      <KanbanDetailsCommentInput />
+              {renderConfirmEdit}
+            </Stack>
+          </Scrollbar>
+        </TabPanel>
+        <TabPanel value="2">
+          <Scrollbar
+            sx={{
+              height: 1,
+              '& .simplebar-content': {
+                height: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              },
+            }}
+          >
+            {!!task?.comments.length && renderComments} <KanbanDetailsCommentInput />
+          </Scrollbar>
+        </TabPanel>
+      </TabContext>
     </Drawer>
   );
 }

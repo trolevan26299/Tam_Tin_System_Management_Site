@@ -130,9 +130,14 @@ export function useNavData() {
           },
           // KANBAN
           {
-            title: t('kanban'),
+            title: 'Công việc',
             path: paths.dashboard.kanban,
             icon: ICONS.kanban,
+          },
+          {
+            title: 'Lịch ghi chú',
+            path: paths.dashboard.calendar,
+            icon: ICONS.calendar,
           },
         ],
       },
