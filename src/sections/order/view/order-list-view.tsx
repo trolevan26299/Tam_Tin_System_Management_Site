@@ -99,8 +99,7 @@ export default function OrderListView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
-    <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
         <CustomBreadcrumbs
           heading="List"
           links={[
@@ -178,6 +177,5 @@ export default function OrderListView() {
           />
         </Card>
       </Container>
-    </>
   );
 }

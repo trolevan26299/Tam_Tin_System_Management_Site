@@ -70,7 +70,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                 )}
 
                 <ListItemText
-                  primary={item?.details?.[index]}
+                  primary={item?.device?.name}
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
