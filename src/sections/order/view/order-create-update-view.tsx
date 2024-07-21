@@ -76,13 +76,38 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
           details: Yup.array(),
           quantity: Yup.number()
             .min(1, 'Quantity is required')
-            .test('check-inventory', 'Quantity exceeds inventory', function (value) {
-              const index = this.path.split('.')[1]; // Get the index of the item in the array
-              const deviceId = this.parent.device;
-              console.log('🚀 ~ deviceId:', deviceId);
-              console.log('🚀 ~ index:', index);
-              return false;
+            .required('Quantity is required')
+            // eslint-disable-next-line func-names
+            .test('quantity-check', function (value, context) {
+              const { device } = context.parent;
+              const { index } = context.options as any;
+
+              const deviceById = deviceOptions[index]?.find((x) => x._id === device);
+              const checkInventoryInDevice = deviceById?.detail?.filter(
+                (x) => x.status === 'inventory'
+              ) as IDetailDevice[];
+
+              if (currentOrder) {
+                const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
+                const remainingNeeded = value - id_deviceIncludedInOrder.length;
+
+                if (remainingNeeded > checkInventoryInDevice.length) {
+                  // eslint-disable-next-line react/no-this-in-sfc
+                  return this.createError({
+                    path: `${context.path}`,
+                    message: `Product ${deviceById?.name} only has ${checkInventoryInDevice?.length} left in stock. Initial order quantity is ${id_deviceIncludedInOrder.length}. Please enter quantity <= ${checkInventoryInDevice?.length}.`,
+                  });
+                }
+              } else if (value > checkInventoryInDevice?.length) {
+                // eslint-disable-next-line react/no-this-in-sfc
+                return this.createError({
+                  path: `${context.path}`,
+                  message: `Product ${deviceById?.name} only has ${checkInventoryInDevice?.length} left in stock, enter quantity <= ${checkInventoryInDevice?.length}`,
+                });
+              }
+              return true;
             }),
+
           price: Yup.number().required('price is required').min(1, 'price is required'),
         })
       )
@@ -114,52 +139,6 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     name: 'items',
   });
 
-  const handleWatchQuantityForItems = (
-    items: {
-      device: string;
-      details?: string[];
-
-      quantity: number;
-      price: number;
-    }[]
-  ) => {
-    let hasError = false;
-
-    items.forEach((item, index) => {
-      const value = item.quantity;
-      const device = deviceOptions?.[index]?.find((x) => x._id === watch(`items.${index}.device`));
-      const checkInventoryInDevice = device?.detail?.filter((x) => x.status === 'inventory') || [];
-
-      if (currentOrder) {
-        const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
-        const remainingNeeded = value - id_deviceIncludedInOrder.length;
-        if (remainingNeeded > checkInventoryInDevice.length) {
-          setError(`items.${index}.quantity`, {
-            message: `Product ${device?.name} only has ${
-              checkInventoryInDevice.length
-            } left in stock, enter quantity <= ${
-              id_deviceIncludedInOrder.length + checkInventoryInDevice.length
-            }`,
-          });
-          hasError = true;
-        } else {
-          clearErrors(`items.${index}.quantity`);
-        }
-      } else if (value > checkInventoryInDevice.length) {
-        setError(`items.${index}.quantity`, {
-          message: `Product ${device?.name} only has ${checkInventoryInDevice.length} left in stock, enter quantity <= ${checkInventoryInDevice.length}`,
-        });
-        hasError = true;
-      } else if (value) {
-        clearErrors(`items.${index}.quantity`);
-      } else {
-        setError(`items.${index}.quantity`, { message: 'quantity is required' });
-      }
-    });
-
-    return hasError;
-  };
-
   const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
     enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
       variant: 'success',
@@ -168,6 +147,29 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
   };
 
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
+    data.items.forEach((item) => {
+      Object.values(deviceOptions).forEach((optionsArray) => {
+        optionsArray.forEach((option) => {
+          if (option._id === item.device) {
+            const inventoryDevices = (option.detail as IDetailDevice[])
+              .filter((d) => d.status === 'inventory')
+              .map((d) => d.id_device);
+
+            const id_deviceIncludedInOrder =
+              currentOrder?.items?.find((currentItem) => currentItem?.device?._id === item.device)
+                ?.details || [];
+
+            const newDetails = [
+              ...id_deviceIncludedInOrder,
+              ...inventoryDevices.splice(0, item.quantity - id_deviceIncludedInOrder.length),
+            ];
+
+            item.details = newDetails;
+          }
+        });
+      });
+    });
+
     const newData: IOrderCreateOrUpdate = {
       ...data,
       delivery_date: fDateTime(data?.delivery_date, 'yyyy-MM-dd HH:mm'),
@@ -179,17 +181,17 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
       totalAmount: watch('totalAmount') - (watch('priceSaleOff') || 0),
     };
 
-    // if (newData?._id) {
-    //   const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
-    //   if (updateOrder) {
-    //     handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
-    //   }
-    // } else {
-    //   const newOrder = await createOrder(newData, enqueueSnackbar);
-    //   if (newOrder) {
-    //     handleGetWhenCreateAndUpdateSuccess(false);
-    //   }
-    // }
+    if (newData?._id) {
+      const updateOrder = await updateOrderById(newData?._id, newData, enqueueSnackbar);
+      if (updateOrder) {
+        handleGetWhenCreateAndUpdateSuccess(!!currentOrder);
+      }
+    } else {
+      const newOrder = await createOrder(newData, enqueueSnackbar);
+      if (newOrder) {
+        handleGetWhenCreateAndUpdateSuccess(false);
+      }
+    }
   };
 
   const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
