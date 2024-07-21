@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useState } from 'react';
 // @mui
 import Button from '@mui/material/Button';
@@ -22,7 +23,6 @@ import { Box, Tab, Typography } from '@mui/material';
 import { getStaffs } from 'src/api/staff';
 import { IStaff } from 'src/types/staff';
 import KanbanContactsDialog from './kanban-contacts-dialog';
-import KanbanDetailsAttachments from './kanban-details-attachments';
 import KanbanDetailsCommentInput from './kanban-details-comment-input';
 import KanbanDetailsCommentList from './kanban-details-comment-list';
 import KanbanDetailsPriority from './kanban-details-priority';
@@ -70,6 +70,9 @@ export default function KanbanDetails({
   const [taskDescription, setTaskDescription] = useState(task?.description);
 
   const rangePicker = useDateRangePicker(task?.due[0], task?.due[1]);
+  console.log('rangePicker', rangePicker);
+  console.log('priority:', priority);
+  console.log('taskDescription', taskDescription);
 
   const handleChangeTab = (event: any, newValue: string) => {
     setTabValue(newValue);
@@ -81,23 +84,22 @@ export default function KanbanDetails({
     setTaskName(event.target.value);
   }, []);
 
-  const handleUpdateTask = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      try {
-        if (event.key === 'Enter') {
-          if (taskName) {
-            onUpdateTask({
-              ...task,
-              name: taskName,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
+  const handleUpdateTask = useCallback(() => {
+    try {
+      if (taskName) {
+        onUpdateTask({
+          ...task,
+          name: taskName,
+          assignee: userAssigneeList,
+          priority,
+          // due: rangePicker,
+          description: taskDescription,
+        });
       }
-    },
-    [onUpdateTask, task, taskName]
-  );
+    } catch (error) {
+      console.error(error);
+    }
+  }, [onUpdateTask, task, taskName, userAssigneeList, priority, taskDescription]);
 
   const handleChangeTaskDescription = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskDescription(event.target.value);
@@ -191,7 +193,7 @@ export default function KanbanDetails({
 
       <CustomDateRangePicker
         variant="calendar"
-        title="Chọn tời gian"
+        title="Chọn thời gian"
         startDate={rangePicker.startDate}
         endDate={rangePicker.endDate}
         onChangeStartDate={rangePicker.onChangeStartDate}
@@ -229,12 +231,6 @@ export default function KanbanDetails({
     </Stack>
   );
 
-  const renderAttachments = (
-    <Stack direction="row">
-      <StyledLabel>Hình ảnh đính kèm</StyledLabel>
-      <KanbanDetailsAttachments attachments={task?.attachments} />
-    </Stack>
-  );
   const renderConfirmEdit = (
     <Box
       sx={{
@@ -248,6 +244,7 @@ export default function KanbanDetails({
         sx={{ marginTop: '10px', width: '100%', marginX: 'auto' }}
         variant="contained"
         size="medium"
+        onClick={handleUpdateTask}
       >
         Chỉnh sửa
       </Button>
@@ -323,8 +320,6 @@ export default function KanbanDetails({
               {renderPriority}
 
               {renderDescription}
-
-              {renderAttachments}
 
               {renderConfirmEdit}
             </Stack>
