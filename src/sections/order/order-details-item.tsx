@@ -121,7 +121,7 @@ export default function OrderDetailsItems({
               <Box sx={{ typography: 'body2' }}>x{item.details?.length}</Box>
 
               <Box sx={{ width: 110, textAlign: 'right', typography: 'subtitle2' }}>
-                {renderMoney(String(item.price))}
+                {renderMoney(String(Number(item.price) * Number(item.details?.length)))}
               </Box>
             </Stack>
           ))}
