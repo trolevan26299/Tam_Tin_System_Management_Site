@@ -465,24 +465,24 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
               <Stack spacing={3} sx={{ p: 3 }}>
                 <Typography variant="subtitle2">Định giá</Typography>
                 <Grid xs={12}>
-                  <RHFTextField
+                  <RHFTextFieldFormatVnd
                     name="totalAmount"
                     label="Tổng tiền"
-                    type="number"
-                    onKeyDown={(evt) =>
-                      ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                    }
+                    onChange={(e) => {
+                      const value = Number(e.target.value) || 0;
+                      setValue(`totalAmount`, value);
+                    }}
                   />
                 </Grid>
                 <Grid xs={12}>
-                  <RHFTextField
+                  <RHFTextFieldFormatVnd
                     name="priceSaleOff"
                     label="Giảm giá"
                     placeholder="Nhập giá giảm"
-                    type="number"
-                    onKeyDown={(evt) =>
-                      ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                    }
+                    onChange={(e) => {
+                      const value = Number(e.target.value) || 0;
+                      setValue(`priceSaleOff`, value);
+                    }}
                   />
                 </Grid>
 
