@@ -25,16 +25,17 @@ export default function KanbanDetailsCommentList({ comments }: Props) {
 
   return (
     <>
-      <Stack
-        flexGrow={1}
-        sx={{
-          py: 3,
-
-          bgcolor: 'background.neutral',
-        }}
-      >
+      <Stack flexGrow={1} sx={{ gap: '10px' }}>
         {comments.map((comment) => (
-          <Stack key={comment.id} direction="row" spacing={2}>
+          <Stack
+            key={comment.id}
+            direction="row"
+            spacing={2}
+            sx={{
+              borderRadius: 1.5,
+              paddingTop: '10px',
+            }}
+          >
             <Avatar src={comment.avatarUrl} />
 
             <Stack spacing={comment.messageType === 'image' ? 1 : 0.5} flexGrow={1}>

@@ -1,3 +1,4 @@
+/* eslint-disable import/no-named-as-default */
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useCallback, useEffect, useState } from 'react';
 // @mui
@@ -20,6 +21,7 @@ import Scrollbar from 'src/components/scrollbar';
 //
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Box, Tab, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
 import { getStaffs } from 'src/api/staff';
 import { IStaff } from 'src/types/staff';
 import KanbanContactsDialog from './kanban-contacts-dialog';
@@ -56,6 +58,7 @@ export default function KanbanDetails({
   onUpdateTask,
   onDeleteTask,
 }: Props) {
+  const snackbar = useSnackbar();
   const [tabValue, setTabValue] = React.useState('1');
   const [staffList, setStaffList] = useState<IStaff[] | undefined>(undefined);
 
@@ -63,16 +66,15 @@ export default function KanbanDetails({
 
   const [taskName, setTaskName] = useState(task?.name);
   const [userAssigneeList, setUserAssigneeList] = useState(task.assignee);
-  console.log('userAssigneeList', userAssigneeList);
 
   const contacts = useBoolean();
 
   const [taskDescription, setTaskDescription] = useState(task?.description);
 
-  const rangePicker = useDateRangePicker(task?.due[0], task?.due[1]);
-  console.log('rangePicker', rangePicker);
-  console.log('priority:', priority);
-  console.log('taskDescription', taskDescription);
+  const rangePicker = useDateRangePicker(
+    task?.due[0] ? new Date(task?.due[0]) : null,
+    task?.due[1] ? new Date(task?.due[1]) : null
+  );
 
   const handleChangeTab = (event: any, newValue: string) => {
     setTabValue(newValue);
@@ -92,14 +94,17 @@ export default function KanbanDetails({
           name: taskName,
           assignee: userAssigneeList,
           priority,
-          // due: rangePicker,
+          due: [rangePicker.startDate, rangePicker.endDate],
           description: taskDescription,
         });
+        onCloseDetails();
+        snackbar.enqueueSnackbar('Cập nhật công việc thành công !', { variant: 'success' });
       }
     } catch (error) {
       console.error(error);
+      snackbar.enqueueSnackbar('Cập nhật công việc thất bại !', { variant: 'error' });
     }
-  }, [onUpdateTask, task, taskName, userAssigneeList, priority, taskDescription]);
+  }, [onUpdateTask, task, taskName, userAssigneeList, priority, taskDescription, rangePicker]);
 
   const handleChangeTaskDescription = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskDescription(event.target.value);
@@ -336,7 +341,8 @@ export default function KanbanDetails({
               },
             }}
           >
-            {!!task?.comments.length && renderComments} <KanbanDetailsCommentInput />
+            {!!task?.comments.length && renderComments}{' '}
+            <KanbanDetailsCommentInput task={task} onUpdateTask={onUpdateTask} />
           </Scrollbar>
         </TabPanel>
       </TabContext>
