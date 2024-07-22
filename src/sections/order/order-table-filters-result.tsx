@@ -13,7 +13,7 @@ import { shortDateLabel } from 'src/components/custom-date-range-picker';
 // ----------------------------------------------------------------------
 
 type Props = StackProps & {
-  filters: IOrderTableFilters;
+  filters: any;
   onFilters: (name: string, value: IOrderTableFilterValue) => void;
   //
   onResetFilters: VoidFunction;
