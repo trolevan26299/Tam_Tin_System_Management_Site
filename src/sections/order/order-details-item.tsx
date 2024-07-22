@@ -80,7 +80,7 @@ export default function OrderDetailsItems({
 
   return (
     <Card>
-      <CardHeader title="Details" />
+      <CardHeader title="Thông tin" />
 
       <Stack
         sx={{
