@@ -9,5 +9,6 @@ export { default as RHFSlider } from './rhf-slider';
 export { default as RHFTextField } from './rhf-text-field';
 export { default as RHFRadioGroup } from './rhf-radio-group';
 export { default as RHFAutocomplete } from './rhf-autocomplete';
+export { default as RHFTextFieldFormatVnd } from './rhf-number-vnd';
 
 export { default } from './form-provider';

@@ -121,7 +121,7 @@ export default function KanbanView() {
           mb: { xs: 3, md: 5 },
         }}
       >
-        Kanban
+        Quản lý công việc
       </Typography>
 
       {boardLoading && renderSkeleton}
@@ -166,7 +166,7 @@ export default function KanbanView() {
                     <KanbanColumn
                       index={index}
                       key={columnId}
-                      column={board?.columns[columnId]}
+                      column={board?.columns.find((column: any) => column.id === columnId)}
                       tasks={board?.tasks}
                     />
                   ))}

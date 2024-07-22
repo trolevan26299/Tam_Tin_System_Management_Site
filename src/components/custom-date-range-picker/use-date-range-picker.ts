@@ -12,11 +12,11 @@ type ReturnType = DateRangePickerProps;
 export default function useDateRangePicker(start: Date | null, end: Date | null): ReturnType {
   const [open, setOpen] = useState(false);
 
-  const [endDate, setEndDate] = useState(end);
+  const [endDate, setEndDate] = useState(end ? new Date(end) : null);
 
-  const [startDate, setStartDate] = useState(start);
+  const [startDate, setStartDate] = useState(start ? new Date(start) : null);
 
-  const error = start && end ? new Date(start).getTime() > new Date(end).getTime() : false;
+  const error = startDate && endDate ? startDate.getTime() > endDate.getTime() : false;
 
   const onOpen = useCallback(() => {
     setOpen(true);

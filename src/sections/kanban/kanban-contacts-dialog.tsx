@@ -1,17 +1,18 @@
-import { useState, useCallback } from 'react';
+/* eslint-disable @typescript-eslint/no-unused-expressions */
+import { useCallback, useState } from 'react';
 // @mui
+import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import InputAdornment from '@mui/material/InputAdornment';
 import ListItem from '@mui/material/ListItem';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import ListItemText from '@mui/material/ListItemText';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import DialogTitle from '@mui/material/DialogTitle';
-import ListItemText from '@mui/material/ListItemText';
-import DialogContent from '@mui/material/DialogContent';
-import InputAdornment from '@mui/material/InputAdornment';
-import ListItemAvatar from '@mui/material/ListItemAvatar';
 // _mock
 import { _contacts } from 'src/_mock';
 // types
@@ -20,30 +21,42 @@ import { IKanbanAssignee } from 'src/types/kanban';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
 import SearchNotFound from 'src/components/search-not-found';
+import { IStaff } from 'src/types/staff';
 
 // ----------------------------------------------------------------------
 
 const ITEM_HEIGHT = 64;
 
 type Props = {
+  staffs?: IStaff[];
   open: boolean;
   onClose: VoidFunction;
-  assignee?: IKanbanAssignee[];
+  assignee: IKanbanAssignee[];
+  handleChangeSetAssignee?: (assignee: any[]) => void;
 };
 
-export default function KanbanContactsDialog({ assignee = [], open, onClose }: Props) {
-  const [searchContact, setSearchContact] = useState('');
+export default function KanbanContactsDialog({
+  staffs,
+  assignee,
+  open,
+  onClose,
+  handleChangeSetAssignee,
+}: Props) {
+  const notFound = !staffs;
 
-  const handleSearchContacts = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchContact(event.target.value);
-  }, []);
-
-  const dataFiltered = applyFilter({
-    inputData: _contacts,
-    query: searchContact,
-  });
-
-  const notFound = !dataFiltered.length && !!searchContact;
+  const toggleAssignee = useCallback(
+    (contact: any) => {
+      const isAssigned = assignee?.some((person) => person.telegram === contact.telegram);
+      let updatedAssignees;
+      if (isAssigned) {
+        updatedAssignees = assignee?.filter((person) => person.telegram !== contact.telegram);
+      } else {
+        updatedAssignees = [...assignee, contact];
+      }
+      handleChangeSetAssignee && handleChangeSetAssignee(updatedAssignees);
+    },
+    [assignee, handleChangeSetAssignee]
+  );
 
   return (
     <Dialog fullWidth maxWidth="xs" open={open} onClose={onClose}>
@@ -51,25 +64,9 @@ export default function KanbanContactsDialog({ assignee = [], open, onClose }: P
         Contacts <Typography component="span">({_contacts.length})</Typography>
       </DialogTitle>
 
-      <Box sx={{ px: 3, py: 2.5 }}>
-        <TextField
-          fullWidth
-          value={searchContact}
-          onChange={handleSearchContacts}
-          placeholder="Search..."
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Box>
-
       <DialogContent sx={{ p: 0 }}>
         {notFound ? (
-          <SearchNotFound query={searchContact} sx={{ mt: 3, mb: 10 }} />
+          <SearchNotFound sx={{ mt: 3, mb: 10 }} />
         ) : (
           <Scrollbar
             sx={{
@@ -77,17 +74,17 @@ export default function KanbanContactsDialog({ assignee = [], open, onClose }: P
               height: ITEM_HEIGHT * 6,
             }}
           >
-            {dataFiltered.map((contact) => {
-              const checked = assignee.map((person) => person.name).includes(contact.name);
+            {staffs?.map((contact) => {
+              const checked = assignee.map((person) => person.telegram).includes(contact.telegram);
 
               return (
                 <ListItem
-                  key={contact.id}
+                  key={contact._id}
                   disableGutters
                   secondaryAction={
                     <Button
                       size="small"
-                      color={checked ? 'primary' : 'inherit'}
+                      color={checked ? 'error' : 'inherit'}
                       startIcon={
                         <Iconify
                           width={16}
@@ -95,14 +92,15 @@ export default function KanbanContactsDialog({ assignee = [], open, onClose }: P
                           sx={{ mr: -0.5 }}
                         />
                       }
+                      onClick={() => toggleAssignee(contact)}
                     >
-                      {checked ? 'Assigned' : 'Assign'}
+                      {checked ? 'Hủy' : 'Thêm'}
                     </Button>
                   }
                   sx={{ height: ITEM_HEIGHT }}
                 >
                   <ListItemAvatar>
-                    <Avatar src={contact.avatarUrl} />
+                    <Avatar src="" alt="image Avatar" />
                   </ListItemAvatar>
 
                   <ListItemText
@@ -112,7 +110,7 @@ export default function KanbanContactsDialog({ assignee = [], open, onClose }: P
                     }}
                     secondaryTypographyProps={{ typography: 'caption' }}
                     primary={contact.name}
-                    secondary={contact.email}
+                    secondary={contact.telegram}
                   />
                 </ListItem>
               );
@@ -122,18 +120,4 @@ export default function KanbanContactsDialog({ assignee = [], open, onClose }: P
       </DialogContent>
     </Dialog>
   );
-}
-
-// ----------------------------------------------------------------------
-
-function applyFilter({ inputData, query }: { inputData: IKanbanAssignee[]; query: string }) {
-  if (query) {
-    inputData = inputData.filter(
-      (contact) =>
-        contact.name.toLowerCase().indexOf(query.toLowerCase()) !== -1 ||
-        contact.email.toLowerCase().indexOf(query.toLowerCase()) !== -1
-    );
-  }
-
-  return inputData;
 }

@@ -2,12 +2,15 @@ import { CustomFile } from 'src/components/upload';
 
 // ----------------------------------------------------------------------
 
+export type IUserList = {
+  _id: string;
+  status: string;
+  username: string;
+};
 export type IUserTableFilterValue = string | string[];
 
 export type IUserTableFilters = {
-  name: string;
-  role: string[];
-  status: string;
+  username: string;
 };
 
 // ----------------------------------------------------------------------
@@ -134,4 +137,24 @@ export type IUserAccountChangePassword = {
   oldPassword: string;
   newPassword: string;
   confirmNewPassword: string;
+};
+
+export enum ROLE {
+  admin = 'admin',
+  superadmin = 'superadmin',
+}
+
+export type IQueryUser = {
+  page?: number;
+  items_per_page?: number;
+  keyword?: string;
+};
+
+export type IDataUser = {
+  data: IUserList[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
 };

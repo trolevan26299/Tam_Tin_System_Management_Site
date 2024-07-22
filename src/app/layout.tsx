@@ -34,13 +34,10 @@ import ProgressBar from 'src/components/progress-bar';
 import { MotionLazy } from 'src/components/animate/motion-lazy';
 import SnackbarProvider from 'src/components/snackbar/snackbar-provider';
 import { SettingsProvider, SettingsDrawer } from 'src/components/settings';
-// sections
-import { CheckoutProvider } from 'src/sections/checkout/context';
+
 // auth
 import { AuthProvider, AuthConsumer } from 'src/auth/context/jwt';
-// import { AuthProvider, AuthConsumer } from 'src/auth/context/auth0';
-// import { AuthProvider, AuthConsumer } from 'src/auth/context/amplify';
-// import { AuthProvider, AuthConsumer } from 'src/auth/context/firebase';
+import { SubCategoryProvider } from 'src/store/provider/sub-category-provider';
 
 // ----------------------------------------------------------------------
 
@@ -98,17 +95,17 @@ export default function RootLayout({ children }: Props) {
                 themeContrast: 'default', // 'default' | 'bold'
                 themeLayout: 'vertical', // 'vertical' | 'horizontal' | 'mini'
                 themeColorPresets: 'default', // 'default' | 'cyan' | 'purple' | 'blue' | 'orange' | 'red'
-                themeStretch: false,
+                themeStretch: true,
               }}
             >
               <ThemeProvider>
                 <MotionLazy>
                   <SnackbarProvider>
-                    <CheckoutProvider>
-                      <SettingsDrawer />
-                      <ProgressBar />
-                      <AuthConsumer>{children}</AuthConsumer>
-                    </CheckoutProvider>
+                    <SettingsDrawer />
+                    <ProgressBar />
+                    <AuthConsumer>
+                      <SubCategoryProvider>{children}</SubCategoryProvider>
+                    </AuthConsumer>
                   </SnackbarProvider>
                 </MotionLazy>
               </ThemeProvider>

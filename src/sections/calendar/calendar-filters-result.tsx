@@ -50,7 +50,7 @@ export default function CalendarFiltersResult({
       <Box sx={{ typography: 'body2' }}>
         <strong>{results}</strong>
         <Box component="span" sx={{ color: 'text.secondary', ml: 0.25 }}>
-          results found
+          Không tìm thấy kết quả
         </Box>
       </Box>
 
@@ -91,7 +91,7 @@ export default function CalendarFiltersResult({
             onClick={onResetFilters}
             startIcon={<Iconify icon="solar:trash-bin-trash-bold" />}
           >
-            Clear
+            Xóa bộ lọc
           </Button>
         )}
       </Stack>

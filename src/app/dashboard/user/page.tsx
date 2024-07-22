@@ -1,5 +1,5 @@
 // sections
-import { UserProfileView } from 'src/sections/user/view';
+import { UserListView } from 'src/sections/user/view';
 
 // ----------------------------------------------------------------------
 
@@ -8,5 +8,5 @@ export const metadata = {
 };
 
 export default function UserProfilePage() {
-  return <UserProfileView />;
+  return <UserListView />;
 }

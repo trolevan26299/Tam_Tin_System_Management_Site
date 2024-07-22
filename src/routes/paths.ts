@@ -89,12 +89,10 @@ export const paths = {
     },
     user: {
       root: `${ROOTS.DASHBOARD}/user`,
-      new: `${ROOTS.DASHBOARD}/user/new`,
       list: `${ROOTS.DASHBOARD}/user/list`,
-      cards: `${ROOTS.DASHBOARD}/user/cards`,
       profile: `${ROOTS.DASHBOARD}/user/profile`,
       account: `${ROOTS.DASHBOARD}/user/account`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/user/${id}/edit`,
+      // edit: (id: string) => `${ROOTS.DASHBOARD}/user/${id}/edit`,
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
       },
@@ -102,12 +100,24 @@ export const paths = {
     product: {
       root: `${ROOTS.DASHBOARD}/product`,
       new: `${ROOTS.DASHBOARD}/product/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/product/${id}`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/product/${id}/edit`,
+      // details: (id: string) => `${ROOTS.DASHBOARD}/product/${id}`,
+      // edit: (id: string) => `${ROOTS.DASHBOARD}/product/${id}/edit`,
       demo: {
         details: `${ROOTS.DASHBOARD}/product/${MOCK_ID}`,
         edit: `${ROOTS.DASHBOARD}/product/${MOCK_ID}/edit`,
       },
+    },
+    category: {
+      root: `${ROOTS.DASHBOARD}/category`,
+      list: `${ROOTS.DASHBOARD}/category/list`,
+    },
+    subCategory: {
+      root: `${ROOTS.DASHBOARD}/sub-category`,
+      list: `${ROOTS.DASHBOARD}/sub-category/list`,
+    },
+    customer: {
+      root: `${ROOTS.DASHBOARD}/customer`,
+      list: `${ROOTS.DASHBOARD}/customer/list`,
     },
     invoice: {
       root: `${ROOTS.DASHBOARD}/invoice`,
@@ -131,30 +141,18 @@ export const paths = {
     },
     order: {
       root: `${ROOTS.DASHBOARD}/order`,
+      new: `${ROOTS.DASHBOARD}/order/new`,
+      list: `${ROOTS.DASHBOARD}/order/list`,
       details: (id: string) => `${ROOTS.DASHBOARD}/order/${id}`,
       demo: {
         details: `${ROOTS.DASHBOARD}/order/${MOCK_ID}`,
+        edit: `${ROOTS.DASHBOARD}/order/${MOCK_ID}/edit`,
       },
     },
-    job: {
-      root: `${ROOTS.DASHBOARD}/job`,
-      new: `${ROOTS.DASHBOARD}/job/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/job/${id}`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/job/${id}/edit`,
-      demo: {
-        details: `${ROOTS.DASHBOARD}/job/${MOCK_ID}`,
-        edit: `${ROOTS.DASHBOARD}/job/${MOCK_ID}/edit`,
-      },
-    },
-    tour: {
-      root: `${ROOTS.DASHBOARD}/tour`,
-      new: `${ROOTS.DASHBOARD}/tour/new`,
-      details: (id: string) => `${ROOTS.DASHBOARD}/tour/${id}`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/tour/${id}/edit`,
-      demo: {
-        details: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}`,
-        edit: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}/edit`,
-      },
+
+    staff: {
+      root: `${ROOTS.DASHBOARD}/staff`,
+      new: `${ROOTS.DASHBOARD}/staff/list`,
     },
   },
 };

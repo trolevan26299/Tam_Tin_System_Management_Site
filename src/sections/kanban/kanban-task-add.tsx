@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useContext } from 'react';
 // @mui
 import Paper from '@mui/material/Paper';
 import ClickAwayListener from '@mui/material/ClickAwayListener';
@@ -9,6 +9,7 @@ import { _mock } from 'src/_mock';
 import uuidv4 from 'src/utils/uuidv4';
 // types
 import { IKanbanTask } from 'src/types/kanban';
+import { AuthContext } from 'src/auth/context/jwt';
 
 // ----------------------------------------------------------------------
 
@@ -20,6 +21,7 @@ type Props = {
 
 export default function KanbanTaskAdd({ status, onAddTask, onCloseAddTask }: Props) {
   const [name, setName] = useState('');
+  const { user } = useContext(AuthContext);
 
   const defaultTask: IKanbanTask = useMemo(
     () => ({
@@ -33,12 +35,12 @@ export default function KanbanTaskAdd({ status, onAddTask, onCloseAddTask }: Pro
       assignee: [],
       due: [null, null],
       reporter: {
-        id: _mock.id(16),
-        name: _mock.fullName(16),
-        avatarUrl: _mock.image.avatar(16),
+        id: '',
+        name: user && user?.username,
+        avatarUrl: '',
       },
     }),
-    [name, status]
+    [name, status, user]
   );
 
   const handleKeyUpAddTask = useCallback(

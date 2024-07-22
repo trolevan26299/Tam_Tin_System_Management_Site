@@ -20,7 +20,7 @@ import {
 import Iconify from 'src/components/iconify';
 import { useSnackbar } from 'src/components/snackbar';
 // types
-import { IKanbanColumn, IKanbanTask } from 'src/types/kanban';
+import { IKanbanColumn, IKanbanTask, ITask } from 'src/types/kanban';
 //
 import KanbanTaskAdd from './kanban-task-add';
 import KanbanTaskItem from './kanban-task-item';
@@ -30,7 +30,7 @@ import KanbanColumnToolBar from './kanban-column-tool-bar';
 
 type Props = {
   column: IKanbanColumn;
-  tasks: Record<string, IKanbanTask>;
+  tasks: ITask[];
   index: number;
 };
 
@@ -45,7 +45,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         if (column.name !== columnName) {
           updateColumn(column.id, columnName);
 
-          enqueueSnackbar('Update success!', {
+          enqueueSnackbar('Thay đổi thành công !', {
             anchorOrigin: { vertical: 'top', horizontal: 'center' },
           });
         }
@@ -53,7 +53,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         console.error(error);
       }
     },
-    [column.id, column.name, enqueueSnackbar]
+    [column?.id, column?.name, enqueueSnackbar]
   );
 
   const handleClearColumn = useCallback(async () => {
@@ -62,19 +62,19 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     } catch (error) {
       console.error(error);
     }
-  }, [column.id]);
+  }, [column?.id]);
 
   const handleDeleteColumn = useCallback(async () => {
     try {
       deleteColumn(column.id);
 
-      enqueueSnackbar('Delete success!', {
+      enqueueSnackbar('Xóa cột thành công!', {
         anchorOrigin: { vertical: 'top', horizontal: 'center' },
       });
     } catch (error) {
       console.error(error);
     }
-  }, [column.id, enqueueSnackbar]);
+  }, [column?.id, enqueueSnackbar]);
 
   const handleAddTask = useCallback(
     async (taskData: IKanbanTask) => {
@@ -86,7 +86,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         console.error(error);
       }
     },
-    [column.id, openAddTask]
+    [column?.id, openAddTask]
   );
 
   const handleUpdateTask = useCallback(async (taskData: IKanbanTask) => {
@@ -102,14 +102,14 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
       try {
         deleteTask(column.id, taskId);
 
-        enqueueSnackbar('Delete success!', {
+        enqueueSnackbar('Xóa công việc thành công!', {
           anchorOrigin: { vertical: 'top', horizontal: 'center' },
         });
       } catch (error) {
         console.error(error);
       }
     },
-    [column.id, enqueueSnackbar]
+    [column?.id, enqueueSnackbar]
   );
 
   const renderAddTask = (
@@ -121,7 +121,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
     >
       {openAddTask.value && (
         <KanbanTaskAdd
-          status={column.name}
+          status={column?.name}
           onAddTask={handleAddTask}
           onCloseAddTask={openAddTask.onFalse}
         />
@@ -147,7 +147,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
   );
 
   return (
-    <Draggable draggableId={column.id} index={index}>
+    <Draggable draggableId={column?.id} index={index}>
       {(provided, snapshot) => (
         <Paper
           ref={provided.innerRef}
@@ -163,13 +163,13 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         >
           <Stack {...provided.dragHandleProps}>
             <KanbanColumnToolBar
-              columnName={column.name}
+              columnName={column?.name}
               onUpdateColumn={handleUpdateColumn}
               onClearColumn={handleClearColumn}
               onDeleteColumn={handleDeleteColumn}
             />
 
-            <Droppable droppableId={column.id} type="TASK">
+            <Droppable droppableId={column?.id} type="TASK">
               {(dropProvided) => (
                 <Stack
                   ref={dropProvided.innerRef}
@@ -180,11 +180,11 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
                     width: 280,
                   }}
                 >
-                  {column.taskIds.map((taskId, taskIndex) => (
+                  {column?.taskIds?.map((taskId, taskIndex) => (
                     <KanbanTaskItem
                       key={taskId}
                       index={taskIndex}
-                      task={tasks[taskId]}
+                      task={tasks.find((task) => task.task_id === taskId)?.detail}
                       onUpdateTask={handleUpdateTask}
                       onDeleteTask={() => handleDeleteTask(taskId)}
                     />

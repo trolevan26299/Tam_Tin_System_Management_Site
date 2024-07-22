@@ -86,7 +86,7 @@ export default function CalendarFilters({
       sx={{ py: 2, pr: 1, pl: 2.5 }}
     >
       <Typography variant="h6" sx={{ flexGrow: 1 }}>
-        Filters
+        Bộ lọc
       </Typography>
 
       <Tooltip title="Reset">
@@ -105,7 +105,7 @@ export default function CalendarFilters({
 
   const renderColors = (
     <Stack spacing={1} sx={{ my: 3, px: 2.5 }}>
-      <Typography variant="subtitle2">Colors</Typography>
+      <Typography variant="subtitle2">Màu</Typography>
       <ColorPicker
         colors={colorOptions}
         selected={filters.colors}
@@ -116,19 +116,23 @@ export default function CalendarFilters({
 
   const renderDateRange = (
     <Stack spacing={1.5} sx={{ mb: 3, px: 2.5 }}>
-      <Typography variant="subtitle2">Range</Typography>
+      <Typography variant="subtitle2">Thời gian</Typography>
 
       <Stack spacing={2}>
-        <DatePicker label="Start date" value={filters.startDate} onChange={handleFilterStartDate} />
+        <DatePicker
+          label="Ngày bắt đầu"
+          value={filters.startDate}
+          onChange={handleFilterStartDate}
+        />
 
         <DatePicker
-          label="End date"
+          label="Ngày kết thúc"
           value={filters.endDate}
           onChange={handleFilterEndDate}
           slotProps={{
             textField: {
               error: dateError,
-              helperText: dateError && 'End date must be later than start date',
+              helperText: dateError && 'Ngày kết thúc phải lớn hơn ngày bắt đầu',
             },
           }}
         />
@@ -139,7 +143,7 @@ export default function CalendarFilters({
   const renderEvents = (
     <>
       <Typography variant="subtitle2" sx={{ px: 2.5, mb: 1 }}>
-        Events ({events.length})
+        Ghi chú ({events.length})
       </Typography>
 
       <Scrollbar sx={{ height: 1 }}>

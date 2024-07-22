@@ -12,26 +12,24 @@ import { useResponsive } from 'src/hooks/use-responsive';
 import Iconify from 'src/components/iconify';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { useGetBoard } from 'src/api/kanban';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  liked: boolean;
   taskName: string;
   taskStatus: string;
-  onLike: VoidFunction;
   onDelete: VoidFunction;
   onCloseDetails: VoidFunction;
 };
 
 export default function KanbanDetailsToolbar({
-  liked,
-  onLike,
   taskName,
   onDelete,
   taskStatus,
   onCloseDetails,
 }: Props) {
+  const { board } = useGetBoard();
   const smUp = useResponsive('up', 'sm');
 
   const confirm = useBoolean();
@@ -75,21 +73,11 @@ export default function KanbanDetailsToolbar({
         </Button>
 
         <Stack direction="row" justifyContent="flex-end" flexGrow={1}>
-          <Tooltip title="Like">
-            <IconButton color={liked ? 'default' : 'primary'} onClick={onLike}>
-              <Iconify icon="ic:round-thumb-up" />
-            </IconButton>
-          </Tooltip>
-
-          <Tooltip title="Delete task">
+          <Tooltip title="Xóa công việc">
             <IconButton onClick={confirm.onTrue}>
               <Iconify icon="solar:trash-bin-trash-bold" />
             </IconButton>
           </Tooltip>
-
-          <IconButton>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
         </Stack>
       </Stack>
 
@@ -99,15 +87,15 @@ export default function KanbanDetailsToolbar({
         arrow="top-right"
         sx={{ width: 140 }}
       >
-        {['To Do', 'In Progress', 'Ready To Test', 'Done'].map((option) => (
+        {board.columns.map((option: any) => (
           <MenuItem
-            key={option}
-            selected={status === option}
+            key={option.id}
+            selected={status === option.name}
             onClick={() => {
-              handleChangeStatus(option);
+              handleChangeStatus(option.name);
             }}
           >
-            {option}
+            {option.name}
           </MenuItem>
         ))}
       </CustomPopover>
@@ -115,15 +103,15 @@ export default function KanbanDetailsToolbar({
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Delete"
+        title="Xóa công việc"
         content={
           <>
-            Are you sure want to delete <strong> {taskName} </strong>?
+            Bạn có muốn xóa công việc <strong> {taskName} </strong>?
           </>
         }
         action={
           <Button variant="contained" color="error" onClick={onDelete}>
-            Delete
+            Xóa
           </Button>
         }
       />

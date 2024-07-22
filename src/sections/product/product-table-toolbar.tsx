@@ -1,199 +1,74 @@
-import { useCallback } from 'react';
-// @mui
-import Stack from '@mui/material/Stack';
-import MenuItem from '@mui/material/MenuItem';
-import Checkbox from '@mui/material/Checkbox';
-import TextField from '@mui/material/TextField';
-import InputLabel from '@mui/material/InputLabel';
-import IconButton from '@mui/material/IconButton';
-import FormControl from '@mui/material/FormControl';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputAdornment from '@mui/material/InputAdornment';
-import Select, { SelectChangeEvent } from '@mui/material/Select';
-// components
-import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
-// types
-import { IProductTableFilters, IProductTableFilterValue } from 'src/types/product';
-
-// ----------------------------------------------------------------------
-
-type Props = {
-  filters: IProductTableFilters;
-  onFilters: (name: string, value: IProductTableFilterValue) => void;
-  //
-  stockOptions: {
-    value: string;
-    label: string;
-  }[];
-  publishOptions: {
-    value: string;
-    label: string;
-  }[];
-};
+import { Autocomplete, Stack, TextField } from '@mui/material';
+import { debounce } from 'lodash';
+import { useState } from 'react';
+import { getListCustomer } from 'src/api/customer';
+import SearchInputDebounce from 'src/components/search-input-debounce/search-input-debounce';
+import { ICustomer } from 'src/types/customer';
+import { IQueryDevice } from 'src/types/product';
 
 export default function ProductTableToolbar({
-  filters,
-  onFilters,
-  //
-  stockOptions,
-  publishOptions,
-}: Props) {
-  const popover = usePopover();
+  onSearch,
+  query,
+}: {
+  onSearch: (query: IQueryDevice) => void;
+  query: IQueryDevice;
+}) {
+  const [customers, setCustomers] = useState<ICustomer[]>([]);
 
-  const handleFilterName = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      onFilters('name', event.target.value);
-    },
-    [onFilters]
-  );
-
-  const handleFilterStock = useCallback(
-    (event: SelectChangeEvent<string[]>) => {
-      onFilters(
-        'stock',
-        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value
-      );
-    },
-    [onFilters]
-  );
-
-  const handleFilterPublish = useCallback(
-    (event: SelectChangeEvent<string[]>) => {
-      onFilters(
-        'publish',
-        typeof event.target.value === 'string' ? event.target.value.split(',') : event.target.value
-      );
-    },
-    [onFilters]
-  );
+  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
+    try {
+      const response = await getListCustomer({ keyword: searchQuery });
+      setCustomers(response.data);
+    } catch (error) {
+      console.error('Failed to search devices:', error);
+    }
+  }, 300);
 
   return (
-    <>
-      <Stack
-        spacing={2}
-        alignItems={{ xs: 'flex-end', md: 'center' }}
-        direction={{
-          xs: 'column',
-          md: 'row',
-        }}
-        sx={{
-          p: 2.5,
-          pr: { xs: 2.5, md: 1 },
-        }}
-      >
-        <FormControl
-          sx={{
-            flexShrink: 0,
-            width: { xs: 1, md: 200 },
+    <Stack
+      spacing={2}
+      alignItems={{ xs: 'flex-end', md: 'center' }}
+      direction={{
+        xs: 'column',
+        md: 'row',
+      }}
+      sx={{
+        p: 2.5,
+        pr: { xs: 2.5, md: 1 },
+      }}
+    >
+      <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 500 }}>
+        <Autocomplete
+          sx={{ width: 200 }}
+          options={customers.map((item: ICustomer) => item?._id)}
+          onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+            if (reason === 'input') {
+              handleInputChangeCustomer(value);
+            }
+            if (reason === 'clear') {
+              onSearch({ ...query, belong_to: undefined });
+            }
           }}
-        >
-          <InputLabel>Stock</InputLabel>
-
-          <Select
-            multiple
-            value={filters.stock}
-            onChange={handleFilterStock}
-            input={<OutlinedInput label="Stock" />}
-            renderValue={(selected) => selected.map((value) => value).join(', ')}
-            sx={{ textTransform: 'capitalize' }}
-          >
-            {stockOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                <Checkbox
-                  disableRipple
-                  size="small"
-                  checked={filters.stock.includes(option.value)}
-                />
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <FormControl
-          sx={{
-            flexShrink: 0,
-            width: { xs: 1, md: 200 },
+          getOptionLabel={(option) =>
+            (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
+          }
+          onChange={(event, newValue) => {
+            if (newValue) onSearch({ ...query, belong_to: String(newValue) });
           }}
-        >
-          <InputLabel>Publish</InputLabel>
+          renderInput={(params) => <TextField label="Thuộc danh mục" {...params} />}
+          value={query?.belong_to}
+        />
 
-          <Select
-            multiple
-            value={filters.publish}
-            onChange={handleFilterPublish}
-            input={<OutlinedInput label="Publish" />}
-            renderValue={(selected) => selected.map((value) => value).join(', ')}
-            sx={{ textTransform: 'capitalize' }}
-          >
-            {publishOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
-                <Checkbox
-                  disableRipple
-                  size="small"
-                  checked={filters.publish.includes(option.value)}
-                />
-                {option.label}
-              </MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
-          <TextField
-            fullWidth
-            value={filters.name}
-            onChange={handleFilterName}
-            placeholder="Search..."
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-
-          <IconButton onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </Stack>
+        <SearchInputDebounce
+          onSearch={(value: string) => {
+            onSearch({ ...query, keyword: value });
+          }}
+          placeholder="Tìm kiếm thiết bị..."
+          width={300}
+          value={query?.keyword || ''}
+          useIconClear
+        />
       </Stack>
-
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 140 }}
-      >
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:printer-minimalistic-bold" />
-          Print
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:import-bold" />
-          Import
-        </MenuItem>
-
-        <MenuItem
-          onClick={() => {
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:export-bold" />
-          Export
-        </MenuItem>
-      </CustomPopover>
-    </>
+    </Stack>
   );
 }

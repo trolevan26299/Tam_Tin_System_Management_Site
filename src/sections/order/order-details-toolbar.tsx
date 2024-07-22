@@ -25,6 +25,7 @@ type Props = {
     value: string;
     label: string;
   }[];
+  onEdit?: VoidFunction;
 };
 
 export default function OrderDetailsToolbar({
@@ -34,6 +35,7 @@ export default function OrderDetailsToolbar({
   orderNumber,
   statusOptions,
   onChangeStatus,
+  onEdit,
 }: Props) {
   const popover = usePopover();
 
@@ -82,23 +84,10 @@ export default function OrderDetailsToolbar({
         >
           <Button
             color="inherit"
-            variant="outlined"
-            endIcon={<Iconify icon="eva:arrow-ios-downward-fill" />}
-            onClick={popover.onOpen}
-            sx={{ textTransform: 'capitalize' }}
+            variant="contained"
+            startIcon={<Iconify icon="solar:pen-bold" />}
+            onClick={() => onEdit?.()}
           >
-            {status}
-          </Button>
-
-          <Button
-            color="inherit"
-            variant="outlined"
-            startIcon={<Iconify icon="solar:printer-minimalistic-bold" />}
-          >
-            Print
-          </Button>
-
-          <Button color="inherit" variant="contained" startIcon={<Iconify icon="solar:pen-bold" />}>
             Edit
           </Button>
         </Stack>

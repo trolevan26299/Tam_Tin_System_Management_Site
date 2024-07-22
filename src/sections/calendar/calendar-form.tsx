@@ -36,8 +36,8 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
   const { enqueueSnackbar } = useSnackbar();
 
   const EventSchema = Yup.object().shape({
-    title: Yup.string().max(255).required('Title is required'),
-    description: Yup.string().max(5000, 'Description must be at most 5000 characters'),
+    title: Yup.string().max(255).required('Tiêu đề không được để trống'),
+    description: Yup.string().max(5000, 'Mô tả không được dài quá 5000 ký tự'),
     // not required
     color: Yup.string(),
     allDay: Yup.boolean(),
@@ -77,10 +77,10 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
       if (!dateError) {
         if (currentEvent?.id) {
           await updateEvent(eventData);
-          enqueueSnackbar('Update success!');
+          enqueueSnackbar('Chỉnh sửa thành công !');
         } else {
           await createEvent(eventData);
-          enqueueSnackbar('Create success!');
+          enqueueSnackbar('Tạo ghi chú thành công !');
         }
         onClose();
         reset();
@@ -93,7 +93,7 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
   const onDelete = useCallback(async () => {
     try {
       await deleteEvent(`${currentEvent?.id}`);
-      enqueueSnackbar('Delete success!');
+      enqueueSnackbar('Xóa thành công !');
       onClose();
     } catch (error) {
       console.error(error);
@@ -103,11 +103,11 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
   return (
     <FormProvider methods={methods} onSubmit={onSubmit}>
       <Stack spacing={3} sx={{ px: 3 }}>
-        <RHFTextField name="title" label="Title" />
+        <RHFTextField name="title" label="Tiêu đề" />
 
-        <RHFTextField name="description" label="Description" multiline rows={3} />
+        <RHFTextField name="description" label="Mô tả" multiline rows={3} />
 
-        <RHFSwitch name="allDay" label="All day" />
+        <RHFSwitch name="allDay" label="Tất cả ngày" />
 
         <Controller
           name="start"
@@ -121,7 +121,7 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
                   field.onChange(fTimestamp(newValue));
                 }
               }}
-              label="Start date"
+              label="Ngày giờ bắt đầu"
               format="dd/MM/yyyy hh:mm a"
               slotProps={{
                 textField: {
@@ -144,13 +144,13 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
                   field.onChange(fTimestamp(newValue));
                 }
               }}
-              label="End date"
+              label="Ngày giờ kết thúc"
               format="dd/MM/yyyy hh:mm a"
               slotProps={{
                 textField: {
                   fullWidth: true,
                   error: dateError,
-                  helperText: dateError && 'End date must be later than start date',
+                  helperText: dateError && 'Ngày kết thúc phải lớn hơn ngày bắt đầu',
                 },
               }}
             />
@@ -182,7 +182,7 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
         <Box sx={{ flexGrow: 1 }} />
 
         <Button variant="outlined" color="inherit" onClick={onClose}>
-          Cancel
+          Hủy
         </Button>
 
         <LoadingButton
@@ -191,7 +191,7 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
           loading={isSubmitting}
           disabled={dateError}
         >
-          Save Changes
+          Lưu
         </LoadingButton>
       </DialogActions>
     </FormProvider>

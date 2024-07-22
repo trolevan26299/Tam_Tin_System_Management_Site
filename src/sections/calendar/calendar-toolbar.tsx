@@ -20,11 +20,11 @@ import CustomPopover, { usePopover } from 'src/components/custom-popover';
 const VIEW_OPTIONS = [
   {
     value: 'dayGridMonth',
-    label: 'Month',
+    label: 'Tháng',
     icon: 'mingcute:calendar-month-line',
   },
-  { value: 'timeGridWeek', label: 'Week', icon: 'mingcute:calendar-week-line' },
-  { value: 'timeGridDay', label: 'Day', icon: 'mingcute:calendar-day-line' },
+  { value: 'timeGridWeek', label: 'Tuần', icon: 'mingcute:calendar-week-line' },
+  { value: 'timeGridDay', label: 'Ngày', icon: 'mingcute:calendar-day-line' },
   {
     value: 'listWeek',
     label: 'Agenda',
@@ -95,7 +95,7 @@ export default function CalendarToolbar({
 
         <Stack direction="row" alignItems="center" spacing={1}>
           <Button size="small" color="error" variant="contained" onClick={onToday}>
-            Today
+            Hôm nay
           </Button>
 
           <IconButton onClick={onOpenFilters}>

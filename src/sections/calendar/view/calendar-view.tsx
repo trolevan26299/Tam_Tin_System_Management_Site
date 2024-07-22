@@ -69,10 +69,8 @@ export default function CalendarView() {
 
   const {
     calendarRef,
-    //
     view,
     date,
-    //
     onDatePrev,
     onDateNext,
     onDateToday,
@@ -139,16 +137,16 @@ export default function CalendarView() {
           alignItems="center"
           justifyContent="space-between"
           sx={{
-            mb: { xs: 3, md: 5 },
+            mb: { xs: 1, md: 2 },
           }}
         >
-          <Typography variant="h4">Calendar</Typography>
+          <Typography variant="h4">Ghi Chú</Typography>
           <Button
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={onOpenForm}
           >
-            New Event
+            Thêm ghi chú
           </Button>
         </Stack>
 
@@ -214,7 +212,7 @@ export default function CalendarView() {
         }}
       >
         <DialogTitle sx={{ minHeight: 76 }}>
-          {openForm && <> {currentEvent?.id ? 'Edit Event' : 'Add Event'}</>}
+          {openForm && <> {currentEvent?.id ? 'Sửa ghi chú' : 'Thêm ghi chú'}</>}
         </DialogTitle>
 
         <CalendarForm

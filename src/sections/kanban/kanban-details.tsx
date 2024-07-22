@@ -1,31 +1,35 @@
-import { useState, useCallback } from 'react';
+/* eslint-disable import/no-named-as-default */
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useCallback, useEffect, useState } from 'react';
 // @mui
-import { styled, alpha } from '@mui/material/styles';
-import Chip from '@mui/material/Chip';
-import Stack from '@mui/material/Stack';
-import Drawer from '@mui/material/Drawer';
 import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
-import TextField from '@mui/material/TextField';
+import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
+import { alpha, styled } from '@mui/material/styles';
+import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 // types
 import { IKanbanTask } from 'src/types/kanban';
 // hooks
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
+import CustomDateRangePicker, { useDateRangePicker } from 'src/components/custom-date-range-picker';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
-import CustomDateRangePicker, { useDateRangePicker } from 'src/components/custom-date-range-picker';
 //
-import KanbanInputName from './kanban-input-name';
-import KanbanDetailsToolbar from './kanban-details-toolbar';
+import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Box, Tab, Typography } from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { getStaffs } from 'src/api/staff';
+import { IStaff } from 'src/types/staff';
 import KanbanContactsDialog from './kanban-contacts-dialog';
-import KanbanDetailsPriority from './kanban-details-priority';
-import KanbanDetailsAttachments from './kanban-details-attachments';
-import KanbanDetailsCommentList from './kanban-details-comment-list';
 import KanbanDetailsCommentInput from './kanban-details-comment-input';
+import KanbanDetailsCommentList from './kanban-details-comment-list';
+import KanbanDetailsPriority from './kanban-details-priority';
+import KanbanDetailsToolbar from './kanban-details-toolbar';
+import KanbanInputName from './kanban-input-name';
 
 // ----------------------------------------------------------------------
 
@@ -43,7 +47,6 @@ type Props = {
   task: IKanbanTask;
   openDetails: boolean;
   onCloseDetails: VoidFunction;
-  //
   onUpdateTask: (updateTask: IKanbanTask) => void;
   onDeleteTask: VoidFunction;
 };
@@ -52,43 +55,56 @@ export default function KanbanDetails({
   task,
   openDetails,
   onCloseDetails,
-  //
   onUpdateTask,
   onDeleteTask,
 }: Props) {
-  const [priority, setPriority] = useState(task.priority);
+  const snackbar = useSnackbar();
+  const [tabValue, setTabValue] = React.useState('1');
+  const [staffList, setStaffList] = useState<IStaff[] | undefined>(undefined);
 
-  const [taskName, setTaskName] = useState(task.name);
+  const [priority, setPriority] = useState(task?.priority);
 
-  const like = useBoolean();
+  const [taskName, setTaskName] = useState(task?.name);
+  const [userAssigneeList, setUserAssigneeList] = useState(task.assignee);
 
   const contacts = useBoolean();
 
-  const [taskDescription, setTaskDescription] = useState(task.description);
+  const [taskDescription, setTaskDescription] = useState(task?.description);
 
-  const rangePicker = useDateRangePicker(task.due[0], task.due[1]);
+  const rangePicker = useDateRangePicker(
+    task?.due[0] ? new Date(task?.due[0]) : null,
+    task?.due[1] ? new Date(task?.due[1]) : null
+  );
 
+  const handleChangeTab = (event: any, newValue: string) => {
+    setTabValue(newValue);
+  };
+  const handleChangeSetAssignee = (assignee: any) => {
+    setUserAssigneeList(assignee);
+  };
   const handleChangeTaskName = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskName(event.target.value);
   }, []);
 
-  const handleUpdateTask = useCallback(
-    (event: React.KeyboardEvent<HTMLInputElement>) => {
-      try {
-        if (event.key === 'Enter') {
-          if (taskName) {
-            onUpdateTask({
-              ...task,
-              name: taskName,
-            });
-          }
-        }
-      } catch (error) {
-        console.error(error);
+  const handleUpdateTask = useCallback(() => {
+    try {
+      if (taskName) {
+        onUpdateTask({
+          ...task,
+          name: taskName,
+          assignee: userAssigneeList,
+          priority,
+          due: [rangePicker.startDate, rangePicker.endDate],
+          description: taskDescription,
+        });
+        onCloseDetails();
+        snackbar.enqueueSnackbar('Cập nhật công việc thành công !', { variant: 'success' });
       }
-    },
-    [onUpdateTask, task, taskName]
-  );
+    } catch (error) {
+      console.error(error);
+      snackbar.enqueueSnackbar('Cập nhật công việc thất bại !', { variant: 'error' });
+    }
+  }, [onUpdateTask, task, taskName, userAssigneeList, priority, taskDescription, rangePicker]);
 
   const handleChangeTaskDescription = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskDescription(event.target.value);
@@ -100,18 +116,16 @@ export default function KanbanDetails({
 
   const renderHead = (
     <KanbanDetailsToolbar
-      liked={like.value}
-      taskName={task.name}
-      onLike={like.onToggle}
+      taskName={task?.name}
       onDelete={onDeleteTask}
-      taskStatus={task.status}
+      taskStatus={task?.status}
       onCloseDetails={onCloseDetails}
     />
   );
 
   const renderName = (
     <KanbanInputName
-      placeholder="Task name"
+      placeholder="Tên công việc"
       value={taskName}
       onChange={handleChangeTaskName}
       onKeyUp={handleUpdateTask}
@@ -120,21 +134,24 @@ export default function KanbanDetails({
 
   const renderReporter = (
     <Stack direction="row" alignItems="center">
-      <StyledLabel>Reporter</StyledLabel>
-      <Avatar alt={task.reporter.name} src={task.reporter.avatarUrl} />
+      <StyledLabel>Người tạo</StyledLabel>
+      <Typography sx={{ fontSize: '14px', fontWeight: 600 }}>{task.reporter.name}</Typography>
     </Stack>
   );
 
   const renderAssignee = (
     <Stack direction="row">
-      <StyledLabel sx={{ height: 40, lineHeight: '40px' }}>Assignee</StyledLabel>
+      <StyledLabel sx={{ height: 40, lineHeight: '40px' }}>Người thực hiện</StyledLabel>
 
       <Stack direction="row" flexWrap="wrap" alignItems="center" spacing={1}>
-        {task.assignee.map((user) => (
-          <Avatar key={user.id} alt={user.name} src={user.avatarUrl} />
+        {userAssigneeList.map((userAssignee: any, index: number) => (
+          <React.Fragment key={index}>
+            {index > 0 && ', '}
+            <Typography sx={{ fontSize: '14px', fontWeight: 600 }}>{userAssignee.name}</Typography>
+          </React.Fragment>
         ))}
 
-        <Tooltip title="Add assignee">
+        <Tooltip title="Thêm người thực hiện">
           <IconButton
             onClick={contacts.onTrue}
             sx={{
@@ -147,38 +164,26 @@ export default function KanbanDetails({
         </Tooltip>
 
         <KanbanContactsDialog
-          assignee={task.assignee}
+          handleChangeSetAssignee={handleChangeSetAssignee}
+          assignee={userAssigneeList || []}
           open={contacts.value}
           onClose={contacts.onFalse}
+          staffs={staffList}
         />
       </Stack>
     </Stack>
   );
 
-  const renderLabel = (
-    <Stack direction="row">
-      <StyledLabel sx={{ height: 24, lineHeight: '24px' }}>Labels</StyledLabel>
-
-      {!!task.labels.length && (
-        <Stack direction="row" flexWrap="wrap" alignItems="center" spacing={1}>
-          {task.labels.map((label) => (
-            <Chip key={label} color="info" label={label} size="small" variant="soft" />
-          ))}
-        </Stack>
-      )}
-    </Stack>
-  );
-
   const renderDueDate = (
     <Stack direction="row" alignItems="center">
-      <StyledLabel> Due date </StyledLabel>
+      <StyledLabel> Thời gian </StyledLabel>
 
       {rangePicker.selected ? (
         <Button size="small" onClick={rangePicker.onOpen}>
           {rangePicker.shortLabel}
         </Button>
       ) : (
-        <Tooltip title="Add due date">
+        <Tooltip title="Thêm ngày bắt đầu - kết thúc">
           <IconButton
             onClick={rangePicker.onOpen}
             sx={{
@@ -193,7 +198,7 @@ export default function KanbanDetails({
 
       <CustomDateRangePicker
         variant="calendar"
-        title="Choose due date"
+        title="Chọn thời gian"
         startDate={rangePicker.startDate}
         endDate={rangePicker.endDate}
         onChangeStartDate={rangePicker.onChangeStartDate}
@@ -208,7 +213,7 @@ export default function KanbanDetails({
 
   const renderPriority = (
     <Stack direction="row" alignItems="center">
-      <StyledLabel>Priority</StyledLabel>
+      <StyledLabel>Mức độ </StyledLabel>
 
       <KanbanDetailsPriority priority={priority} onChangePriority={handleChangePriority} />
     </Stack>
@@ -216,7 +221,7 @@ export default function KanbanDetails({
 
   const renderDescription = (
     <Stack direction="row">
-      <StyledLabel> Description </StyledLabel>
+      <StyledLabel> Ghi chú </StyledLabel>
 
       <TextField
         fullWidth
@@ -231,15 +236,40 @@ export default function KanbanDetails({
     </Stack>
   );
 
-  const renderAttachments = (
-    <Stack direction="row">
-      <StyledLabel>Attachments</StyledLabel>
-      <KanbanDetailsAttachments attachments={task.attachments} />
-    </Stack>
+  const renderConfirmEdit = (
+    <Box
+      sx={{
+        marginTop: '20%',
+        display: 'flex',
+        justifyContent: 'flex-start',
+        borderTop: '1px dashed gray',
+      }}
+    >
+      <Button
+        sx={{ marginTop: '10px', width: '100%', marginX: 'auto' }}
+        variant="contained"
+        size="medium"
+        onClick={handleUpdateTask}
+      >
+        Chỉnh sửa
+      </Button>
+    </Box>
   );
 
-  const renderComments = <KanbanDetailsCommentList comments={task.comments} />;
+  const renderComments = <KanbanDetailsCommentList comments={task?.comments} />;
 
+  useEffect(() => {
+    const fetchStaffs = async () => {
+      try {
+        const staffs = await getStaffs();
+        if (!staffs) return;
+        setStaffList(staffs.data);
+      } catch (error) {
+        console.log('Failed to fetch task:', error);
+      }
+    };
+    fetchStaffs();
+  }, []);
   return (
     <Drawer
       open={openDetails}
@@ -261,45 +291,61 @@ export default function KanbanDetails({
 
       <Divider />
 
-      <Scrollbar
-        sx={{
-          height: 1,
-          '& .simplebar-content': {
-            height: 1,
-            display: 'flex',
-            flexDirection: 'column',
-          },
-        }}
-      >
-        <Stack
-          spacing={3}
-          sx={{
-            pt: 3,
-            pb: 5,
-            px: 2.5,
-          }}
-        >
-          {renderName}
+      <TabContext value={tabValue}>
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <TabList
+            aria-label="lab API tabs example"
+            sx={{ width: '100%' }}
+            onChange={handleChangeTab}
+          >
+            <Tab label="Tổng quan" value="1" sx={{ width: '45%' }} />
+            <Tab label="Bình luận" value="2" sx={{ width: '45%' }} />
+          </TabList>
+        </Box>
+        <TabPanel value="1">
+          <Scrollbar
+            sx={{
+              height: 1,
+              '& .simplebar-content': {
+                height: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              },
+            }}
+          >
+            <Stack spacing={3}>
+              {renderName}
 
-          {renderReporter}
+              {renderReporter}
 
-          {renderAssignee}
+              {renderAssignee}
 
-          {renderLabel}
+              {renderDueDate}
 
-          {renderDueDate}
+              {renderPriority}
 
-          {renderPriority}
+              {renderDescription}
 
-          {renderDescription}
-
-          {renderAttachments}
-        </Stack>
-
-        {!!task.comments.length && renderComments}
-      </Scrollbar>
-
-      <KanbanDetailsCommentInput />
+              {renderConfirmEdit}
+            </Stack>
+          </Scrollbar>
+        </TabPanel>
+        <TabPanel value="2">
+          <Scrollbar
+            sx={{
+              height: 1,
+              '& .simplebar-content': {
+                height: 1,
+                display: 'flex',
+                flexDirection: 'column',
+              },
+            }}
+          >
+            {!!task?.comments.length && renderComments}{' '}
+            <KanbanDetailsCommentInput task={task} onUpdateTask={onUpdateTask} />
+          </Scrollbar>
+        </TabPanel>
+      </TabContext>
     </Drawer>
   );
 }
