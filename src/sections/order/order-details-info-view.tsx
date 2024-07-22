@@ -17,14 +17,7 @@ import { IOrder } from 'src/types/order';
 function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
   const renderCustomer = (
     <>
-      <CardHeader
-        title="Customer Info"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
+      <CardHeader title="Thông tin khách hàng" />
       <Stack direction="row" sx={{ p: 3 }}>
         <Avatar
           alt={currentOrder?.customer?.name}
@@ -59,14 +52,7 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
 
   const renderDelivery = (
     <>
-      <CardHeader
-        title="Delivery"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
+      <CardHeader title="Vận chuyển" />
       <Stack spacing={1.5} sx={{ p: 3, typography: 'body2' }}>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
@@ -76,13 +62,13 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
         </Stack>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Delivery date
+            Ngày giao
           </Box>
           {currentOrder?.delivery_date}
         </Stack>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Tracking No.
+            Mã đơn
           </Box>
           <Link underline="always" color="inherit">
             {currentOrder?._id}
@@ -94,24 +80,17 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
 
   const renderShipping = (
     <>
-      <CardHeader
-        title="Shipping"
-        action={
-          <IconButton>
-            <Iconify icon="solar:pen-bold" />
-          </IconButton>
-        }
-      />
+      <CardHeader title="Vận chuyển đến" />
       <Stack spacing={1.5} sx={{ p: 3, typography: 'body2' }}>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Address
+            Địa chỉ
           </Box>
           {currentOrder?.customer?.address}
         </Stack>
         <Stack direction="row" alignItems="center">
           <Box component="span" sx={{ color: 'text.secondary', width: 120, flexShrink: 0 }}>
-            Phone number
+            Số điện thoại
           </Box>
           {currentOrder?.customer?.phone}
         </Stack>

@@ -91,7 +91,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                 const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
                 const remainingNeeded = value - id_deviceIncludedInOrder.length;
 
-                if (remainingNeeded > checkInventoryInDevice.length) {
+                if (remainingNeeded > checkInventoryInDevice?.length) {
                   // eslint-disable-next-line react/no-this-in-sfc
                   return this.createError({
                     path: `${context.path}`,
