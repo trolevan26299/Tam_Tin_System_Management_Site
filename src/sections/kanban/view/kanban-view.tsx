@@ -75,7 +75,7 @@ export default function KanbanView() {
           destinationColumnId: destinationColumn.id,
           sourceTaskIds,
           destinationTaskIds,
-          draggableId,
+          taskMoveId: draggableId,
         });
 
         console.info('Moving to different list!');
