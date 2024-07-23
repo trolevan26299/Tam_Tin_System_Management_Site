@@ -27,3 +27,35 @@ export function fToNow(date: InputValue) {
       })
     : '';
 }
+
+// export const parsedDateAdSearch = (value: string) => {
+//   const mount = value.split('-');
+//   const unit = mount[1] as 'days' | 'weeks' | 'months' | 'years';
+//   const amount = Number(mount[0]);
+
+//   const toDate = endOfDay(new Date());
+//   let fromDate;
+
+//   if (value === '1-days') {
+//     fromDate = startOfDay(new Date());
+//   } else {
+//     switch (unit) {
+//       case 'days':
+//         fromDate = startOfDay(subDays(toDate, amount));
+//         break;
+//       case 'weeks':
+//         fromDate = startOfDay(subWeeks(toDate, amount));
+//         break;
+//       case 'months':
+//         fromDate = startOfDay(subMonths(toDate, amount));
+//         break;
+//       case 'years':
+//         fromDate = startOfDay(subYears(toDate, amount));
+//         break;
+//       default:
+//         throw new Error('Invalid time unit');
+//     }
+//   }
+
+//   return { fromDate, toDate };
+// };

@@ -23,22 +23,44 @@ import AnalyticsWidgetSummary from '../analytics-widget-summary';
 import AnalyticsTrafficBySite from '../analytics-traffic-by-site';
 import AnalyticsCurrentSubject from '../analytics-current-subject';
 import AnalyticsConversionRates from '../analytics-conversion-rates';
+import { useEffect, useState } from 'react';
+import { IAnalyTicsDto, IQueryAnalytics } from 'src/types/analytics';
+import { getAnalytics } from 'src/api/analytics';
+import { fDate } from 'src/utils/format-time';
+import AnalyticsToolbar from '../analytics-toolbar';
 
 // ----------------------------------------------------------------------
 
 export default function OverviewAnalyticsView() {
   const settings = useSettingsContext();
+  // const [analytics, setAnalytics] = useState<IAnalyTicsDto>({});
+  const [state, setState] = useState<{ query?: IQueryAnalytics; analytics?: IAnalyTicsDto }>({
+    // query: {
+    //   from_date: fDate(new Date(), 'YYYY-MM-DD'),
+    //   to_date: fDate(new Date(), 'YYYY-MM-DD'),
+    // },
+  });
 
+  const handleGetAnalytics = async (query: IQueryAnalytics) => {
+    const analytics = await getAnalytics(query);
+    console.log('🚀 ~ handleGetAnalytics ~ analytics:', analytics);
+  };
+
+  console.log('🚀 ~ OverviewAnalyticsView ~ state:', state);
+  useEffect(() => {
+    // handleGetAnalytics();
+  }, []);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <Typography
+      {/* <Typography
         variant="h4"
         sx={{
           mb: { xs: 3, md: 5 },
         }}
       >
         Hi, Welcome back 👋
-      </Typography>
+      </Typography> */}
+      <AnalyticsToolbar query={state.query as IQueryAnalytics} />
 
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>
