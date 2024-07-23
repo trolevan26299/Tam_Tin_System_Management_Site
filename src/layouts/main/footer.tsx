@@ -105,8 +105,8 @@ export default function Footer() {
                 mx: { xs: 'auto', md: 'unset' },
               }}
             >
-              The starting point for your next project with Minimal UI Kit, built on the newest
-              version of Material-UI ©, ready to be customized to your style.
+              Website quản trị Tâm Tín, tối ưu hóa các công việc xuất nhập kho , thống kê và quản
+              trị nhân sự
             </Typography>
 
             <Stack
