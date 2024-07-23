@@ -1,16 +1,16 @@
 'use client';
 
-import { useCallback } from 'react';
 import { DragDropContext, Droppable, DropResult } from '@hello-pangea/dnd';
+import { useCallback } from 'react';
 // @mui
-import Stack from '@mui/material/Stack';
 import Container from '@mui/material/Container';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 // api
-import { useGetBoard, moveColumn, moveTask } from 'src/api/kanban';
+import { moveColumn, moveTaskAnotherColumn, moveTaskSameColumn, useGetBoard } from 'src/api/kanban';
 // components
-import Scrollbar from 'src/components/scrollbar';
 import EmptyContent from 'src/components/empty-content';
+import Scrollbar from 'src/components/scrollbar';
 //
 import KanbanColumn from '../kanban-column';
 import KanbanColumnAdd from '../kanban-column-add';
@@ -44,27 +44,21 @@ export default function KanbanView() {
           return;
         }
 
-        const sourceColumn = board?.columns[source.droppableId];
+        const sourceColumn = board?.columns.find((column: any) => column.id === source.droppableId);
 
-        const destinationColumn = board?.columns[destination.droppableId];
+        const destinationColumn = board?.columns.find(
+          (column: any) => column.id === destination.droppableId
+        );
 
         // Moving task to same list
         if (sourceColumn.id === destinationColumn.id) {
           const newTaskIds = [...sourceColumn.taskIds];
 
-          newTaskIds.splice(source.index, 1);
-
-          newTaskIds.splice(destination.index, 0, draggableId);
-
-          moveTask({
-            ...board?.columns,
-            [sourceColumn.id]: {
-              ...sourceColumn,
-              taskIds: newTaskIds,
-            },
-          });
-
-          console.info('Moving to same list!');
+          // Hoán đổi vị trí của hai task ID
+          const temp = newTaskIds[source.index];
+          newTaskIds[source.index] = newTaskIds[destination.index];
+          newTaskIds[destination.index] = temp;
+          moveTaskSameColumn(sourceColumn.id, newTaskIds);
 
           return;
         }
@@ -73,23 +67,15 @@ export default function KanbanView() {
         const sourceTaskIds = [...sourceColumn.taskIds];
 
         const destinationTaskIds = [...destinationColumn.taskIds];
-
-        // Remove from source
         sourceTaskIds.splice(source.index, 1);
-
-        // Insert into destination
         destinationTaskIds.splice(destination.index, 0, draggableId);
 
-        moveTask({
-          ...board?.columns,
-          [sourceColumn.id]: {
-            ...sourceColumn,
-            taskIds: sourceTaskIds,
-          },
-          [destinationColumn.id]: {
-            ...destinationColumn,
-            taskIds: destinationTaskIds,
-          },
+        moveTaskAnotherColumn({
+          sourceColumnId: sourceColumn.id,
+          destinationColumnId: destinationColumn.id,
+          sourceTaskIds,
+          destinationTaskIds,
+          draggableId,
         });
 
         console.info('Moving to different list!');
