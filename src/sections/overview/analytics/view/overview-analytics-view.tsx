@@ -1,33 +1,33 @@
 'use client';
 
 // @mui
-import Grid from '@mui/material/Unstable_Grid2';
 import Container from '@mui/material/Container';
-import Typography from '@mui/material/Typography';
+import Grid from '@mui/material/Unstable_Grid2';
 // _mock
 import {
-  _analyticTasks,
-  _analyticPosts,
-  _analyticTraffic,
   _analyticOrderTimeline,
+  _analyticPosts,
+  _analyticTasks,
+  _analyticTraffic,
 } from 'src/_mock';
 // components
 import { useSettingsContext } from 'src/components/settings';
 //
-import AnalyticsNews from '../analytics-news';
-import AnalyticsTasks from '../analytics-tasks';
+import { useEffect, useState } from 'react';
+import { getAnalytics } from 'src/api/analytics';
+import { IAnalyTicsDto, IQueryAnalytics } from 'src/types/analytics';
+import { format } from 'date-fns';
+import { getDateRange } from 'src/utils/format-time';
+import AnalyticsConversionRates from '../analytics-conversion-rates';
+import AnalyticsCurrentSubject from '../analytics-current-subject';
 import AnalyticsCurrentVisits from '../analytics-current-visits';
+import AnalyticsNews from '../analytics-news';
 import AnalyticsOrderTimeline from '../analytics-order-timeline';
+import AnalyticsTasks from '../analytics-tasks';
+import AnalyticsToolbar from '../analytics-toolbar';
+import AnalyticsTrafficBySite from '../analytics-traffic-by-site';
 import AnalyticsWebsiteVisits from '../analytics-website-visits';
 import AnalyticsWidgetSummary from '../analytics-widget-summary';
-import AnalyticsTrafficBySite from '../analytics-traffic-by-site';
-import AnalyticsCurrentSubject from '../analytics-current-subject';
-import AnalyticsConversionRates from '../analytics-conversion-rates';
-import { useEffect, useState } from 'react';
-import { IAnalyTicsDto, IQueryAnalytics } from 'src/types/analytics';
-import { getAnalytics } from 'src/api/analytics';
-import { fDate } from 'src/utils/format-time';
-import AnalyticsToolbar from '../analytics-toolbar';
 
 // ----------------------------------------------------------------------
 
@@ -35,20 +35,21 @@ export default function OverviewAnalyticsView() {
   const settings = useSettingsContext();
   // const [analytics, setAnalytics] = useState<IAnalyTicsDto>({});
   const [state, setState] = useState<{ query?: IQueryAnalytics; analytics?: IAnalyTicsDto }>({
-    // query: {
-    //   from_date: fDate(new Date(), 'YYYY-MM-DD'),
-    //   to_date: fDate(new Date(), 'YYYY-MM-DD'),
-    // },
+    query: {
+      from_date: format(new Date(), 'yyyy-MM-dd'),
+      to_date: format(new Date(), 'yyyy-MM-dd'),
+      period: '0-days',
+    },
   });
 
   const handleGetAnalytics = async (query: IQueryAnalytics) => {
-    const analytics = await getAnalytics(query);
-    console.log('🚀 ~ handleGetAnalytics ~ analytics:', analytics);
+    const { start, end } = getDateRange(query?.period as string);
+    setState({ ...state, query: { ...state.query, from_date: start, to_date: end } });
   };
 
-  console.log('🚀 ~ OverviewAnalyticsView ~ state:', state);
   useEffect(() => {
-    // handleGetAnalytics();
+    handleGetAnalytics(state.query as IQueryAnalytics);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
@@ -60,7 +61,16 @@ export default function OverviewAnalyticsView() {
       >
         Hi, Welcome back 👋
       </Typography> */}
-      <AnalyticsToolbar query={state.query as IQueryAnalytics} />
+      <AnalyticsToolbar
+        query={state.query as IQueryAnalytics}
+        changeQuery={(value) => {
+          setState({ ...state, query: value });
+          if (value.period) {
+            const { start, end } = getDateRange(value?.period as string);
+            setState({ ...state, query: { ...value, from_date: start, to_date: end } });
+          }
+        }}
+      />
 
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>

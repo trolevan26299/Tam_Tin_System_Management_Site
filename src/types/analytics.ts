@@ -1,6 +1,7 @@
 export type IQueryAnalytics = {
   from_date?: string;
   to_date?: string;
+  period?: string;
 };
 
 export type IAnalyTicsDto = {
