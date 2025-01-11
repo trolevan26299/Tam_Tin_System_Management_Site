@@ -1,9 +1,8 @@
 'use client';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
 import { useCallback, useEffect, useState } from 'react';
-import { deleteDeviceById, getDeviceById, getListDevice } from 'src/api/product';
+import { deleteDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -35,7 +34,6 @@ const TABLE_HEAD = [
 ];
 
 export default function ProductListView() {
-  const theme = useTheme();
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const { subCategoryList } = useGetSubCategory();
