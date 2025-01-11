@@ -92,7 +92,6 @@ export const paths = {
       list: `${ROOTS.DASHBOARD}/user/list`,
       profile: `${ROOTS.DASHBOARD}/user/profile`,
       account: `${ROOTS.DASHBOARD}/user/account`,
-      // edit: (id: string) => `${ROOTS.DASHBOARD}/user/${id}/edit`,
       demo: {
         edit: `${ROOTS.DASHBOARD}/user/${MOCK_ID}/edit`,
       },
@@ -100,12 +99,10 @@ export const paths = {
     product: {
       root: `${ROOTS.DASHBOARD}/product`,
       new: `${ROOTS.DASHBOARD}/product/new`,
-      // details: (id: string) => `${ROOTS.DASHBOARD}/product/${id}`,
-      // edit: (id: string) => `${ROOTS.DASHBOARD}/product/${id}/edit`,
-      demo: {
-        details: `${ROOTS.DASHBOARD}/product/${MOCK_ID}`,
-        edit: `${ROOTS.DASHBOARD}/product/${MOCK_ID}/edit`,
-      },
+    },
+    linhKien: {
+      linhKien: `${ROOTS.DASHBOARD}/linh-kien-management/linh-kien`,
+      transaction: `${ROOTS.DASHBOARD}/linh-kien-management/linh-kien-transaction`,
     },
     category: {
       root: `${ROOTS.DASHBOARD}/category`,
