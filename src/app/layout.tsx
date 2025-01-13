@@ -42,9 +42,9 @@ import { SubCategoryProvider } from 'src/store/provider/sub-category-provider';
 // ----------------------------------------------------------------------
 
 export const metadata = {
-  title: 'Minimal UI Kit',
+  title: 'Tâm Tín Quản Trị',
   description:
-    'The starting point for your next project with Minimal UI Kit, built on the newest version of Material-UI ©, ready to be customized to your style',
+    'Website quản trị Tâm Tín, tối ưu hóa các công việc xuất nhập kho , thống kê và quản trị nhân sự',
   keywords: 'react,material,kit,application,dashboard,admin,template',
   themeColor: '#000000',
   manifest: '/manifest.json',

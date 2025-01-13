@@ -92,6 +92,16 @@ export function useNavData() {
             icon: ICONS.product,
             children: [{ title: 'Danh sách', path: paths.dashboard.product.root }],
           },
+          // LINH KIEN
+          {
+            title: 'Quản lý linh kiện',
+            path: paths.dashboard.linhKien.linhKien,
+            icon: ICONS.product,
+            children: [
+              { title: 'Linh kiện', path: paths.dashboard.linhKien.linhKien },
+              { title: 'Giao dịch', path: paths.dashboard.linhKien.transaction },
+            ],
+          },
           // ORDER
           {
             title: 'Đơn Hàng',

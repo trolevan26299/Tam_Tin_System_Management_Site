@@ -58,7 +58,7 @@ export async function updateColumn(columnId: string, columnName: string) {
 export async function moveColumn(newOrdered: string[]) {
   try {
     // Gửi yêu cầu POST để cập nhật thứ tự các cột
-    await axiosInstance.post(`${URL}/column/order`, { newOrdered });
+    await axiosInstance.post(`${URL}/column/order`, newOrdered);
 
     // Cập nhật lại dữ liệu cục bộ từ server
     mutate(URL);
@@ -110,10 +110,38 @@ export async function updateTask(taskData: IKanbanTask) {
 }
 
 // ----------------------------------------------------------------------
-
-export async function moveTask(updateColumns: Record<string, IKanbanColumn>) {
+export async function moveTaskSameColumn(columnId: string, taskIds: string[]) {
   try {
-    await axiosInstance.post(`${URL}/task/move`, { updateColumns });
+    await axiosInstance.post(`${URL}/task-same-column/order`, { columnId, taskIds });
+    mutate(URL);
+  } catch (error) {
+    console.error('Failed to move task:', error);
+  }
+}
+// ----------------------------------------------------------------------
+
+export async function moveTaskAnotherColumn({
+  sourceColumnId,
+  destinationColumnId,
+  sourceTaskIds,
+  destinationTaskIds,
+  taskMoveId,
+}: {
+  sourceColumnId: string;
+  destinationColumnId: string;
+  sourceTaskIds: string[];
+  destinationTaskIds: string[];
+  taskMoveId: string;
+}) {
+  const updateColumns = {
+    sourceColumnId,
+    destinationColumnId,
+    sourceTaskIds,
+    destinationTaskIds,
+    taskMoveId,
+  };
+  try {
+    await axiosInstance.post(`${URL}/task-another-column/order`, updateColumns);
     mutate(URL);
   } catch (error) {
     console.error('Failed to move task:', error);
