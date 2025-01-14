@@ -96,4 +96,5 @@ export const endpoints = {
   analytics: {
     list: '/api/analytics',
   },
+  accessory: '/api/linh-kien',
 };

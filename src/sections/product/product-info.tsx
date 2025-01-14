@@ -80,7 +80,6 @@ export default function DeviceInfo({
   };
 
   const onSubmit = handleSubmit(async (data) => {
-    console.log('có vào đây');
     const newDate: IDevice = {
       _id: data?._id,
       name: data?.name,

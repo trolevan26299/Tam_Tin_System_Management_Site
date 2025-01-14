@@ -100,82 +100,82 @@ export default function OrderListView() {
   }, []);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        <CustomBreadcrumbs
-          heading="List"
-          links={[
-            { name: 'Dashboard', href: paths.dashboard.root },
-            {
-              name: 'Order',
-              href: paths.dashboard.order.root,
-            },
-            { name: 'List' },
-          ]}
-          action={
-            <Button
-              component={RouterLink}
-              href={paths.dashboard.order.new}
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-            >
-              Tạo order
-            </Button>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
+      <CustomBreadcrumbs
+        heading="List"
+        links={[
+          { name: 'Dashboard', href: paths.dashboard.root },
+          {
+            name: 'Order',
+            href: paths.dashboard.order.root,
+          },
+          { name: 'List' },
+        ]}
+        action={
+          <Button
+            component={RouterLink}
+            href={paths.dashboard.order.new}
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+          >
+            Tạo order
+          </Button>
+        }
+        sx={{ mb: { xs: 3, md: 5 } }}
+      />
+      <Card>
+        <OrderTableToolbar
+          onSearch={handleSearch}
+          query={queryList}
+          onReset={() => {
+            handleSearch({ page: 0, items_per_page: 5 });
+          }}
         />
-        <Card>
-          <OrderTableToolbar
-            onSearch={handleSearch}
-            query={queryList}
-            onReset={() => {
-              handleSearch({ page: 0, items_per_page: 5 });
-            }}
-          />
-          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <Scrollbar>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom headLabel={TABLE_HEAD} />
-                <TableBody>
-                  {tableData?.data?.map((row, index) => (
-                    <OrderTableRow
-                      key={index}
-                      row={row}
-                      selected={table.selected.includes(row?._id as string)}
-                      onSelectRow={() => table.onSelectRow(row?._id as string)}
-                      onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      onEditRow={() => handleViewRow(row?._id as string)}
-                      onViewRow={() => handleViewRow(row?._id as string)}
-                    />
-                  ))}
-                  <TableEmptyRows
-                    height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.totalCount || 0)}
+        <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+          <Scrollbar>
+            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+              <TableHeadCustom headLabel={TABLE_HEAD} />
+              <TableBody>
+                {tableData?.data?.map((row, index) => (
+                  <OrderTableRow
+                    key={index}
+                    row={row}
+                    selected={table.selected.includes(row?._id as string)}
+                    onSelectRow={() => table.onSelectRow(row?._id as string)}
+                    onDeleteRow={() => handleDeleteRow(row?._id as string)}
+                    onEditRow={() => handleViewRow(row?._id as string)}
+                    onViewRow={() => handleViewRow(row?._id as string)}
                   />
-                  <TableNoData notFound={tableData?.totalCount === 0} />
-                </TableBody>
-              </Table>
-            </Scrollbar>
-          </TableContainer>
+                ))}
+                <TableEmptyRows
+                  height={denseHeight}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.totalCount || 0)}
+                />
+                <TableNoData notFound={tableData?.totalCount === 0} />
+              </TableBody>
+            </Table>
+          </Scrollbar>
+        </TableContainer>
 
-          <TablePaginationCustom
-            count={tableData?.totalCount || 0}
-            page={Number(queryList?.page)}
-            rowsPerPage={Number(queryList?.items_per_page)}
-            onPageChange={(event, page) => {
-              const newQuery = { ...queryList, page };
-              handleSearch(newQuery);
-            }}
-            onRowsPerPageChange={(event) => {
-              const newQuery = {
-                ...queryList,
-                page: 0,
-                items_per_page: Number(event.target.value),
-              };
-              handleSearch(newQuery);
-            }}
-            dense={table.dense}
-            onChangeDense={table.onChangeDense}
-          />
-        </Card>
-      </Container>
+        <TablePaginationCustom
+          count={tableData?.totalCount || 0}
+          page={Number(queryList?.page)}
+          rowsPerPage={Number(queryList?.items_per_page)}
+          onPageChange={(event, page) => {
+            const newQuery = { ...queryList, page };
+            handleSearch(newQuery);
+          }}
+          onRowsPerPageChange={(event) => {
+            const newQuery = {
+              ...queryList,
+              page: 0,
+              items_per_page: Number(event.target.value),
+            };
+            handleSearch(newQuery);
+          }}
+          dense={table.dense}
+          onChangeDense={table.onChangeDense}
+        />
+      </Card>
+    </Container>
   );
 }

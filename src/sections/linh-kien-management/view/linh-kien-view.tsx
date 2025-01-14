@@ -1,8 +1,20 @@
 'use client';
 
-import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
-import React, { useCallback, useEffect, useState } from 'react';
-import { deleteDeviceById, getListDevice } from 'src/api/product';
+import {
+  Button,
+  Card,
+  Container,
+  IconButton,
+  InputAdornment,
+  Stack,
+  Table,
+  TableBody,
+  TableContainer,
+  TextField,
+} from '@mui/material';
+import { useSnackbar } from 'notistack';
+import { useEffect, useMemo, useState } from 'react';
+import { deleteLinhKien, useGetLinhKien } from 'src/api/linhkien';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -16,170 +28,154 @@ import {
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
-import DeviceInfo from 'src/sections/product/product-info';
-import ProductTableRow from 'src/sections/product/product-table-row';
-import ProductTableToolbar from 'src/sections/product/product-table-toolbar';
-import { useGetSubCategory } from 'src/store/context/sub-category-context';
-import { IDataDevice, IDevice, IQueryDevice } from 'src/types/product';
-import LinhKienTableToolbar from '../linh-kien-table-toolbar';
+import { ILinhKien } from 'src/types/linh-kien';
+import LinhKienTableRow from '../linhKienTableRow';
+import LinhKienInfo from '../linhkien-info';
 
 const TABLE_HEAD = [
-  { id: 'id_device', label: 'ID', width: 160 },
-  { id: 'name', label: 'Tên', width: 160 },
-  { id: 'category_name', label: 'Thuộc', width: 160 },
-  { id: 'price', label: 'Giá nhập', width: 160 },
-  { id: 'inventory', label: 'Tồn kho', width: 120 },
-  { id: 'sold', label: 'Đã bán', width: 120 },
-  { id: 'note', label: 'Ghi chú', width: 160 },
-  { id: 'action', label: '', width: 120 },
+  { id: 'name_linh_kien', label: 'Tên' },
+  { id: 'total', label: 'Tổng' },
+  { id: 'create_date', label: 'Ngày tạo' },
+  { id: 'user_create', label: 'Nhân viên tạo' },
+  { id: 'data_ung', label: 'Nhân viên ứng' },
+  { id: 'action', label: 'action' },
 ];
 
 export default function LinhKienView() {
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
-  const { subCategoryList } = useGetSubCategory();
-  const [tableData, setTableData] = useState<IDataDevice | undefined>();
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
-    page: 0,
-    items_per_page: 10,
-  });
   const denseHeight = table.dense ? 52 : 72;
+  const { enqueueSnackbar } = useSnackbar();
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const handleSearch = async (query: IQueryDevice) => {
-    const deviceList = await getDeviceList(query);
-    setQueryDevice(query);
-    setTableData(deviceList);
-  };
+  const { data: linhKienList } = useGetLinhKien();
 
-  const getDeviceList = async (query?: IQueryDevice) => {
-    const deviceList = await getListDevice(query);
-    return deviceList;
-  };
+  const filteredList = useMemo(() => {
+    if (!searchTerm) return linhKienList;
+    return linhKienList?.filter(
+      (item: ILinhKien) => item?.name_linh_kien?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  }, [searchTerm, linhKienList]);
 
-  const handleDeleteById = async (id: string) => {
-    await deleteDeviceById(id);
-  };
+  const paginatedList = useMemo(() => {
+    const startIndex = table.page * table.rowsPerPage;
+    return filteredList?.slice(startIndex, startIndex + table.rowsPerPage);
+  }, [filteredList, table.page, table.rowsPerPage]);
 
-  const handleDeleteRow = useCallback(
-    (id: string) => {
-      handleDeleteById(id);
-      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
-      setTableData({ ...tableData, data: deleteRow });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [table, tableData]
-  );
-
-  const getAllData = async () => {
-    try {
-      const deviceList = await getDeviceList(queryDevice);
-      setTableData(deviceList);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   useEffect(() => {
-    getAllData();
+    table.onChangePage(null, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchTerm]);
   return (
-    <>
-      <Container maxWidth={settings.themeStretch ? false : 'lg'}>
-        <CustomBreadcrumbs
-          heading="Danh sách linh kiện"
-          links={[
-            { name: 'Trang chủ', href: paths.dashboard.root },
-            { name: 'Quản lý linh kiện', href: paths.dashboard.linhKien.linhKien },
-            { name: 'Danh sách' },
-          ]}
-          action={
-            <Button
-              variant="contained"
-              startIcon={<Iconify icon="mingcute:add-line" />}
-              onClick={() => {
-                setOpenDialog(true);
-              }}
-            >
-              Thêm mới linh kiện
-            </Button>
-          }
-          sx={{ mb: { xs: 3, md: 5 } }}
-        />
-
-        <Card>
-          <LinhKienTableToolbar
-            onSearch={(query) => {
-              const newQuery = { ...query, page: 0 };
-              handleSearch(newQuery);
+    <Container maxWidth={settings.themeStretch ? false : 'lg'}>
+      <CustomBreadcrumbs
+        heading="Danh sách linh kiện"
+        links={[
+          { name: 'Trang chủ', href: paths.dashboard.root },
+          { name: 'Quản lý linh kiện', href: paths.dashboard.linhKien.linhKien },
+          { name: 'Danh sách' },
+        ]}
+        action={
+          <Button
+            variant="contained"
+            startIcon={<Iconify icon="mingcute:add-line" />}
+            onClick={() => {
+              setOpenDialog(true);
             }}
-            query={queryDevice}
-          />
-          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <Scrollbar>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom headLabel={TABLE_HEAD} />
-
-                <TableBody>
-                  {/* {tableData?.data.map((row) => (
-                  <ProductTableRow
-                    key={row._id}
-                    row={{
-                      ...row,
-                      sub_category_id: subCategoryList?.find((x) => x._id === row.sub_category_id)
-                        ?.name as string,
-                    }}
-                    selected={table.selected.includes(row?._id as string)}
-                    onSelectRow={() => table.onSelectRow(row?._id as string)}
-                    onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                    // onEditRow={() => handleEditRow(row?._id as string)}
-                  />
-                ))} */}
-
-                  <TableEmptyRows
-                    height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.totalCount || 0)}
-                  />
-
-                  <TableNoData notFound={tableData?.totalCount === 0} />
-                </TableBody>
-              </Table>
-            </Scrollbar>
-          </TableContainer>
-
-          <TablePaginationCustom
-            count={tableData?.totalCount || 0}
-            page={Number(queryDevice?.page)}
-            rowsPerPage={Number(queryDevice?.items_per_page)}
-            onPageChange={(event, page) => {
-              const newQuery = { ...queryDevice, page };
-              handleSearch(newQuery);
-            }}
-            onRowsPerPageChange={(event) => {
-              const newQuery = {
-                ...queryDevice,
-                page: 0,
-                items_per_page: Number(event.target.value),
-              };
-              handleSearch(newQuery);
-            }}
-            dense={table.dense}
-            onChangeDense={table.onChangeDense}
-          />
-        </Card>
-      </Container>
-      <DeviceInfo
-        open={openDialog}
-        onClose={handleCloseDialog}
-        getDeviceList={() => {
-          handleSearch(queryDevice);
-        }}
-        listSubCategory={subCategoryList}
+          >
+            Thêm mới linh kiện
+          </Button>
+        }
+        sx={{ mb: { xs: 3, md: 5 } }}
       />
-    </>
+
+      <Card>
+        <Stack
+          spacing={2}
+          alignItems={{ xs: 'flex-end', md: 'center' }}
+          direction={{
+            xs: 'column',
+            md: 'row',
+          }}
+          sx={{
+            p: 2.5,
+            pr: { xs: 2.5, md: 1 },
+          }}
+        >
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 500 }}>
+            <TextField
+              sx={{ width: 300 }}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Tìm kiếm linh kiện..."
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Iconify icon="eva:search-fill" sx={{ color: 'text.disabled' }} />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => {
+                        setSearchTerm('');
+                      }}
+                    >
+                      <Iconify icon="eva:close-fill" sx={{ color: 'text.disabled' }} />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+          </Stack>
+        </Stack>
+        <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+          <Scrollbar>
+            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+              <TableHeadCustom headLabel={TABLE_HEAD} />
+
+              <TableBody>
+                {paginatedList?.map((row: ILinhKien) => (
+                  <LinhKienTableRow
+                    key={row._id}
+                    row={row}
+                    selected={table.selected.includes(row?._id as string)}
+                    onDeleteRow={(passCode?: number) => {
+                      if (passCode) deleteLinhKien(String(row?._id), passCode, enqueueSnackbar);
+                    }}
+                  />
+                ))}
+
+                <TableEmptyRows
+                  height={denseHeight}
+                  emptyRows={emptyRows(table.page, table.rowsPerPage, linhKienList?.length || 0)}
+                />
+
+                <TableNoData notFound={linhKienList?.length === 0} />
+              </TableBody>
+            </Table>
+          </Scrollbar>
+        </TableContainer>
+
+        <TablePaginationCustom
+          count={filteredList?.length || 0}
+          page={table.page}
+          rowsPerPage={table.rowsPerPage}
+          onPageChange={table.onChangePage}
+          onRowsPerPageChange={table.onChangeRowsPerPage}
+          dense={table.dense}
+          onChangeDense={table.onChangeDense}
+        />
+      </Card>
+
+      <LinhKienInfo
+        open={openDialog}
+        onClose={() => {
+          setOpenDialog(false);
+        }}
+      />
+    </Container>
   );
 }
