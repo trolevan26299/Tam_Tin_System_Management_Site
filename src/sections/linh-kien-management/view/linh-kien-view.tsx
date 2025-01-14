@@ -47,10 +47,11 @@ export default function LinhKienView() {
   const denseHeight = table.dense ? 52 : 72;
   const { enqueueSnackbar } = useSnackbar();
 
+  const { data: linhKienList } = useGetLinhKien();
+
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
 
-  const { data: linhKienList } = useGetLinhKien();
 
   const filteredList = useMemo(() => {
     if (!searchTerm) return linhKienList;

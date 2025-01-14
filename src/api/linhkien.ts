@@ -3,10 +3,10 @@ import { ILinhKienInfo } from 'src/types/linh-kien';
 import axiosInstance, { endpoints, fetcher } from 'src/utils/axios';
 import useSWR, { mutate } from 'swr';
 
-const URL = endpoints.accessory;
+const URL = endpoints.linhKien.list;
 
 export function useGetLinhKien() {
-  const { data, isLoading, error, isValidating } = useSWR(`${URL}?is_all=true`, fetcher);
+  const { data, isLoading, error, isValidating } = useSWR(`${URL}`, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
@@ -24,7 +24,7 @@ export function useGetLinhKien() {
 
 export async function createLinhKien(data: ILinhKienInfo) {
   try {
-    await axiosInstance.post(`${URL}`, data);
+    await axiosInstance.post(`${endpoints.linhKien.default}`, data);
     mutate(URL);
   } catch (error) {
     console.error('Failed to create linh kien:', error);
@@ -37,7 +37,7 @@ export async function deleteLinhKien(
   enqueueSnackbar: (message: string, options?: object) => void
 ) {
   try {
-    const data = await axiosInstance.delete(`${URL}/${id}`, {
+    const data = await axiosInstance.delete(`${endpoints.linhKien.default}/${id}`, {
       params: { passcode: passCode },
     });
     enqueueSnackbar(data?.data?.message, { variant: 'success' });
