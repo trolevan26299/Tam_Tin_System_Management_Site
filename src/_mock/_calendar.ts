@@ -14,3 +14,38 @@ export const CALENDAR_COLOR_OPTIONS = [
   palette.error.main,
   palette.error.darker,
 ];
+
+export const PERIOD_OPTIONS = [
+  {
+    value: '0-days',
+    label: 'Hôm nay',
+  },
+  {
+    value: '1-days',
+    label: 'Hôm qua',
+  },
+  {
+    value: '1-weeks',
+    label: 'Tuần trước',
+  },
+  {
+    value: '1-months',
+    label: 'Tháng trước',
+  },
+  {
+    value: '1-years',
+    label: 'Năm trước',
+  },
+  {
+    value: '0-weeks',
+    label: 'Tuần này',
+  },
+  {
+    value: '0-months',
+    label: 'Tháng này',
+  },
+  {
+    value: '0-years',
+    label: 'Năm này',
+  },
+];
