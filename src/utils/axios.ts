@@ -93,4 +93,8 @@ export const endpoints = {
     update: (staffId: string) => `/api/staff/${staffId}`,
     delete: (staffId: string) => `api/staff/${staffId}`,
   },
+  analytics: {
+    list: '/api/analytics',
+  },
+  accessory: '/api/linh-kien',
 };
