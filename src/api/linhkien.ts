@@ -1,12 +1,12 @@
 import { useMemo } from 'react';
-import { ILinhKienInfo } from 'src/types/linh-kien';
+import { ILinhKienInfo, IQueryLinhKien } from 'src/types/linh-kien';
 import axiosInstance, { endpoints, fetcher } from 'src/utils/axios';
 import useSWR, { mutate } from 'swr';
 
 const URL = endpoints.linhKien.list;
 
 export function useGetLinhKien() {
-  const { data, isLoading, error, isValidating } = useSWR(`${URL}`, fetcher);
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
@@ -46,4 +46,35 @@ export async function deleteLinhKien(
     enqueueSnackbar(error.error, { variant: 'error' });
     console.error('Failed to delete linh kien:', error);
   }
+}
+
+// transaction
+const URL_TRANSACTION = endpoints.linhKien.transaction;
+
+export async function getLinhKienByName(params: IQueryLinhKien) {
+  try {
+    const res = await axiosInstance.get(URL, { params });
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
+
+export function useGetLinhKienTransaction(query: IQueryLinhKien) {
+  const usp = new URLSearchParams(query as any);
+
+  const { data, isLoading, error, isValidating } = useSWR(`${URL_TRANSACTION}?${usp}`, fetcher);
+
+  const memoizedValue = useMemo(
+    () => ({
+      data,
+      isLoading,
+      error,
+      isValidating,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [data, error, isLoading, isValidating]
+  );
+
+  return memoizedValue;
 }

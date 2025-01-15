@@ -3,6 +3,7 @@
 import { Button, Card, Container, Stack, Table, TableBody, TableContainer } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useState } from 'react';
+import { useGetLinhKienTransaction } from 'src/api/linhkien';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -12,9 +13,17 @@ import {
   TableEmptyRows,
   TableHeadCustom,
   TableNoData,
+  TablePaginationCustom,
   useTable,
 } from 'src/components/table';
 import { paths } from 'src/routes/paths';
+import {
+  IDataLinhKienTransaction,
+  ILinhKienTransaction,
+  IQueryLinhKien,
+} from 'src/types/linh-kien';
+import LinhkienTransactionTableRow from '../linh-kien-transaction-table-row';
+import LinhKienTransactionInfo from '../linh-kien-transaction-info';
 
 const TABLE_HEAD = [
   { id: 'name_linh_kien', label: 'Tên' },
@@ -24,7 +33,7 @@ const TABLE_HEAD = [
   { id: 'noi_dung', label: 'Nội dung' },
   { id: 'nguoi_tao', label: 'Người tạo' },
   { id: 'create_date', label: 'Ngày tạo' },
-  { id: 'action', label: 'action' },
+  { id: 'action', label: 'Hành động' },
 ];
 
 const LinhKienTransactionView = () => {
@@ -33,12 +42,18 @@ const LinhKienTransactionView = () => {
   const denseHeight = table.dense ? 52 : 72;
   const { enqueueSnackbar } = useSnackbar();
 
-  const [tableData, setTableData] = useState<any | undefined>();
+  const [queryTransaction, setQueryTransaction] = useState<IQueryLinhKien>({
+    page: 0,
+    items_per_page: 10,
+  });
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+
+  const { data: linhKienList } = useGetLinhKienTransaction(queryTransaction);
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
-        heading="Danh sách linh kiện transaction"
+        heading="Danh sách linh kiện giao dịch"
         links={[
           { name: 'Trang chủ', href: paths.dashboard.root },
           { name: 'Quản lý linh kiện giao dịch', href: paths.dashboard.linhKien.transaction },
@@ -49,7 +64,7 @@ const LinhKienTransactionView = () => {
             variant="contained"
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => {
-              // setOpenDialog(true);
+              setOpenDialog(true);
             }}
           >
             Thêm mới linh kiện giao dịch
@@ -70,35 +85,69 @@ const LinhKienTransactionView = () => {
             pr: { xs: 2.5, md: 1 },
           }}
         >
-          <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
-            <Scrollbar>
-              <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
-                <TableHeadCustom headLabel={TABLE_HEAD} />
-
-                <TableBody>
-                  {/* {paginatedList?.map((row: ILinhKien) => (
-                    <LinhKienTableRow
-                      key={row._id}
-                      row={row}
-                      selected={table.selected.includes(row?._id as string)}
-                      onDeleteRow={(passCode?: number) => {
-                        if (passCode) deleteLinhKien(String(row?._id), passCode, enqueueSnackbar);
-                      }}
-                    />
-                  ))} */}
-
-                  <TableEmptyRows
-                    height={denseHeight}
-                    emptyRows={emptyRows(table.page, table.rowsPerPage, tableData?.totalCount || 0)}
-                  />
-
-                  <TableNoData notFound={tableData?.totalCount === 0} />
-                </TableBody>
-              </Table>
-            </Scrollbar>
-          </TableContainer>
+          {/*  */}
         </Stack>
+        <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
+          <Scrollbar>
+            <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
+              <TableHeadCustom headLabel={TABLE_HEAD} />
+
+              <TableBody>
+                {linhKienList?.data?.map((row: ILinhKienTransaction) => (
+                  <LinhkienTransactionTableRow
+                    key={row._id}
+                    row={row}
+                    selected={table.selected.includes(row?._id as string)}
+                    onDeleteRow={() => {
+                      //
+                    }}
+                    onEditRow={() => {
+                      //
+                    }}
+                  />
+                ))}
+
+                <TableEmptyRows
+                  height={denseHeight}
+                  emptyRows={emptyRows(
+                    table.page,
+                    table.rowsPerPage,
+                    linhKienList?.totalCount || 0
+                  )}
+                />
+
+                <TableNoData notFound={linhKienList?.totalCount === 0} />
+              </TableBody>
+            </Table>
+          </Scrollbar>
+        </TableContainer>
+
+        <TablePaginationCustom
+          count={linhKienList?.totalCount || 0}
+          page={Number(queryTransaction?.page)}
+          rowsPerPage={Number(queryTransaction?.items_per_page)}
+          onPageChange={(event, page) => {
+            const newQuery = { ...queryTransaction, page };
+            setQueryTransaction(newQuery);
+          }}
+          onRowsPerPageChange={(event) => {
+            const newQuery = {
+              ...queryTransaction,
+              page: 0,
+              items_per_page: Number(event.target.value),
+            };
+            setQueryTransaction(newQuery);
+          }}
+          dense={table.dense}
+          onChangeDense={table.onChangeDense}
+        />
       </Card>
+
+      <LinhKienTransactionInfo
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        // currentItem={}
+      />
     </Container>
   );
 };

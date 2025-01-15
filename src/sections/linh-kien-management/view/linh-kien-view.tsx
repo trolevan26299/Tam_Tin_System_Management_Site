@@ -38,7 +38,7 @@ const TABLE_HEAD = [
   { id: 'create_date', label: 'Ngày tạo' },
   { id: 'user_create', label: 'Nhân viên tạo' },
   { id: 'data_ung', label: 'Nhân viên ứng' },
-  { id: 'action', label: 'action' },
+  { id: 'action', label: 'Hành động' },
 ];
 
 export default function LinhKienView() {
@@ -51,7 +51,6 @@ export default function LinhKienView() {
 
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
-
 
   const filteredList = useMemo(() => {
     if (!searchTerm) return linhKienList;

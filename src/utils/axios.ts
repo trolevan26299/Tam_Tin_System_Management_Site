@@ -99,5 +99,6 @@ export const endpoints = {
   linhKien: {
     list: '/api/linh-kien?is_all=true',
     default: '/api/linh-kien',
+    transaction: '/api/transaction-linh-kien',
   },
 };
