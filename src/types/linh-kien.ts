@@ -41,8 +41,8 @@ export type IDataLinhKien = {
 
 // transaction
 export type IStaff = {
-  name: string;
-  id: string;
+  name?: string;
+  id?: string;
 };
 
 export type ILinhKienTransaction = {

@@ -15,21 +15,20 @@ import { debounce } from 'lodash';
 import { useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
 import { getLinhKienByName } from 'src/api/linhkien';
+import { getStaffs } from 'src/api/staff';
+import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
 import { ILinhKien, ILinhKienTransaction } from 'src/types/linh-kien';
+import { IStaff } from 'src/types/staff';
 import * as Yup from 'yup';
 import { option } from '../user/user-info';
 
 const initializeDefaultValues = (): DefaultValues<ILinhKienTransaction> => ({
   name_linh_kien: '',
-  nhan_vien: {
-    id: '',
-    name: '',
-  },
+  nhan_vien: {},
   total: 0,
   type: 'Ứng',
   noi_dung: undefined,
-  nguoi_tao: undefined,
   _id: undefined,
 });
 
@@ -48,15 +47,14 @@ function LinhKienTransactionInfo({
   // currentItem?: ILinhKienTransaction;
 }) {
   const theme = useTheme();
+  const { user } = useAuthContext();
 
   const [linhKien, setLinhKien] = useState<ILinhKien[]>([]);
+  const [staff, setStaff] = useState<IStaff[]>([]);
 
   const NewLinhKienTransactionSchema = Yup.object().shape({
     name_linh_kien: Yup.string().required('Tên là bắt buộc'),
-    nhan_vien: Yup.object().shape({
-      id: Yup.string().required('id là bắt buột'),
-      name: Yup.string().required('Tên là bắt buột'),
-    }),
+    nhan_vien: Yup.object().required('Nhân viên là bắt buộc'),
     total: Yup.number().required().min(1, 'Số lượng là bắt buộc'),
     type: Yup.string().required('Loại bắt buộc'),
   });
@@ -67,18 +65,38 @@ function LinhKienTransactionInfo({
   });
 
   const {
+    getValues,
     handleSubmit,
-    formState: { isSubmitting },
+    formState: { isSubmitting, errors },
   } = methods;
+  console.log(getValues('nhan_vien'), errors);
 
   const onSubmit = async (data: ILinhKienTransaction) => {
-    console.log(data);
+    const newData: ILinhKienTransaction = { ...data, nguoi_tao: user?.username };
+    console.log(newData);
   };
 
   const handleInputChangeLinhKien = debounce(async (searchQuery: string) => {
     try {
-      const response = await getLinhKienByName({ keyword: searchQuery });
-      setLinhKien(response);
+      if (searchQuery !== '') {
+        const response = await getLinhKienByName({ keyword: searchQuery });
+        setLinhKien(response.data);
+      } else {
+        setLinhKien([]);
+      }
+    } catch (error) {
+      console.error('Failed to search linh kien:', error);
+    }
+  }, 300);
+
+  const handleInputChangeStaff = debounce(async (searchQuery: string) => {
+    try {
+      if (searchQuery !== '') {
+        const response = await getStaffs({ keyword: searchQuery });
+        setStaff(response.data);
+      } else {
+        setStaff([]);
+      }
     } catch (error) {
       console.error('Failed to search linh kien:', error);
     }
@@ -142,6 +160,24 @@ function LinhKienTransactionInfo({
 
               <Grid xs={12}>
                 <RHFTextField name="total" label="Tổng" />
+              </Grid>
+
+              <Grid xs={12}>
+                <RHFAutocomplete
+                  name="nhan_vien"
+                  label="Nhân viên"
+                  options={staff.map((item) => ({ id: item?._id, name: item?.name }))}
+                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                    if (reason === 'input') {
+                      handleInputChangeStaff(value);
+                    }
+                  }}
+                  getOptionLabel={(opt: any) => staff?.find((x) => x._id === opt?.id)?.name || ''}
+                />
+              </Grid>
+
+              <Grid xs={12}>
+                <RHFTextField name="noi_dung" label="Ghi chú" multiline rows={4} />
               </Grid>
             </Grid>
           </Box>
