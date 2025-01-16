@@ -93,10 +93,10 @@ export async function createTransactionLinhKien(
   enqueueSnackbar: (message: string, options?: object) => void
 ) {
   try {
-    const res = await axiosInstance.post(`${endpoints.linhKien.default}`, data);
-    enqueueSnackbar(res?.data?.message, { variant: 'success' });
-    return res.data;
+    const res = await axiosInstance.post(`${endpoints.linhKien.transaction}`, data);
+    enqueueSnackbar('Tạo mới thành công!', { variant: 'success' });
     // mutate(URL_TRANSACTION);
+    return res;
   } catch (error) {
     enqueueSnackbar(error.error, { variant: 'error' });
     return console.error(error);

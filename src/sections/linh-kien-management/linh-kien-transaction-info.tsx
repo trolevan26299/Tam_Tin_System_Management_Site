@@ -12,9 +12,10 @@ import {
 import { useTheme } from '@mui/material/styles';
 import Grid from '@mui/material/Unstable_Grid2';
 import { debounce } from 'lodash';
-import { useState } from 'react';
+import { useSnackbar } from 'notistack';
+import { useEffect, useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
-import { getLinhKienByName } from 'src/api/linhkien';
+import { createTransactionLinhKien, getLinhKienByName } from 'src/api/linhkien';
 import { getStaffs } from 'src/api/staff';
 import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
@@ -42,14 +43,16 @@ export const optionStatus: option[] = [
 
 function LinhKienTransactionInfo({
   open,
-  onClose, // currentItem,
+  onClose,
+  currentItem,
 }: {
   open: boolean;
   onClose: () => void;
-  // currentItem?: ILinhKienTransaction;
+  currentItem?: ILinhKienTransaction;
 }) {
   const theme = useTheme();
   const { user } = useAuthContext();
+  const { enqueueSnackbar } = useSnackbar();
 
   const [linhKien, setLinhKien] = useState<ILinhKien[]>([]);
   const [staff, setStaff] = useState<IStaff[]>([]);
@@ -71,11 +74,13 @@ function LinhKienTransactionInfo({
   const {
     handleSubmit,
     formState: { isSubmitting },
+    reset,
   } = methods;
 
   const onSubmit = async (data: ILinhKienTransaction) => {
     const newData: ILinhKienTransaction = { ...data, nguoi_tao: user?.username };
-    console.log(newData);
+    const res = await createTransactionLinhKien(newData, enqueueSnackbar);
+    console.log(res);
   };
 
   const handleInputChangeLinhKien = debounce(async (searchQuery: string) => {
@@ -104,6 +109,9 @@ function LinhKienTransactionInfo({
     }
   }, 300);
 
+  useEffect(() => {
+    reset();
+  }, [open, reset]);
   return (
     <Dialog
       fullWidth

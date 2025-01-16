@@ -41,8 +41,7 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
 
   useEffect(() => {
     reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, reset]);
   return (
     <Dialog
       fullWidth
