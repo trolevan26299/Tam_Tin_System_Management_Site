@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { ILinhKienInfo, IQueryLinhKien } from 'src/types/linh-kien';
+import { ILinhKienInfo, ILinhKienTransaction, IQueryLinhKien } from 'src/types/linh-kien';
 import axiosInstance, { endpoints, fetcher } from 'src/utils/axios';
 import useSWR, { mutate } from 'swr';
 
@@ -77,4 +77,28 @@ export function useGetLinhKienTransaction(query: IQueryLinhKien) {
   );
 
   return memoizedValue;
+}
+
+export async function getLinhKienTransactionById(id: string) {
+  try {
+    const res = await axiosInstance.get(`${URL_TRANSACTION}/${id}`);
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
+}
+
+export async function createTransactionLinhKien(
+  data: ILinhKienTransaction,
+  enqueueSnackbar: (message: string, options?: object) => void
+) {
+  try {
+    const res = await axiosInstance.post(`${endpoints.linhKien.default}`, data);
+    enqueueSnackbar(res?.data?.message, { variant: 'success' });
+    return res.data;
+    // mutate(URL_TRANSACTION);
+  } catch (error) {
+    enqueueSnackbar(error.error, { variant: 'error' });
+    return console.error(error);
+  }
 }

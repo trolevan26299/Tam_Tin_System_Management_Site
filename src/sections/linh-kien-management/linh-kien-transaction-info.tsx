@@ -25,7 +25,9 @@ import { option } from '../user/user-info';
 
 const initializeDefaultValues = (): DefaultValues<ILinhKienTransaction> => ({
   name_linh_kien: '',
-  nhan_vien: {},
+  nhan_vien: {
+    id: '',
+  },
   total: 0,
   type: 'Ứng',
   noi_dung: undefined,
@@ -54,7 +56,9 @@ function LinhKienTransactionInfo({
 
   const NewLinhKienTransactionSchema = Yup.object().shape({
     name_linh_kien: Yup.string().required('Tên là bắt buộc'),
-    nhan_vien: Yup.object().required('Nhân viên là bắt buộc'),
+    nhan_vien: Yup.object()
+      .required('Nhân viên là bắt buộc')
+      .test('is-valid', 'Nhân viên là bắt buộc', (value) => value && (value as any).id !== ''),
     total: Yup.number().required().min(1, 'Số lượng là bắt buộc'),
     type: Yup.string().required('Loại bắt buộc'),
   });
@@ -65,11 +69,9 @@ function LinhKienTransactionInfo({
   });
 
   const {
-    getValues,
     handleSubmit,
-    formState: { isSubmitting, errors },
+    formState: { isSubmitting },
   } = methods;
-  console.log(getValues('nhan_vien'), errors);
 
   const onSubmit = async (data: ILinhKienTransaction) => {
     const newData: ILinhKienTransaction = { ...data, nguoi_tao: user?.username };
@@ -159,7 +161,14 @@ function LinhKienTransactionInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFTextField name="total" label="Tổng" />
+                <RHFTextField
+                  name="total"
+                  label="Tổng"
+                  type="number"
+                  onKeyDown={(evt) =>
+                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                  }
+                />
               </Grid>
 
               <Grid xs={12}>
@@ -172,6 +181,7 @@ function LinhKienTransactionInfo({
                       handleInputChangeStaff(value);
                     }
                   }}
+                  isOptionEqualToValue={(opt, value) => opt.id === value.id}
                   getOptionLabel={(opt: any) => staff?.find((x) => x._id === opt?.id)?.name || ''}
                 />
               </Grid>

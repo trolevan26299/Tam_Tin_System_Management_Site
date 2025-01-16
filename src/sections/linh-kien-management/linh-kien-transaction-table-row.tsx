@@ -71,7 +71,7 @@ function LinhkienTransactionTableRow({ row, selected, onDeleteRow, onEditRow }: 
       >
         <MenuItem
           onClick={() => {
-            // onEditRow();
+            onEditRow();
             popover.onClose();
           }}
         >

@@ -103,6 +103,7 @@ const LinhKienTransactionView = () => {
                     }}
                     onEditRow={() => {
                       //
+                      console.log(row._id);
                     }}
                   />
                 ))}
