@@ -20,6 +20,7 @@ function StaffTableToolbar({
       }}
       sx={{
         p: 2.5,
+        width: '50%',
         pr: { xs: 2.5, md: 1 },
       }}
     >
@@ -28,7 +29,7 @@ function StaffTableToolbar({
           onSearch({ ...query, keyword: value });
         }}
         placeholder="Tìm kiếm tên nhân viên..."
-        width={300}
+        width="100%"
         value={query?.keyword || ''}
         useIconClear
       />

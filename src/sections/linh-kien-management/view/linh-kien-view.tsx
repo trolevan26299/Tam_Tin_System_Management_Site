@@ -105,7 +105,7 @@ export default function LinhKienView() {
             pr: { xs: 2.5, md: 1 },
           }}
         >
-          <Stack direction="row" alignItems="center" spacing={2} sx={{ width: 500 }}>
+          <Stack direction="row" alignItems="center" spacing={2} sx={{ minWidth: 500 }}>
             <TextField
               sx={{ width: 300 }}
               value={searchTerm}
