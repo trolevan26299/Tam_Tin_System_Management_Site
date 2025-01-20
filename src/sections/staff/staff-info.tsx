@@ -125,26 +125,23 @@ function StaffInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={onSubmit}>
-        <DialogTitle sx={{ pb: 2 }}>{!currentStaff ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
+        <DialogTitle sx={{ pb: 0 ,pl:5}}>{!currentStaff ? 'Tạo mới' : 'Cập nhật'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
-              p: 3,
+              p: 2,
               borderBottom: `solid 1px ${theme.palette.divider}`,
-              height: '710px',
+              height: '600px',
               overflow: 'auto',
             }}
           >
             <Grid container spacing={3}>
+
               <Grid xs={12}>
                 <RHFTextField name="name" label="Tên nhân viên" />
               </Grid>
 
-              <Grid xs={12}>
-                <RHFTextField name="address" label="Địa chỉ" />
-              </Grid>
-
-              <Grid xs={12}>
+              <Grid xs={6}>
                 <RHFTextField
                   name="age"
                   label="Tuổi"
@@ -154,6 +151,31 @@ function StaffInfo({
                   }
                 />
               </Grid>
+
+              <Grid xs={6}>
+                <RHFTextField name="phone" label="Số điện thoại" />
+              </Grid>
+
+              <Grid xs={12}>
+                <RHFTextField name="address" label="Địa chỉ" />
+              </Grid>
+
+              {/* Thông tin công việc */}
+              <Grid xs={6}>
+                <RHFTextField name="position" label="Vị trí" />
+              </Grid>
+
+              <Grid xs={6}>
+                <RHFTextField
+                  name="exp"
+                  label="Kinh nghiệm (năm)"
+                  type="number"
+                  onKeyDown={(evt) =>
+                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                  }
+                />
+              </Grid>
+
               <Grid xs={12}>
                 <RHFTextField
                   name="salary"
@@ -168,35 +190,17 @@ function StaffInfo({
                 />
               </Grid>
 
-              <Grid xs={12}>
-                <RHFTextField name="position" label="Vị trí" />
-              </Grid>
-
-              <Grid xs={12}>
-                <RHFTextField
-                  name="exp"
-                  label="Kinh nghiệm"
-                  type="number"
-                  onKeyDown={(evt) =>
-                    ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                  }
-                />
-              </Grid>
-
-              <Grid xs={12}>
-                <RHFTextField name="phone" label="Phone" />
-              </Grid>
-
-              <Grid xs={12}>
+              {/* Thông tin Telegram */}
+              <Grid xs={6}>
                 <RHFTextField name="username_telegram" label="Username Telegram" />
               </Grid>
 
-              <Grid xs={12}>
+              <Grid xs={6}>
                 <RHFTextField name="user_id_telegram" label="UserId Telegram" />
               </Grid>
 
               <Grid xs={12}>
-                <RHFTextField name="note" label="Ghi chú" multiline rows={4} />
+                <RHFTextField name="note" label="Ghi chú" multiline rows={3} />
               </Grid>
             </Grid>
           </Box>

@@ -126,7 +126,7 @@ function StaffListView() {
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom headLabel={TABLE_HEAD} />
-                <TableBody>
+                <TableBody >
                   {tableData?.data?.map((row) => (
                     <StaffTableRow
                       key={row._id}
