@@ -28,7 +28,8 @@ const initializeDefaultValues = (): DefaultValues<IStaff> => ({
   position: '',
   exp: undefined,
   phone: '',
-  telegram: '',
+  username_telegram: '',
+  user_id_telegram: '',
   note: '',
 });
 
@@ -48,13 +49,14 @@ function StaffInfo({
 
   const NewStaff = Yup.object().shape({
     name: Yup.string().required('Name is required'),
-    address: Yup.string().required('Address is required'),
-    age: Yup.number().required('Age is required !'),
-    salary: Yup.number().required('Salary is required'),
-    position: Yup.string().required('Position is required'),
-    exp: Yup.number().required('Exp is required'),
-    phone: Yup.string().required('Phone is required'),
-    telegram: Yup.string().required('Telegram is required'),
+    address: Yup.string(),
+    age: Yup.number(),
+    salary: Yup.number(),
+    position: Yup.string(),
+    exp: Yup.number(),
+    phone: Yup.string(),
+    username_telegram: Yup.string(),
+    user_id_telegram: Yup.string(),
     note: Yup.string(),
   });
 
@@ -186,7 +188,11 @@ function StaffInfo({
               </Grid>
 
               <Grid xs={12}>
-                <RHFTextField name="telegram" label="Username Telegram" />
+                <RHFTextField name="username_telegram" label="Username Telegram" />
+              </Grid>
+
+              <Grid xs={12}>
+                <RHFTextField name="user_id_telegram" label="UserId Telegram" />
               </Grid>
 
               <Grid xs={12}>
