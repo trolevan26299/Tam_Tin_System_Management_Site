@@ -7,11 +7,10 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import { IPropRow } from 'src/types/staff';
 
 function StaffTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: IPropRow) {
-  const { name, address, age, salary, position, exp, phone, telegram, note } = row;
+  const { name, address, age, salary, position, exp, phone, user_id_telegram,username_telegram, note } = row;
 
   const confirm = useBoolean();
 
-  const quickEdit = useBoolean();
 
   const popover = usePopover();
   return (
@@ -26,7 +25,7 @@ function StaffTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: I
         <ListItemText primary={age} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
       <TableCell>
-        <ListItemText primary={salary} primaryTypographyProps={{ typography: 'body2' }} />
+        <ListItemText   primary={new Intl.NumberFormat('vi-VN').format(salary || 0)}  primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
       <TableCell>
         <ListItemText primary={position} primaryTypographyProps={{ typography: 'body2' }} />
@@ -38,7 +37,10 @@ function StaffTableRow({ row, selected, onEditRow, onSelectRow, onDeleteRow }: I
         <ListItemText primary={phone} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
       <TableCell>
-        <ListItemText primary={telegram} primaryTypographyProps={{ typography: 'body2' }} />
+        <ListItemText primary={`${username_telegram ? `@${username_telegram}` : ''}`} primaryTypographyProps={{ typography: 'body2' }} />
+      </TableCell>
+      <TableCell>
+        <ListItemText primary={user_id_telegram} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
       <TableCell>
         <ListItemText primary={note} primaryTypographyProps={{ typography: 'body2' }} />
