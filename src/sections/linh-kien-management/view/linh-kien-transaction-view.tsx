@@ -3,7 +3,11 @@
 import { Button, Card, Container, Stack, Table, TableBody, TableContainer } from '@mui/material';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
-import { getLinhKienTransactionBy, getLinhKienTransactionById } from 'src/api/linhkien';
+import {
+  deleteTransactionLinhKien,
+  getLinhKienTransactionBy,
+  getLinhKienTransactionById,
+} from 'src/api/linhkien';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -40,6 +44,7 @@ const LinhKienTransactionView = () => {
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const denseHeight = table.dense ? 52 : 72;
+  const { enqueueSnackbar } = useSnackbar();
 
   const [queryTransaction, setQueryTransaction] = useState<IQueryLinhKien>({
     page: 0,
@@ -113,8 +118,11 @@ const LinhKienTransactionView = () => {
                     key={row._id}
                     row={row}
                     selected={table.selected.includes(row?._id as string)}
-                    onDeleteRow={() => {
-                      //
+                    onDeleteRow={(passCode?: number) => {
+                      if (passCode) {
+                        deleteTransactionLinhKien(String(row?._id), passCode, enqueueSnackbar);
+                        handleSearch(queryTransaction);
+                      }
                     }}
                     onEditRow={() => {
                       handleGetLinhKienTransactionById(row._id as string);

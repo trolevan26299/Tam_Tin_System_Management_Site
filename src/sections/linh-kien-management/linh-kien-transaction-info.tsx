@@ -165,7 +165,6 @@ function LinhKienTransactionInfo({
       }}
       PaperProps={{
         sx: {
-          mt: 15,
           overflow: 'unset',
         },
       }}
@@ -178,7 +177,7 @@ function LinhKienTransactionInfo({
               py: 1,
               px: 2,
               borderBottom: `solid 1px ${theme.palette.divider}`,
-              height: '500px',
+              height: currentItem ? '530px' : '455px',
               overflow: 'auto',
             }}
           >

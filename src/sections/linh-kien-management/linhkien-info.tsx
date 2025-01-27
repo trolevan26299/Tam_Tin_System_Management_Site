@@ -56,7 +56,6 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
       }}
       PaperProps={{
         sx: {
-          mt: 15,
           overflow: 'unset',
         },
       }}

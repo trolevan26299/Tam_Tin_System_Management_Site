@@ -1,4 +1,13 @@
-import { Button, IconButton, ListItemText, MenuItem, TableCell, TableRow } from '@mui/material';
+import {
+  Button,
+  IconButton,
+  ListItemText,
+  MenuItem,
+  TableCell,
+  TableRow,
+  TextField,
+} from '@mui/material';
+import { useState } from 'react';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
@@ -17,6 +26,7 @@ function LinhkienTransactionTableRow({ row, selected, onDeleteRow, onEditRow }: 
     row;
   const confirm = useBoolean();
   const popover = usePopover();
+  const [passCode, setPassCode] = useState<number | undefined>();
 
   return (
     <TableRow hover selected={selected}>
@@ -94,10 +104,28 @@ function LinhkienTransactionTableRow({ row, selected, onDeleteRow, onEditRow }: 
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Delete"
-        content="Bạn có chắc chắn muốn xóa?"
+        title="Xóa"
+        content={
+          <TextField
+            placeholder="Nhập pass code"
+            type="number"
+            onKeyDown={(evt) => ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()}
+            onChange={(e) => setPassCode(Number(e.target.value))}
+            value={passCode}
+            fullWidth
+          />
+        }
         action={
-          <Button variant="contained" color="error" onClick={() => onDeleteRow()}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => {
+              onDeleteRow(passCode);
+              confirm.onFalse();
+              setPassCode(undefined);
+            }}
+            disabled={passCode === undefined || passCode === 0}
+          >
             Xóa
           </Button>
         }

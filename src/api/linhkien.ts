@@ -110,3 +110,20 @@ export async function updateTransactionLinhKien(
     return console.error(error);
   }
 }
+
+export async function deleteTransactionLinhKien(
+  id: string,
+  passCode: number,
+  enqueueSnackbar: (message: string, options?: object) => void
+) {
+  try {
+    const res = await axiosInstance.delete(`${endpoints.linhKien.transaction}/${id}`, {
+      params: { passcode: passCode },
+    });
+    enqueueSnackbar('Xóa thành công!', { variant: 'success' });
+    return res.data;
+  } catch (error) {
+    enqueueSnackbar(error.error, { variant: 'error' });
+    return console.error(error);
+  }
+}
