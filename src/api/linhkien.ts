@@ -22,11 +22,16 @@ export function useGetLinhKien() {
   return memoizedValue;
 }
 
-export async function createLinhKien(data: ILinhKienInfo) {
+export async function createLinhKien(
+  data: ILinhKienInfo,
+  enqueueSnackbar: (message: string, options?: object) => void
+) {
   try {
     await axiosInstance.post(`${endpoints.linhKien.default}`, data);
+    enqueueSnackbar('Tạo linh kiện thành công !', { variant: 'success' });
     mutate(URL);
   } catch (error) {
+    enqueueSnackbar(error.error, { variant: 'error' });
     console.error('Failed to create linh kien:', error);
   }
 }
@@ -60,23 +65,13 @@ export async function getLinhKienByName(params: IQueryLinhKien) {
   }
 }
 
-export function useGetLinhKienTransaction(query: IQueryLinhKien) {
-  const usp = new URLSearchParams(query as any);
-
-  const { data, isLoading, error, isValidating } = useSWR(`${URL_TRANSACTION}?${usp}`, fetcher);
-
-  const memoizedValue = useMemo(
-    () => ({
-      data,
-      isLoading,
-      error,
-      isValidating,
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data, error, isLoading, isValidating]
-  );
-
-  return memoizedValue;
+export async function getLinhKienTransactionBy(query: IQueryLinhKien) {
+  try {
+    const res = await axiosInstance.get(URL_TRANSACTION, { params: query });
+    return res.data;
+  } catch (error) {
+    return console.error(error);
+  }
 }
 
 export async function getLinhKienTransactionById(id: string) {
@@ -95,8 +90,21 @@ export async function createTransactionLinhKien(
   try {
     const res = await axiosInstance.post(`${endpoints.linhKien.transaction}`, data);
     enqueueSnackbar('Tạo mới thành công!', { variant: 'success' });
-    // mutate(URL_TRANSACTION);
-    return res;
+    return res.data;
+  } catch (error) {
+    enqueueSnackbar(error.error, { variant: 'error' });
+    return console.error(error);
+  }
+}
+
+export async function updateTransactionLinhKien(
+  data: ILinhKienTransaction,
+  enqueueSnackbar: (message: string, options?: object) => void
+) {
+  try {
+    const res = await axiosInstance.put(`${endpoints.linhKien.transaction}/${data._id}`, data);
+    enqueueSnackbar('Cập nhật thành công!', { variant: 'success' });
+    return res.data;
   } catch (error) {
     enqueueSnackbar(error.error, { variant: 'error' });
     return console.error(error);

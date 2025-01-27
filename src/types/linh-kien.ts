@@ -55,6 +55,7 @@ export type ILinhKienTransaction = {
   nguoi_tao?: string;
   total: number;
   create_date?: string;
+  passcode?: number;
 };
 
 export type IDataLinhKienTransaction = {

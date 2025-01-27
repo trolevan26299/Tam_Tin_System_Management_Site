@@ -2,8 +2,8 @@
 
 import { Button, Card, Container, Stack, Table, TableBody, TableContainer } from '@mui/material';
 import { useSnackbar } from 'notistack';
-import { useState } from 'react';
-import { useGetLinhKienTransaction } from 'src/api/linhkien';
+import { useEffect, useState } from 'react';
+import { getLinhKienTransactionBy, getLinhKienTransactionById } from 'src/api/linhkien';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -40,16 +40,30 @@ const LinhKienTransactionView = () => {
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const denseHeight = table.dense ? 52 : 72;
-  const { enqueueSnackbar } = useSnackbar();
 
   const [queryTransaction, setQueryTransaction] = useState<IQueryLinhKien>({
     page: 0,
     items_per_page: 10,
   });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [linhKienList, setLinhKien] = useState<IDataLinhKienTransaction | null>(null);
+  const [currentItem, setCurrentItem] = useState<ILinhKienTransaction | undefined>(undefined);
 
-  const { data: linhKienList } = useGetLinhKienTransaction(queryTransaction);
+  const handleSearch = async (query: IQueryLinhKien) => {
+    const res = await getLinhKienTransactionBy(query);
+    setLinhKien(res);
+  };
 
+  const handleGetLinhKienTransactionById = async (id: string) => {
+    const res = await getLinhKienTransactionById(id);
+    setCurrentItem(res);
+    setOpenDialog(true);
+  };
+
+  useEffect(() => {
+    handleSearch(queryTransaction);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
@@ -65,6 +79,7 @@ const LinhKienTransactionView = () => {
             startIcon={<Iconify icon="mingcute:add-line" />}
             onClick={() => {
               setOpenDialog(true);
+              setCurrentItem(undefined);
             }}
           >
             Thêm mới linh kiện giao dịch
@@ -102,8 +117,7 @@ const LinhKienTransactionView = () => {
                       //
                     }}
                     onEditRow={() => {
-                      //
-                      console.log(row._id);
+                      handleGetLinhKienTransactionById(row._id as string);
                     }}
                   />
                 ))}
@@ -147,7 +161,10 @@ const LinhKienTransactionView = () => {
       <LinhKienTransactionInfo
         open={openDialog}
         onClose={() => setOpenDialog(false)}
-        // currentItem={}
+        currentItem={currentItem || undefined}
+        onSearch={() => {
+          handleSearch(queryTransaction);
+        }}
       />
     </Container>
   );

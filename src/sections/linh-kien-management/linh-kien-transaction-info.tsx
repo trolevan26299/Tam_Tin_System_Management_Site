@@ -15,7 +15,11 @@ import { debounce } from 'lodash';
 import { useSnackbar } from 'notistack';
 import { useEffect, useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
-import { createTransactionLinhKien, getLinhKienByName } from 'src/api/linhkien';
+import {
+  createTransactionLinhKien,
+  getLinhKienByName,
+  updateTransactionLinhKien,
+} from 'src/api/linhkien';
 import { getStaffs } from 'src/api/staff';
 import { useAuthContext } from 'src/auth/hooks';
 import FormProvider, { RHFAutocomplete, RHFSelect, RHFTextField } from 'src/components/hook-form';
@@ -32,6 +36,7 @@ const initializeDefaultValues = (): DefaultValues<ILinhKienTransaction> => ({
   total: 0,
   type: 'Ứng',
   noi_dung: undefined,
+  passcode: undefined,
   _id: undefined,
 });
 
@@ -45,12 +50,15 @@ function LinhKienTransactionInfo({
   open,
   onClose,
   currentItem,
+  onSearch,
 }: {
   open: boolean;
   onClose: () => void;
   currentItem?: ILinhKienTransaction;
+  onSearch: () => void;
 }) {
   const theme = useTheme();
+
   const { user } = useAuthContext();
   const { enqueueSnackbar } = useSnackbar();
 
@@ -64,6 +72,11 @@ function LinhKienTransactionInfo({
       .test('is-valid', 'Nhân viên là bắt buộc', (value) => value && (value as any).id !== ''),
     total: Yup.number().required().min(1, 'Số lượng là bắt buộc'),
     type: Yup.string().required('Loại bắt buộc'),
+    passcode: Yup.number().when('_id', {
+      is: (id: string) => !!id,
+      then: (schema) => schema.required('Passcode là bắt buộc').min(4, 'Passcode ít nhất 4 ký tự'),
+      otherwise: (schema) => schema.notRequired(),
+    }),
   });
 
   const methods = useForm<ILinhKienTransaction>({
@@ -75,12 +88,19 @@ function LinhKienTransactionInfo({
     handleSubmit,
     formState: { isSubmitting },
     reset,
+    clearErrors,
+    setValue,
   } = methods;
 
   const onSubmit = async (data: ILinhKienTransaction) => {
     const newData: ILinhKienTransaction = { ...data, nguoi_tao: user?.username };
-    const res = await createTransactionLinhKien(newData, enqueueSnackbar);
-    console.log(res);
+    if (newData._id) {
+      await updateTransactionLinhKien(newData, enqueueSnackbar);
+    } else {
+      await createTransactionLinhKien(newData, enqueueSnackbar);
+    }
+    onSearch();
+    onClose();
   };
 
   const handleInputChangeLinhKien = debounce(async (searchQuery: string) => {
@@ -109,9 +129,30 @@ function LinhKienTransactionInfo({
     }
   }, 300);
 
+  const handleSetDataToForm = () => {
+    if (currentItem) {
+      setValue('_id', currentItem._id);
+      setValue('total', currentItem.total);
+      setValue('noi_dung', currentItem.noi_dung);
+      setValue('type', currentItem.type);
+      if (currentItem?.name_linh_kien) {
+        handleInputChangeLinhKien(currentItem.name_linh_kien);
+        setValue('name_linh_kien', currentItem.name_linh_kien);
+      }
+      if (currentItem?.nhan_vien) {
+        handleInputChangeStaff(currentItem?.nhan_vien?.name as string);
+        setValue('nhan_vien', { id: currentItem.nhan_vien?.id, name: currentItem.nhan_vien?.name });
+      }
+    } else {
+      reset();
+    }
+  };
+
   useEffect(() => {
-    reset();
-  }, [open, reset]);
+    handleSetDataToForm();
+    clearErrors();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentItem, clearErrors, open]);
   return (
     <Dialog
       fullWidth
@@ -130,7 +171,7 @@ function LinhKienTransactionInfo({
       }}
     >
       <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-        <DialogTitle sx={{ pb: 2 }}>Tạo mới</DialogTitle>
+        <DialogTitle sx={{ pb: 2 }}>{currentItem ? 'Cập nhật' : 'Tạo mới'}</DialogTitle>
         <DialogContent>
           <Box
             sx={{
@@ -146,14 +187,14 @@ function LinhKienTransactionInfo({
                 <RHFAutocomplete
                   name="name_linh_kien"
                   label="Linh kiện"
-                  options={linhKien.map((item) => item?._id)}
+                  options={linhKien.map((item) => item?.name_linh_kien)}
                   onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
                     if (reason === 'input') {
                       handleInputChangeLinhKien(value);
                     }
                   }}
                   getOptionLabel={(opt) =>
-                    linhKien?.find((x) => x._id === opt)?.name_linh_kien || ''
+                    linhKien?.find((x) => x.name_linh_kien === opt)?.name_linh_kien || ''
                   }
                 />
               </Grid>
@@ -197,6 +238,19 @@ function LinhKienTransactionInfo({
               <Grid xs={12}>
                 <RHFTextField name="noi_dung" label="Ghi chú" multiline rows={4} />
               </Grid>
+
+              {currentItem?._id && (
+                <Grid xs={12}>
+                  <RHFTextField
+                    name="passcode"
+                    label="Pass code"
+                    type="number"
+                    onKeyDown={(evt) =>
+                      ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                    }
+                  />
+                </Grid>
+              )}
             </Grid>
           </Box>
         </DialogContent>
