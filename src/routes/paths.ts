@@ -101,6 +101,7 @@ export const paths = {
       new: `${ROOTS.DASHBOARD}/product/new`,
     },
     linhKien: {
+      root: `${ROOTS.DASHBOARD}/linh-kien-management`,
       linhKien: `${ROOTS.DASHBOARD}/linh-kien-management/linh-kien`,
       transaction: `${ROOTS.DASHBOARD}/linh-kien-management/linh-kien-transaction`,
     },

@@ -95,7 +95,7 @@ export function useNavData() {
           // LINH KIEN
           {
             title: 'Quản lý linh kiện',
-            path: paths.dashboard.linhKien.linhKien,
+            path: paths.dashboard.linhKien.root,
             icon: ICONS.product,
             children: [
               { title: 'Linh kiện', path: paths.dashboard.linhKien.linhKien },

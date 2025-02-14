@@ -38,3 +38,31 @@ export type IDataLinhKien = {
   nextPage?: number;
   totalCount?: number;
 };
+
+// transaction
+export type IStaff = {
+  name?: string;
+  id?: string;
+};
+
+export type ILinhKienTransaction = {
+  _id?: string;
+  noi_dung?: string;
+  name_linh_kien: string;
+  data_update?: string;
+  type: string;
+  nhan_vien: IStaff;
+  nguoi_tao?: string;
+  total: number;
+  create_date?: string;
+  passcode?: number;
+};
+
+export type IDataLinhKienTransaction = {
+  data: ILinhKienTransaction[];
+  currentPage?: number;
+  lastPage?: number;
+  prevPage?: number;
+  nextPage?: number;
+  totalCount?: number;
+};
