@@ -17,8 +17,8 @@ import { useEffect, useState } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
 import {
   createTransactionLinhKien,
-  getLinhKienByName,
   updateTransactionLinhKien,
+  useGetLinhKien,
 } from 'src/api/linhkien';
 import { getStaffs } from 'src/api/staff';
 import { useAuthContext } from 'src/auth/hooks';
@@ -62,7 +62,6 @@ function LinhKienTransactionInfo({
   const { user } = useAuthContext();
   const { enqueueSnackbar } = useSnackbar();
 
-  const [linhKien, setLinhKien] = useState<ILinhKien[]>([]);
   const [staff, setStaff] = useState<IStaff[]>([]);
 
   const NewLinhKienTransactionSchema = Yup.object().shape({
@@ -103,46 +102,17 @@ function LinhKienTransactionInfo({
     onClose();
   };
 
-  const handleInputChangeLinhKien = debounce(async (searchQuery: string) => {
-    try {
-      if (searchQuery !== '') {
-        const response = await getLinhKienByName({ keyword: searchQuery });
-        setLinhKien(response.data);
-      } else {
-        setLinhKien([]);
-      }
-    } catch (error) {
-      console.error('Failed to search linh kien:', error);
-    }
-  }, 300);
-
-  const handleInputChangeStaff = debounce(async (searchQuery: string) => {
-    try {
-      if (searchQuery !== '') {
-        const response = await getStaffs({ keyword: searchQuery });
-        setStaff(response.data);
-      } else {
-        setStaff([]);
-      }
-    } catch (error) {
-      console.error('Failed to search linh kien:', error);
-    }
-  }, 300);
-
   const handleSetDataToForm = () => {
     if (currentItem) {
       setValue('_id', currentItem._id);
       setValue('total', currentItem.total);
       setValue('noi_dung', currentItem.noi_dung);
       setValue('type', currentItem.type);
-      if (currentItem?.name_linh_kien) {
-        handleInputChangeLinhKien(currentItem.name_linh_kien);
-        setValue('name_linh_kien', currentItem.name_linh_kien);
-      }
+      setValue('name_linh_kien', currentItem.name_linh_kien);
       if (currentItem?.nhan_vien) {
-        handleInputChangeStaff(currentItem?.nhan_vien?.name as string);
         setValue('nhan_vien', { id: currentItem.nhan_vien?.id, name: currentItem.nhan_vien?.name });
       }
+      setValue('passcode', undefined);
     } else {
       reset();
     }
@@ -153,6 +123,19 @@ function LinhKienTransactionInfo({
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentItem, clearErrors, open]);
+
+  const { data: linhKienList, mutate } = useGetLinhKien();
+  const getStaff = async () => {
+    const response = await getStaffs({ is_all: true });
+    setStaff(response.data);
+  };
+
+  useEffect(() => {
+    if (open) {
+      mutate();
+      getStaff();
+    }
+  }, [open, mutate]);
   return (
     <Dialog
       fullWidth
@@ -186,14 +169,12 @@ function LinhKienTransactionInfo({
                 <RHFAutocomplete
                   name="name_linh_kien"
                   label="Linh kiện"
-                  options={linhKien.map((item) => item?.name_linh_kien)}
-                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
-                    if (reason === 'input') {
-                      handleInputChangeLinhKien(value);
-                    }
-                  }}
-                  getOptionLabel={(opt) =>
-                    linhKien?.find((x) => x.name_linh_kien === opt)?.name_linh_kien || ''
+                  options={linhKienList?.map((item: ILinhKien) => item?.name_linh_kien) || []}
+                  getOptionLabel={(opt) => (typeof opt === 'string' ? opt : '')}
+                  filterOptions={(options, { inputValue }) =>
+                    options.filter((opt: any) =>
+                      opt.toLowerCase().includes(inputValue.toLowerCase())
+                    )
                   }
                 />
               </Grid>
@@ -224,13 +205,12 @@ function LinhKienTransactionInfo({
                   name="nhan_vien"
                   label="Nhân viên"
                   options={staff.map((item) => ({ id: item?._id, name: item?.name }))}
-                  onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
-                    if (reason === 'input') {
-                      handleInputChangeStaff(value);
-                    }
-                  }}
-                  isOptionEqualToValue={(opt, value) => opt.id === value.id}
                   getOptionLabel={(opt: any) => staff?.find((x) => x._id === opt?.id)?.name || ''}
+                  filterOptions={(options, { inputValue }) =>
+                    options.filter((opt: any) =>
+                      opt.name.toLowerCase().includes(inputValue.toLowerCase())
+                    )
+                  }
                 />
               </Grid>
 

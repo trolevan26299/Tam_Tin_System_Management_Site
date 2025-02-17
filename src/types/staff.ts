@@ -16,6 +16,7 @@ export type IQueryStaff = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  is_all?: boolean;
 };
 
 export type IDataStaff = {

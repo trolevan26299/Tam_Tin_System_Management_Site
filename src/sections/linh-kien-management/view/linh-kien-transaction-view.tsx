@@ -11,6 +11,7 @@ import {
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
+import SearchInputDebounce from 'src/components/search-input-debounce';
 import { useSettingsContext } from 'src/components/settings';
 import {
   emptyRows,
@@ -26,8 +27,8 @@ import {
   ILinhKienTransaction,
   IQueryLinhKien,
 } from 'src/types/linh-kien';
-import LinhkienTransactionTableRow from '../linh-kien-transaction-table-row';
 import LinhKienTransactionInfo from '../linh-kien-transaction-info';
+import LinhkienTransactionTableRow from '../linh-kien-transaction-table-row';
 
 const TABLE_HEAD = [
   { id: 'name_linh_kien', label: 'Tên' },
@@ -105,7 +106,15 @@ const LinhKienTransactionView = () => {
             pr: { xs: 2.5, md: 1 },
           }}
         >
-          {/*  */}
+          <SearchInputDebounce
+            onSearch={(value: string) => {
+              handleSearch({ ...queryTransaction, keyword: value, page: 0 });
+            }}
+            placeholder="Tìm kiếm tên nhân viên hoặc tên linh kiện..."
+            width={400}
+            value={queryTransaction.keyword || ''}
+            useIconClear
+          />
         </Stack>
         <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
           <Scrollbar>
