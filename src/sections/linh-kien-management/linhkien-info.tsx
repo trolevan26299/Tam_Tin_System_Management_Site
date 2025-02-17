@@ -9,6 +9,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import Grid from '@mui/material/Unstable_Grid2';
 import { LoadingButton } from '@mui/lab';
 import { createLinhKien } from 'src/api/linhkien';
+import { useSnackbar } from 'notistack';
 
 const initializeDefaultValues = (): DefaultValues<ILinhKienInfo> => ({
   name_linh_kien: '',
@@ -17,6 +18,7 @@ const initializeDefaultValues = (): DefaultValues<ILinhKienInfo> => ({
 
 function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void }) {
   const theme = useTheme();
+  const { enqueueSnackbar } = useSnackbar();
 
   const NewLinhKien = Yup.object().shape({
     name_linh_kien: Yup.string().required('Name is required'),
@@ -35,14 +37,13 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
   } = methods;
 
   const onSubmit = handleSubmit(async (data) => {
-    createLinhKien(data);
+    createLinhKien(data, enqueueSnackbar);
     onClose();
   });
 
   useEffect(() => {
     reset();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [open]);
+  }, [open, reset]);
   return (
     <Dialog
       fullWidth
@@ -55,7 +56,6 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
       }}
       PaperProps={{
         sx: {
-          mt: 15,
           overflow: 'unset',
         },
       }}

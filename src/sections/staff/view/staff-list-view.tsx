@@ -29,7 +29,8 @@ const TABLE_HEAD = [
   { id: 'position', label: 'Vị trí' },
   { id: 'exp', label: 'Kinh nghiệm' },
   { id: 'phone', label: 'Phone' },
-  { id: 'username_tg', label: 'Telegram' },
+  { id: 'username_telegram', label: 'Username Telegram' },
+  { id: 'user_id_telegram', label: 'UserId Telegram' },
   { id: 'note', label: 'Note' },
   { id: 'action', label: 'Hành động', width: 120 },
 ];
@@ -125,7 +126,7 @@ function StaffListView() {
             <Scrollbar>
               <Table size={table.dense ? 'small' : 'medium'} sx={{ minWidth: 960 }}>
                 <TableHeadCustom headLabel={TABLE_HEAD} />
-                <TableBody>
+                <TableBody >
                   {tableData?.data?.map((row) => (
                     <StaffTableRow
                       key={row._id}

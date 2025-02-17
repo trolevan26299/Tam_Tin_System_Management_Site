@@ -1,13 +1,14 @@
 export type IStaff = {
   _id?: string;
   name: string;
-  address: string;
-  age: number;
-  salary: number;
-  position: string;
-  exp: number;
-  phone: string;
-  telegram: string;
+  address?: string;
+  age?: number;
+  salary?: number;
+  position?: string;
+  exp?: number;
+  phone?: string;
+  username_telegram?: string;
+  user_id_telegram?: string;
   note?: string;
 };
 
@@ -15,6 +16,7 @@ export type IQueryStaff = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  is_all?: boolean;
 };
 
 export type IDataStaff = {

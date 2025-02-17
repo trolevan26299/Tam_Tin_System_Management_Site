@@ -29,32 +29,17 @@ function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
       <TableCell>{total}</TableCell>
 
       <TableCell>
-        <ListItemText
-          primary={format(new Date(String(create_date)), 'dd MMM yyyy')}
-          secondary={format(new Date(String(create_date)), 'p')}
-          primaryTypographyProps={{ typography: 'body2', noWrap: true }}
-          secondaryTypographyProps={{
-            mt: 0.5,
-            component: 'span',
-            typography: 'caption',
-          }}
-        />
+        <ListItemText primary={create_date} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
 
       <TableCell>{user_create?.username}</TableCell>
 
       <TableCell>
         {data_ung?.map((item) => (
-          <>
-            <ListItemText
-              primary={`Nhân viên: ${item?.name}`}
-              primaryTypographyProps={{ typography: 'body2' }}
-            />
-            <ListItemText
-              primary={`Tổng: ${item?.total}`}
-              primaryTypographyProps={{ typography: 'body2' }}
-            />
-          </>
+          <ListItemText
+            primary={`${item?.name} - ${item?.total}`}
+            primaryTypographyProps={{ typography: 'body2' }}
+          />
         ))}
       </TableCell>
 
@@ -73,10 +58,10 @@ function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Delete"
+        title="Xóa"
         content={
           <TextField
-            placeholder="Enter pass code"
+            placeholder="Nhập pass code"
             type="number"
             onKeyDown={(evt) => ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()}
             onChange={(e) => setPassCode(Number(e.target.value))}
@@ -95,7 +80,7 @@ function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
             }}
             disabled={passCode === undefined || passCode === 0}
           >
-            Delete
+            Xóa
           </Button>
         }
       />

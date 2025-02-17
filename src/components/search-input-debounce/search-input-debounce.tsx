@@ -7,7 +7,7 @@ interface SearchProps {
   onSearch: (query: string) => void;
   delay?: number;
   placeholder?: string;
-  width?: number;
+  width?: number | string;
   fullWidth?: boolean;
   value: string;
   useIconClear?: boolean;
@@ -15,7 +15,7 @@ interface SearchProps {
 
 export default function SearchInputDebounce({
   onSearch,
-  delay = 2000,
+  delay = 1000,
   placeholder,
   width,
   fullWidth,
