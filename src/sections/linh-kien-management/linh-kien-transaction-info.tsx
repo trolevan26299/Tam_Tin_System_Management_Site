@@ -117,24 +117,20 @@ function LinhKienTransactionInfo({
     }
   };
 
-  useEffect(() => {
-    handleSetDataToForm();
-    clearErrors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentItem, clearErrors, open]);
-
-  const { data: linhKienList, mutate } = useGetLinhKien();
+  const { data: linhKienList } = useGetLinhKien();
   const getStaff = async () => {
     const response = await getStaffs({ is_all: true });
     setStaff(response.data);
   };
 
   useEffect(() => {
+    handleSetDataToForm();
+    clearErrors();
     if (open) {
-      mutate();
       getStaff();
     }
-  }, [open, mutate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentItem, clearErrors, open]);
   return (
     <Dialog
       fullWidth
