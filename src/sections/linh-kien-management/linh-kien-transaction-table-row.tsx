@@ -49,7 +49,7 @@ function LinhkienTransactionTableRow({ row, selected, onDeleteRow, onEditRow }: 
       )}
       <TableCell>
         <div
-          dangerouslySetInnerHTML={{ __html: String(noi_dung) }}
+
           style={{
             display: '-webkit-box',
             WebkitLineClamp: 2,
@@ -58,7 +58,9 @@ function LinhkienTransactionTableRow({ row, selected, onDeleteRow, onEditRow }: 
             textOverflow: 'ellipsis',
             maxHeight: '3.6em',
           }}
-        />
+        >
+          {noi_dung || ''}
+        </div>
       </TableCell>
       <TableCell>
         <ListItemText primary={nguoi_tao} primaryTypographyProps={{ typography: 'body2' }} />
