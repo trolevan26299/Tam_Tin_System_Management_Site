@@ -2,6 +2,7 @@ export type IQueryLinhKien = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  type?: string;
 };
 
 export type IDataUng = {

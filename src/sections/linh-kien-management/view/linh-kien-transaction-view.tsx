@@ -1,8 +1,18 @@
 'use client';
 
-import { Button, Card, Container, Stack, Table, TableBody, TableContainer } from '@mui/material';
+import {
+  Button,
+  Card,
+  Container,
+  MenuItem,
+  Stack,
+  Table,
+  TableBody,
+  TableContainer,
+  TextField,
+} from '@mui/material';
 import { useSnackbar } from 'notistack';
-import { useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import {
   deleteTransactionLinhKien,
   getLinhKienTransactionBy,
@@ -27,7 +37,7 @@ import {
   ILinhKienTransaction,
   IQueryLinhKien,
 } from 'src/types/linh-kien';
-import LinhKienTransactionInfo from '../linh-kien-transaction-info';
+import LinhKienTransactionInfo, { optionStatus } from '../linh-kien-transaction-info';
 import LinhkienTransactionTableRow from '../linh-kien-transaction-table-row';
 
 const TABLE_HEAD = [
@@ -50,13 +60,16 @@ const LinhKienTransactionView = () => {
   const [queryTransaction, setQueryTransaction] = useState<IQueryLinhKien>({
     page: 0,
     items_per_page: 10,
+    type: '_all_',
   });
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [linhKienList, setLinhKien] = useState<IDataLinhKienTransaction | null>(null);
   const [currentItem, setCurrentItem] = useState<ILinhKienTransaction | undefined>(undefined);
 
   const handleSearch = async (query: IQueryLinhKien) => {
-    const res = await getLinhKienTransactionBy(query);
+    setQueryTransaction(query);
+    const newQuery = { ...query, type: query.type === '_all_' ? '' : query.type };
+    const res = await getLinhKienTransactionBy(newQuery);
     setLinhKien(res);
   };
 
@@ -106,6 +119,23 @@ const LinhKienTransactionView = () => {
             pr: { xs: 2.5, md: 1 },
           }}
         >
+          <TextField
+            select
+            label="Loại giao dịch"
+            value={queryTransaction?.type || ''}
+            onChange={(event) => {
+              const { value } = event.target;
+              handleSearch({ ...queryTransaction, type: value, page: 0 });
+            }}
+            sx={{ width: '200px' }}
+          >
+            <MenuItem value="_all_">Tất cả</MenuItem>
+            {optionStatus.map((item, index) => (
+              <MenuItem key={index} value={item.value}>
+                {item.label}
+              </MenuItem>
+            ))}
+          </TextField>
           <SearchInputDebounce
             onSearch={(value: string) => {
               handleSearch({ ...queryTransaction, keyword: value, page: 0 });
@@ -161,6 +191,7 @@ const LinhKienTransactionView = () => {
           onPageChange={(event, page) => {
             const newQuery = { ...queryTransaction, page };
             setQueryTransaction(newQuery);
+            handleSearch(newQuery);
           }}
           onRowsPerPageChange={(event) => {
             const newQuery = {
@@ -169,20 +200,23 @@ const LinhKienTransactionView = () => {
               items_per_page: Number(event.target.value),
             };
             setQueryTransaction(newQuery);
+            handleSearch(newQuery);
           }}
           dense={table.dense}
           onChangeDense={table.onChangeDense}
         />
       </Card>
 
-      <LinhKienTransactionInfo
-        open={openDialog}
-        onClose={() => setOpenDialog(false)}
-        currentItem={currentItem || undefined}
-        onSearch={() => {
-          handleSearch(queryTransaction);
-        }}
-      />
+      {openDialog && (
+        <LinhKienTransactionInfo
+          open={openDialog}
+          onClose={() => setOpenDialog(false)}
+          currentItem={currentItem || undefined}
+          onSearch={() => {
+            handleSearch(queryTransaction);
+          }}
+        />
+      )}
     </Container>
   );
 };
