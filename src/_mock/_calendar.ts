@@ -25,6 +25,18 @@ export const PERIOD_OPTIONS = [
     label: 'Hôm qua',
   },
   {
+    value: '0-weeks',
+    label: 'Tuần này',
+  },
+  {
+    value: '0-months',
+    label: 'Tháng này',
+  },
+  {
+    value: '0-years',
+    label: 'Năm này',
+  },
+  {
     value: '1-weeks',
     label: 'Tuần trước',
   },
@@ -37,15 +49,7 @@ export const PERIOD_OPTIONS = [
     label: 'Năm trước',
   },
   {
-    value: '0-weeks',
-    label: 'Tuần này',
-  },
-  {
-    value: '0-months',
-    label: 'Tháng này',
-  },
-  {
-    value: '0-years',
-    label: 'Năm này',
+    value: '_all_',
+    label: 'Nhập trực tiếp',
   },
 ];
