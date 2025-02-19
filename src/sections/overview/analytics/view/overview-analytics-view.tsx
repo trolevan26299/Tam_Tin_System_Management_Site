@@ -15,8 +15,10 @@ import { useSettingsContext } from 'src/components/settings';
 //
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { getListCustomer } from 'src/api/customer';
 import { getListOrder } from 'src/api/order';
-import { IAnalyTicsDto, IQueryAnalytics } from 'src/types/analytics';
+import { IQueryAnalytics } from 'src/types/analytics';
+import { IDataCustomer } from 'src/types/customer';
 import { getDateRange } from 'src/utils/format-time';
 import AnalyticsConversionRates from '../analytics-conversion-rates';
 import AnalyticsCurrentSubject from '../analytics-current-subject';
@@ -28,8 +30,6 @@ import AnalyticsToolbar from '../analytics-toolbar';
 import AnalyticsTrafficBySite from '../analytics-traffic-by-site';
 import AnalyticsWebsiteVisits from '../analytics-website-visits';
 import AnalyticsWidgetSummary from '../analytics-widget-summary';
-import { getListCustomer } from 'src/api/customer';
-import { IDataCustomer } from 'src/types/customer';
 
 // ----------------------------------------------------------------------
 
