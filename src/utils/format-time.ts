@@ -94,3 +94,12 @@ export function getDateRange(value: string): DateRange {
       throw new Error('Invalid period option');
   }
 }
+
+export function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('vi-VN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+}

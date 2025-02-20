@@ -1,6 +1,36 @@
+
 export type IDetailDevice = {
   status: string;
   id_device: string;
+  deviceInfo: IDeviceInfo;
+};
+
+export type IHistoryRepairItem = {
+  id: string;
+  name?: string;
+  total?: number;
+}
+
+export type IHistoryRepair = {
+  type_repair?: string;
+  date_repair?: string;
+  linh_kien?: IHistoryRepairItem[];
+  staff_repair?: string;
+  note?: string;
+}
+export type IDeviceInfo = {
+  _id: string;
+  name: string;
+  id_device: string;
+  status: string;
+  history_repair?: IHistoryRepair[];
+  date_buy?: string;
+  warranty?: number;
+  name_customer?: string;
+  type_customer?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  __v?: number;
 };
 
 export type IDevice = {

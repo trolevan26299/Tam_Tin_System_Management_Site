@@ -2,7 +2,7 @@
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { deleteDeviceById, getListDevice } from 'src/api/product';
+import { deleteDeviceByDeviceId, deleteDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -18,22 +18,24 @@ import {
 import { paths } from 'src/routes/paths';
 import { useGetSubCategory } from 'src/store/context/sub-category-context';
 import { IDataDevice, IDevice, IQueryDevice } from 'src/types/product';
+import { useSnackbar } from 'notistack';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'id_device', label: 'ID', width: 160 },
   { id: 'name', label: 'Tên', width: 160 },
   { id: 'category_name', label: 'Thuộc', width: 160 },
   { id: 'price', label: 'Giá nhập', width: 160 },
   { id: 'inventory', label: 'Tồn kho', width: 120 },
   { id: 'sold', label: 'Đã bán', width: 120 },
   { id: 'note', label: 'Ghi chú', width: 160 },
-  { id: 'action', label: '', width: 120 },
+  { id: 'actions', label: '', width: 80 },
 ];
 
 export default function ProductListView() {
+  const { enqueueSnackbar } = useSnackbar();
+
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const { subCategoryList } = useGetSubCategory();
@@ -74,6 +76,15 @@ export default function ProductListView() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [table, tableData]
   );
+
+  const handleDeleteDevice = async (id: string) => {
+    try {
+      await deleteDeviceByDeviceId(id , enqueueSnackbar);
+      getAllData();
+    } catch (error) {
+      console.error('Lỗi khi xóa thiết bị:', error);
+    }
+  };
 
   const getAllData = async () => {
     try {
@@ -136,7 +147,7 @@ export default function ProductListView() {
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      // onEditRow={() => handleEditRow(row?._id as string)}
+                      onDeleteDevice={handleDeleteDevice}
                     />
                   ))}
 

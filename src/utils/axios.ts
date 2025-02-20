@@ -57,6 +57,7 @@ export const endpoints = {
     create: '/api/device',
     update: (deviceId: string) => `/api/device/${deviceId}`,
     delete: (deviceId: string) => `api/device/${deviceId}`,
+    deleteByDeviceId: (deviceId: string) => `/api/device/delete-by-device-id/${deviceId}`,
   },
   category: {
     list: '/api/category/list',
