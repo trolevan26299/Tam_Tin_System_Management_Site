@@ -54,3 +54,15 @@ export async function deleteDeviceById(id: string) {
     return error.status;
   }
 }
+
+export async function deleteDeviceByDeviceId(id: string, enqueueSnackbar: (message: string, options?: object) => void) {
+  try {
+
+    const url = endpoints.device.deleteByDeviceId(id);
+    await axiosInstance.delete(url);
+
+    enqueueSnackbar('Xóa thiết bị thành công', { variant: 'success' });
+  } catch (error) {
+    console.error('Lỗi khi xóa thiết bị:', error);
+  }
+}
