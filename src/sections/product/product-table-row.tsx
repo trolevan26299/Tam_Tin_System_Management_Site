@@ -249,53 +249,32 @@ export default function ProductTableRow({
 
 
         <TableCell align="right" sx={{ pr: 1 }}>
-        <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
-          <IconButton
-            color={collapse.value ? 'inherit' : 'default'}
-            onClick={collapse.onToggle}
-            sx={{
-              ...(collapse.value && {
-                bgcolor: 'action.hover',
-              }),
-            }}
-          >
-            <Iconify icon="eva:arrow-ios-downward-fill" />
-          </IconButton>
+          <Stack direction="row" alignItems="center" justifyContent="flex-end" spacing={1}>
+            <IconButton
+              color={collapse.value ? 'inherit' : 'default'}
+              onClick={collapse.onToggle}
+              sx={{
+                ...(collapse.value && {
+                  bgcolor: 'action.hover',
+                }),
+              }}
+            >
+              <Iconify icon="eva:arrow-ios-downward-fill" />
+            </IconButton>
 
-          <IconButton color={popover.open ? 'primary' : 'default'} onClick={popover.onOpen}>
-            <Iconify icon="eva:more-vertical-fill" />
-          </IconButton>
-        </Stack>
-      </TableCell>
+            <IconButton
+              color="error"
+              onClick={() => {
+                confirm.onTrue();
+              }}
+            >
+              <Iconify icon="solar:trash-bin-trash-bold" />
+            </IconButton>
+          </Stack>
+        </TableCell>
       </TableRow>
       {renderSecondary}
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="right-top"
-        sx={{ width: 140 }}
-      >
-        <MenuItem
-          onClick={() => {
-            // onEditRow();
-            popover.onClose();
-          }}
-        >
-          <Iconify icon="solar:pen-bold" />
-          Edit
-        </MenuItem>
 
-        <MenuItem
-          onClick={() => {
-            confirm.onTrue();
-            popover.onClose();
-          }}
-          sx={{ color: 'error.main' }}
-        >
-          <Iconify icon="solar:trash-bin-trash-bold" />
-          Delete
-        </MenuItem>
-      </CustomPopover>
 
       <ConfirmDialog
         open={confirm.value}

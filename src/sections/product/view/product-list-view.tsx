@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 'use client';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
@@ -68,13 +70,31 @@ export default function ProductListView() {
   };
 
   const handleDeleteRow = useCallback(
-    (id: string) => {
-      handleDeleteById(id);
-      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
-      setTableData({ ...tableData, data: deleteRow });
+    async (id: string) => {
+      try {
+        const deviceToDelete = tableData?.data?.find((row) => row._id === id);
+
+        const hasRepairHistory = deviceToDelete?.detail?.some(
+          (device) => device.deviceInfo.history_repair && device.deviceInfo.history_repair.length > 0
+        );
+
+        if (!hasRepairHistory) {
+          await handleDeleteById(id);
+          const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
+          setTableData({ ...tableData, data: deleteRow });
+          enqueueSnackbar('Xóa sản phẩm thành công', { variant: 'success' });
+        } else {
+          enqueueSnackbar('Các sản phẩm bên trong đã có lịch sử sửa chữa, không thể xóa được. Nếu muốn xóa hãy xóa sản phẩm đó trước rồi quay lại', {
+            variant: 'error',
+          });
+
+        }
+      } catch (error) {
+        console.error('Lỗi khi xóa sản phẩm:', error);
+        enqueueSnackbar('Đã xảy ra lỗi khi xóa sản phẩm', { variant: 'error' });
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [table, tableData]
+    [tableData, handleDeleteById, enqueueSnackbar]
   );
 
   const handleDeleteDevice = async (id: string) => {
