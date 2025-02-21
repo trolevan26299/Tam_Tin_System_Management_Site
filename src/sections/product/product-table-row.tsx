@@ -279,11 +279,11 @@ export default function ProductTableRow({
       <ConfirmDialog
         open={confirm.value}
         onClose={confirm.onFalse}
-        title="Delete"
-        content="Are you sure want to delete?"
+        title="Xóa sản phẩm"
+        content="Bạn có chắc chắn muốn xóa sản phẩm này?"
         action={
           <Button variant="contained" color="error" onClick={onDeleteRow}>
-            Delete
+            Xóa
           </Button>
         }
       />
