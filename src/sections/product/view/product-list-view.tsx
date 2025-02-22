@@ -1,8 +1,10 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+
 'use client';
 
 import { Button, Card, Container, Table, TableBody, TableContainer } from '@mui/material';
 import { useCallback, useEffect, useState } from 'react';
-import { deleteDeviceById, getListDevice } from 'src/api/product';
+import { deleteDeviceByDeviceId, deleteDeviceById, getListDevice } from 'src/api/product';
 import CustomBreadcrumbs from 'src/components/custom-breadcrumbs';
 import Iconify from 'src/components/iconify';
 import Scrollbar from 'src/components/scrollbar';
@@ -18,22 +20,24 @@ import {
 import { paths } from 'src/routes/paths';
 import { useGetSubCategory } from 'src/store/context/sub-category-context';
 import { IDataDevice, IDevice, IQueryDevice } from 'src/types/product';
+import { useSnackbar } from 'notistack';
 import DeviceInfo from '../product-info';
 import ProductTableRow from '../product-table-row';
 import ProductTableToolbar from '../product-table-toolbar';
 
 const TABLE_HEAD = [
-  { id: 'id_device', label: 'ID', width: 160 },
   { id: 'name', label: 'Tên', width: 160 },
   { id: 'category_name', label: 'Thuộc', width: 160 },
   { id: 'price', label: 'Giá nhập', width: 160 },
   { id: 'inventory', label: 'Tồn kho', width: 120 },
   { id: 'sold', label: 'Đã bán', width: 120 },
   { id: 'note', label: 'Ghi chú', width: 160 },
-  { id: 'action', label: '', width: 120 },
+  { id: 'actions', label: '', width: 80 },
 ];
 
 export default function ProductListView() {
+  const { enqueueSnackbar } = useSnackbar();
+
   const table = useTable({ defaultDense: true, defaultRowsPerPage: 10 });
   const settings = useSettingsContext();
   const { subCategoryList } = useGetSubCategory();
@@ -66,14 +70,41 @@ export default function ProductListView() {
   };
 
   const handleDeleteRow = useCallback(
-    (id: string) => {
-      handleDeleteById(id);
-      const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
-      setTableData({ ...tableData, data: deleteRow });
+    async (id: string) => {
+      try {
+        const deviceToDelete = tableData?.data?.find((row) => row._id === id);
+
+        const hasRepairHistory = deviceToDelete?.detail?.some(
+          (device) => device.deviceInfo.history_repair && device.deviceInfo.history_repair.length > 0
+        );
+
+        if (!hasRepairHistory) {
+          await handleDeleteById(id);
+          const deleteRow = tableData?.data?.filter((row) => row._id !== id) as IDevice[];
+          setTableData({ ...tableData, data: deleteRow });
+          enqueueSnackbar('Xóa sản phẩm thành công', { variant: 'success' });
+        } else {
+          enqueueSnackbar('Các sản phẩm bên trong đã có lịch sử sửa chữa, không thể xóa được. Nếu muốn xóa hãy xóa sản phẩm đó trước rồi quay lại', {
+            variant: 'error',
+          });
+
+        }
+      } catch (error) {
+        console.error('Lỗi khi xóa sản phẩm:', error);
+        enqueueSnackbar('Đã xảy ra lỗi khi xóa sản phẩm', { variant: 'error' });
+      }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [table, tableData]
+    [tableData, handleDeleteById, enqueueSnackbar]
   );
+
+  const handleDeleteDevice = async (id: string) => {
+    try {
+      await deleteDeviceByDeviceId(id , enqueueSnackbar);
+      getAllData();
+    } catch (error) {
+      console.error('Lỗi khi xóa thiết bị:', error);
+    }
+  };
 
   const getAllData = async () => {
     try {
@@ -136,7 +167,7 @@ export default function ProductListView() {
                       selected={table.selected.includes(row?._id as string)}
                       onSelectRow={() => table.onSelectRow(row?._id as string)}
                       onDeleteRow={() => handleDeleteRow(row?._id as string)}
-                      // onEditRow={() => handleEditRow(row?._id as string)}
+                      onDeleteDevice={handleDeleteDevice}
                     />
                   ))}
 
