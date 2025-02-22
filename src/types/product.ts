@@ -1,4 +1,3 @@
-
 export type IDetailDevice = {
   status: string;
   id_device: string;
@@ -9,7 +8,7 @@ export type IHistoryRepairItem = {
   id: string;
   name?: string;
   total?: number;
-}
+};
 
 export type IHistoryRepair = {
   type_repair?: string;
@@ -17,7 +16,7 @@ export type IHistoryRepair = {
   linh_kien?: IHistoryRepairItem[];
   staff_repair?: string;
   note?: string;
-}
+};
 export type IDeviceInfo = {
   _id: string;
   name: string;
@@ -56,6 +55,7 @@ export type IQueryDevice = {
   items_per_page?: number;
   keyword?: string;
   belong_to?: string;
+  subCategoryId?: string;
 };
 
 export type IDataDevice = {

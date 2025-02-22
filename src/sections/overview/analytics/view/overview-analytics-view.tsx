@@ -13,10 +13,12 @@ import {
 // components
 import { useSettingsContext } from 'src/components/settings';
 //
-import { useEffect, useState } from 'react';
-import { getAnalytics } from 'src/api/analytics';
-import { IAnalyTicsDto, IQueryAnalytics } from 'src/types/analytics';
 import { format } from 'date-fns';
+import { useEffect, useState } from 'react';
+import { getListCustomer } from 'src/api/customer';
+import { getListOrder } from 'src/api/order';
+import { IQueryAnalytics } from 'src/types/analytics';
+import { IDataCustomer } from 'src/types/customer';
 import { getDateRange } from 'src/utils/format-time';
 import AnalyticsConversionRates from '../analytics-conversion-rates';
 import AnalyticsCurrentSubject from '../analytics-current-subject';
@@ -34,12 +36,18 @@ import AnalyticsWidgetSummary from '../analytics-widget-summary';
 export default function OverviewAnalyticsView() {
   const settings = useSettingsContext();
   // const [analytics, setAnalytics] = useState<IAnalyTicsDto>({});
-  const [state, setState] = useState<{ query?: IQueryAnalytics; analytics?: IAnalyTicsDto }>({
+  const [state, setState] = useState<{
+    query?: IQueryAnalytics;
+    analytics?: any;
+    customer?: IDataCustomer;
+  }>({
     query: {
       from_date: format(new Date(), 'yyyy-MM-dd'),
       to_date: format(new Date(), 'yyyy-MM-dd'),
       period: '0-days',
     },
+    analytics: {},
+    customer: undefined,
   });
 
   const handleGetAnalytics = async (query: IQueryAnalytics) => {
@@ -47,8 +55,69 @@ export default function OverviewAnalyticsView() {
     setState({ ...state, query: { ...state.query, from_date: start, to_date: end } });
   };
 
+  const handleGetOrder = async (query: IQueryAnalytics) => {
+    const res = await getListOrder({
+      from_date: query?.from_date,
+      to_date: query?.to_date,
+    });
+    setState({
+      ...state,
+      analytics: res,
+      query: {
+        ...state.query,
+        from_date: query.from_date,
+        to_date: query.to_date,
+        period: query.period,
+      },
+    });
+  };
+
+  const handleGetCustomer = async (query: IQueryAnalytics) => {
+    const res = await getListCustomer({
+      from_date: query?.from_date,
+      to_date: query?.to_date,
+    });
+    setState({
+      ...state,
+      customer: res,
+      query: {
+        ...state.query,
+        from_date: query.from_date,
+        to_date: query.to_date,
+        period: query.period,
+      },
+    });
+  };
+
+  const init = async (query: IQueryAnalytics) => {
+    handleGetAnalytics(query);
+    handleGetOrder(query);
+    handleGetCustomer(query);
+  };
+
+  const getRevenue = () => {
+    const totalAmountSum = state.analytics.data?.reduce(
+      (total: number, order: any) => total + order.totalAmount,
+      0
+    );
+    return totalAmountSum;
+  };
+
+  const getProfit = () => {
+    const totalProfit = state.analytics.data?.reduce((profitSum: number, order: any) => {
+      const totalCost = order.items.reduce((sum: number, item: any) => sum + item.price, 0);
+      const profit = order.totalAmount - totalCost;
+
+      return profitSum + profit;
+    }, 0);
+
+    return totalProfit;
+  };
+
+  console.log(state);
+
   useEffect(() => {
-    handleGetAnalytics(state.query as IQueryAnalytics);
+    init(state.query as IQueryAnalytics);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
@@ -64,27 +133,24 @@ export default function OverviewAnalyticsView() {
       <AnalyticsToolbar
         query={state.query as IQueryAnalytics}
         changeQuery={(value) => {
-          setState({ ...state, query: value });
-          if (value.period) {
-            const { start, end } = getDateRange(value?.period as string);
-            setState({ ...state, query: { ...value, from_date: start, to_date: end } });
-          }
+          handleGetOrder(value);
+          handleGetCustomer(value);
         }}
       />
 
       <Grid container spacing={3}>
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Weekly Sales"
-            total={714000}
+            title="Đơn hàng"
+            total={state.analytics.totalCount || 0}
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_bag.png" />}
           />
         </Grid>
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="New Users"
-            total={1352831}
+            title="Doanh thu"
+            total={getRevenue() || 0}
             color="info"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_users.png" />}
           />
@@ -92,8 +158,8 @@ export default function OverviewAnalyticsView() {
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Item Orders"
-            total={1723315}
+            title="Lợi nhuận"
+            total={getProfit() || 0}
             color="warning"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_buy.png" />}
           />
@@ -101,8 +167,8 @@ export default function OverviewAnalyticsView() {
 
         <Grid xs={12} sm={6} md={3}>
           <AnalyticsWidgetSummary
-            title="Bug Reports"
-            total={234}
+            title="Khách hàng mới"
+            total={state.customer?.totalCount || 0}
             color="error"
             icon={<img alt="icon" src="/assets/icons/glass/ic_glass_message.png" />}
           />

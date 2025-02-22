@@ -139,7 +139,7 @@ export default function DeviceInfo({
 
               <Grid xs={12}>
                 <RHFSelect name="sub_category_id" label="Thuộc danh mục">
-                  {listSubCategory?.map((item: ISubCategory) => (
+                  {(listSubCategory || [])?.map((item: ISubCategory) => (
                     <MenuItem value={item?._id} key={item?._id}>
                       {item?.name}
                     </MenuItem>

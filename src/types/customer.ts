@@ -18,6 +18,8 @@ export type IQueryCustomer = {
   page?: number;
   items_per_page?: number;
   keyword?: string;
+  from_date?: string;
+  to_date?: string;
 };
 
 export type IDataCustomer = {
