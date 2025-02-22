@@ -46,6 +46,7 @@ export default function ProductListView() {
   const [queryDevice, setQueryDevice] = useState<IQueryDevice>({
     page: 0,
     items_per_page: 10,
+    subCategoryId: '_all_',
   });
 
   const denseHeight = table.dense ? 52 : 72;
@@ -55,7 +56,11 @@ export default function ProductListView() {
   };
 
   const handleSearch = async (query: IQueryDevice) => {
-    const deviceList = await getDeviceList(query);
+    const newQuery = {
+      ...query,
+      subCategoryId: query.subCategoryId === '_all_' ? undefined : query.subCategoryId,
+    };
+    const deviceList = await getDeviceList(newQuery);
     setQueryDevice(query);
     setTableData(deviceList);
   };
@@ -75,7 +80,8 @@ export default function ProductListView() {
         const deviceToDelete = tableData?.data?.find((row) => row._id === id);
 
         const hasRepairHistory = deviceToDelete?.detail?.some(
-          (device) => device.deviceInfo.history_repair && device.deviceInfo.history_repair.length > 0
+          (device) =>
+            device.deviceInfo.history_repair && device.deviceInfo.history_repair.length > 0
         );
 
         if (!hasRepairHistory) {
@@ -84,10 +90,12 @@ export default function ProductListView() {
           setTableData({ ...tableData, data: deleteRow });
           enqueueSnackbar('Xóa sản phẩm thành công', { variant: 'success' });
         } else {
-          enqueueSnackbar('Các sản phẩm bên trong đã có lịch sử sửa chữa, không thể xóa được. Nếu muốn xóa hãy xóa sản phẩm đó trước rồi quay lại', {
-            variant: 'error',
-          });
-
+          enqueueSnackbar(
+            'Các sản phẩm bên trong đã có lịch sử sửa chữa, không thể xóa được. Nếu muốn xóa hãy xóa sản phẩm đó trước rồi quay lại',
+            {
+              variant: 'error',
+            }
+          );
         }
       } catch (error) {
         console.error('Lỗi khi xóa sản phẩm:', error);
@@ -99,23 +107,15 @@ export default function ProductListView() {
 
   const handleDeleteDevice = async (id: string) => {
     try {
-      await deleteDeviceByDeviceId(id , enqueueSnackbar);
-      getAllData();
+      await deleteDeviceByDeviceId(id, enqueueSnackbar);
+      handleSearch(queryDevice);
     } catch (error) {
       console.error('Lỗi khi xóa thiết bị:', error);
     }
   };
 
-  const getAllData = async () => {
-    try {
-      const deviceList = await getDeviceList(queryDevice);
-      setTableData(deviceList);
-    } catch (error) {
-      console.log(error);
-    }
-  };
   useEffect(() => {
-    getAllData();
+    handleSearch(queryDevice);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   return (
@@ -145,10 +145,10 @@ export default function ProductListView() {
         <Card>
           <ProductTableToolbar
             onSearch={(query) => {
-              const newQuery = { ...query, page: 0 };
-              handleSearch(newQuery);
+              handleSearch(query);
             }}
             query={queryDevice}
+            listSubCategory={subCategoryList}
           />
           <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
             <Scrollbar>
