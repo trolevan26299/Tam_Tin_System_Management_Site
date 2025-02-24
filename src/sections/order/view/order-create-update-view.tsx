@@ -37,6 +37,7 @@ interface IItems {
   details: string[];
   quantity: number;
   price: number;
+  warranty: number;
 }
 
 const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
@@ -44,12 +45,14 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
   delivery_date: '',
   totalAmount: 0,
   customer: '',
+  type_customer: 'bank',
   items: [
     {
       device: '',
       details: [],
       quantity: undefined,
       price: undefined,
+      warranty: undefined,
     },
   ],
   shipBy: '',
@@ -62,17 +65,18 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
   const settings = useSettingsContext();
   const { enqueueSnackbar } = useSnackbar();
   const [customers, setCustomers] = useState<ICustomer[]>([]);
+  const [filteredCustomers, setFilteredCustomers] = useState<ICustomer[]>([]);
   const [deviceOptions, setDeviceOptions] = useState<{ [key: number]: IDevice[] }>({});
 
   const NewOrderSchema = Yup.object().shape({
-    delivery_date: Yup.string().required('Delivery date is required'),
-    totalAmount: Yup.number().required().min(1, 'Total amount is required'),
-    shipBy: Yup.string().required('ShipBy is required'),
-    customer: Yup.string().required('Customer is required'),
+    delivery_date: Yup.string().required('Vui lòng chọn ngày giao'),
+    totalAmount: Yup.number().required().min(1, 'Tổng tiền là bắt buộc'),
+    shipBy: Yup.string().required('Vui lòng chọn người giao'),
+    customer: Yup.string().required('Vui lòng chọn khách hàng'),
     items: Yup.array()
       .of(
         Yup.object().shape({
-          device: Yup.string().required('Device is required'),
+          device: Yup.string().required('Vui lòng chọn sản phẩm'),
           details: Yup.array(),
           quantity: Yup.number()
             .min(1, 'Quantity is required')
@@ -95,23 +99,25 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                   // eslint-disable-next-line react/no-this-in-sfc
                   return this.createError({
                     path: `${context.path}`,
-                    message: `Product ${deviceById?.name} only has ${checkInventoryInDevice?.length} left in stock. Initial order quantity is ${id_deviceIncludedInOrder.length}. Please enter quantity <= ${checkInventoryInDevice?.length}.`,
+                    message: `Sản phẩm ${deviceById?.name} còn ${checkInventoryInDevice?.length} trong kho. Số lượng đã đặt là ${id_deviceIncludedInOrder.length}. Vui lòng nhập số lượng <= ${checkInventoryInDevice?.length}.`,
                   });
                 }
               } else if (value > checkInventoryInDevice?.length) {
                 // eslint-disable-next-line react/no-this-in-sfc
                 return this.createError({
                   path: `${context.path}`,
-                  message: `Product ${deviceById?.name} only has ${checkInventoryInDevice?.length} left in stock, enter quantity <= ${checkInventoryInDevice?.length}`,
+                  message: `Sản phẩm ${deviceById?.name} còn ${checkInventoryInDevice?.length} trong kho. Vui lòng nhập số lượng <= ${checkInventoryInDevice?.length}.`,
                 });
               }
               return true;
             }),
 
-          price: Yup.number().required('price is required').min(1, 'price is required'),
+          price: Yup.number().required('Giá bán là bắt buộc').min(1, 'Giá bán phải lớn hơn 0'),
+          warranty: Yup.number().required('Bảo hành là bắt buộc').min(1, 'Bảo hành phải lớn hơn 0'),
         })
       )
       .required(),
+    type_customer: Yup.string().required('Loại khách hàng là bắt buộc'),
   });
 
   const methods = useForm<IOrderCreateOrUpdate>({
@@ -172,13 +178,17 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
 
     const newData: IOrderCreateOrUpdate = {
       ...data,
+      type_customer: data?.type_customer,
       delivery_date: fDateTime(data?.delivery_date, 'yyyy-MM-dd HH:mm'),
       items: data?.items.map((item) => ({
         details: item.details,
         device: item.device,
         price: item.price,
+        quantity: item.details?.length || 0,
+        warranty: item.warranty,
       })) as any,
       totalAmount: watch('totalAmount') - (watch('priceSaleOff') || 0),
+      priceSaleOff: watch('priceSaleOff'),
     };
 
     if (newData?._id) {
@@ -193,15 +203,6 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
       }
     }
   };
-
-  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
-    try {
-      const response = await getListCustomer({ keyword: searchQuery });
-      setCustomers(response.data);
-    } catch (error) {
-      console.error('Failed to search devices:', error);
-    }
-  }, 300);
 
   const handleSearchDevice = debounce(async (index: number, searchQuery: string) => {
     try {
@@ -238,12 +239,14 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
       setValue('delivery_date', currentOrder?.delivery_date);
       setValue('shipBy', String(currentOrder?.shipBy));
       setValue('customer', String(currentOrder?.customer?._id));
+      setValue('type_customer', currentOrder?.type_customer || 'bank');
       setValue('note', currentOrder?.note);
+      setValue('priceSaleOff', currentOrder?.priceSaleOff);
 
       const items = currentOrder?.items?.map((item) => ({
         device: item.device?._id as string,
         details: item.details,
-
+        warranty: item.warranty,
         quantity: item.details?.length,
         price: item?.price as number,
       }));
@@ -266,6 +269,13 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     }
   };
 
+  const handleInputChangeCustomer = (searchQuery: string) => {
+    const filtered = customers.filter((customer) =>
+      customer.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    setFilteredCustomers(filtered);
+  };
+
   useEffect(() => {
     const totalAmount = calculateTotalAmount(watchedItems);
     setValue('totalAmount', totalAmount);
@@ -276,6 +286,15 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     clearErrors();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentOrder?._id]);
+  const handleGetAllCustomer = async () => {
+    const customersList = await getListCustomer({ page: 0, items_per_page: 1000 });
+    setCustomers(customersList.data);
+    setFilteredCustomers(customersList.data);
+  };
+  useEffect(() => {
+    handleGetAllCustomer();
+  }, []);
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
       <CustomBreadcrumbs
@@ -324,21 +343,30 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                 </Grid>
 
                 <Grid xs={12}>
-                  <RHFAutocomplete
-                    name="customer"
-                    label="Khách hàng"
-                    options={customers.map((item) => item?._id)}
-                    onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
-                      if (reason === 'input') {
-                        handleInputChangeCustomer(value);
+                  <Stack spacing={1.5} direction="row" width="100%">
+                    <RHFAutocomplete
+                      name="customer"
+                      label="Khách hàng"
+                      options={filteredCustomers.map((item) => item?._id)}
+                      onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
+                        if (reason === 'input') {
+                          handleInputChangeCustomer(value);
+                        }
+                      }}
+                      getOptionLabel={(option) =>
+                        customers?.find((x) => x._id === option)?.name || ''
                       }
-                    }}
-                    getOptionLabel={(option) =>
-                      customers?.find((x) => x._id === option)?.name || ''
-                    }
-                  />
+                      sx={{ width: '70%' }}
+                    />
+                    <RHFAutocomplete
+                      sx={{ width: '30%' }}
+                      name="type_customer"
+                      label="Loại khách hàng"
+                      options={['bank', 'private']}
+                      getOptionLabel={(option) => (option === 'bank' ? 'Ngân hàng' : 'Tư nhân')}
+                    />
+                  </Stack>
                 </Grid>
-
                 <Grid xs={12}>
                   <RHFTextField name="shipBy" label="Giao bởi" />
                 </Grid>
@@ -389,12 +417,23 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                             />
                           </Grid>
 
-                          <Grid xs={3}>
+                          <Grid xs={2}>
                             <RHFTextField
                               name={`items.${index}.quantity`}
                               label="Số lượng"
                               type="number"
                               disabled={!watch(`items.${index}.price`)}
+                              onKeyDown={(evt) =>
+                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                              }
+                            />
+                          </Grid>
+                          <Grid xs={2}>
+                            <RHFTextField
+                              name={`items.${index}.warranty`}
+                              label="Bảo hành"
+                              type="number"
+                              disabled={!watch(`items.${index}.device`)}
                               onKeyDown={(evt) =>
                                 ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
                               }
@@ -436,6 +475,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                                     details: [],
                                     quantity: 0,
                                     price: 0,
+                                    warranty: 0,
                                   })
                                 }
                                 sx={{ height: '55px' }}
@@ -463,7 +503,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
           <Grid xs={12} md={8}>
             <Card>
               <Stack spacing={3} sx={{ p: 3 }}>
-                <Typography variant="subtitle2">Định giá</Typography>
+                <Typography variant="subtitle2">Giá tiền</Typography>
                 <Grid xs={12}>
                   <RHFTextFieldFormatVnd
                     name="totalAmount"
@@ -491,7 +531,8 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                   sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right' }}
                 >
                   <Typography>
-                    Tổng: {renderMoney(String(watch('totalAmount') - (watch('priceSaleOff') || 0)))}
+                    Tổng tiền:{' '}
+                    {renderMoney(String(watch('totalAmount') - (watch('priceSaleOff') || 0)))}
                   </Typography>
                 </Grid>
               </Stack>

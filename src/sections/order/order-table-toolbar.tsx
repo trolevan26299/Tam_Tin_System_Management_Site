@@ -1,3 +1,4 @@
+/* eslint-disable import/no-duplicates */
 // @mui
 import Stack from '@mui/material/Stack';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
@@ -11,6 +12,9 @@ import { ICustomer } from 'src/types/customer';
 import { useState } from 'react';
 import { debounce } from 'lodash';
 import { getListCustomer } from 'src/api/customer';
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import vi from 'date-fns/locale/vi';
 
 // ----------------------------------------------------------------------
 
@@ -18,31 +22,25 @@ export default function OrderTableToolbar({
   onSearch,
   query,
   onReset,
+  customerList
 }: {
   onSearch: (query: IQueryOrder) => void;
   query: IQueryOrder;
   onReset: VoidFunction;
+  customerList: ICustomer[];
 }) {
-  const [customers, setCustomers] = useState<ICustomer[]>([]);
 
-  const handleInputChangeCustomer = debounce(async (searchQuery: string) => {
-    try {
-      const response = await getListCustomer({ keyword: searchQuery });
-      setCustomers(response.data);
-    } catch (error) {
-      console.error('Failed to search devices:', error);
-    }
-  }, 300);
+  const [customers, setCustomers] = useState<ICustomer[]>(customerList);
 
   const handleFilterFromDate = (value: any) => {
     const date = new Date(value);
-    const formattedDate = format(date, 'yyyy/MM/dd');
+    const formattedDate = format(date, 'dd/MM/yyyy');
     onSearch({ ...query, from_date: formattedDate, page: 0 });
   };
 
   const handleFilterToDate = (value: any) => {
     const date = new Date(value);
-    const formattedDate = format(date, 'yyyy/MM/dd');
+    const formattedDate = format(date, 'dd/MM/yyyy');
     onSearch({ ...query, to_date: formattedDate, page: 0 });
   };
   return (
@@ -58,6 +56,8 @@ export default function OrderTableToolbar({
         pr: { xs: 2.5, md: 1 },
       }}
     >
+       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={vi}>
+
       <DatePicker
         label="Từ ngày"
         value={new Date(String(query?.from_date) || '')}
@@ -71,7 +71,14 @@ export default function OrderTableToolbar({
         sx={{
           maxWidth: { md: 200 },
         }}
-        format="yyyy/MM/dd"
+        format="dd/MM/yyyy"
+        dayOfWeekFormatter={(dayOfWeek: string) => {
+          const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+          // dayOfWeek sẽ là 'Sunday', 'Monday', etc.
+          const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            .indexOf(dayOfWeek);
+          return days[dayIndex];
+        }}
       />
 
       <DatePicker
@@ -87,35 +94,37 @@ export default function OrderTableToolbar({
         sx={{
           maxWidth: { md: 200 },
         }}
-        format="yyyy/MM/dd"
+        format="dd/MM/yyyy"
+         dayOfWeekFormatter={(dayOfWeek: string) => {
+          const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+          // dayOfWeek sẽ là 'Sunday', 'Monday', etc.
+          const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+            .indexOf(dayOfWeek);
+          return days[dayIndex];
+        }}
       />
-      <Autocomplete
+       </LocalizationProvider>
+       <Autocomplete
         sx={{ width: 700 }}
-        options={customers.map((item: ICustomer) => item?._id)}
-        onInputChange={(_e: React.SyntheticEvent, value: string, reason: string) => {
-          if (reason === 'input') {
-            handleInputChangeCustomer(value);
-          }
-          if (reason === 'clear') {
+        options={customerList}
+        getOptionLabel={(option) => option?.name || ''}
+        onChange={(event, newValue) => {
+          if (newValue) {
+            onSearch({ ...query, customerId: newValue._id });
+          } else {
             onSearch({ ...query, customerId: undefined });
           }
         }}
-        getOptionLabel={(option) =>
-          (customers?.find((x: ICustomer) => x._id === option)?.name || '') as any
-        }
-        onChange={(event, newValue) => {
-          if (newValue) onSearch({ ...query, customerId: String(newValue) });
-        }}
         renderInput={(params) => <TextField label="Khách hàng" {...params} />}
-        value={query?.customerId || ''}
+        value={customerList.find(x => x._id === query?.customerId) || null}
+        isOptionEqualToValue={(option, value) => option._id === value._id}
       />
-
       <Stack direction="row" alignItems="center" spacing={2} flexGrow={1} sx={{ width: 1 }}>
         <SearchInputDebounce
           onSearch={(value: string) => {
             onSearch({ ...query, keyword: value, page: 0 });
           }}
-          placeholder="Tìm kiếm theo khách hàng hoặc số đơn hàng..."
+          placeholder="Tìm kiếm đơn hàng theo số đơn hàng"
           fullWidth
           value={query.keyword || ''}
         />

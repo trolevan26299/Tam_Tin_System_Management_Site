@@ -20,16 +20,19 @@ import {
 import { RouterLink } from 'src/routes/components';
 import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
+import { ICustomer } from 'src/types/customer';
+import { getListCustomer } from 'src/api/customer';
 import OrderTableRow from '../order-table-row';
 import OrderTableToolbar from '../order-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID Order', width: 100 },
-  { id: 'delivery', label: 'Ship by', width: 100 },
+  { id: 'delivery', label: 'Ship bởi', width: 100 },
   { id: 'customer', label: 'Khách hàng', width: 120 },
   { id: 'delivery_date', label: 'Ngày giao', width: 100 },
   { id: 'items', label: 'Sản phẩm', width: 100 },
-  { id: 'price', label: 'Giá', width: 140 },
+  { id: 'price', label: 'Tổng tiền', width: 140 },
+  { id: 'priceSaleOff', label: 'Giảm giá', width: 140 },
   { id: 'note', label: 'Ghi chú', width: 140 },
   { id: 'action', label: 'Hành động', width: 120 },
 ];
@@ -45,7 +48,9 @@ export default function OrderListView() {
     page: 0,
     items_per_page: 10,
   });
+  const [customerList, setCustomerList] = useState<ICustomer[]>([]);
 
+  console.log('customerList', customerList);
   const denseHeight = table.dense ? 52 : 72;
 
   const handleViewRow = useCallback(
@@ -58,9 +63,11 @@ export default function OrderListView() {
   const handleDeleteById = async (id: string) => {
     const deleteOrder = await deleteOrderById(id);
     if (deleteOrder) {
-      enqueueSnackbar('Delete success!', {
+      enqueueSnackbar('Xóa đơn hàng thành công!', {
         variant: 'success',
       });
+      getAllData();
+
     }
   };
 
@@ -94,10 +101,22 @@ export default function OrderListView() {
     }
   };
 
+  const getAllCustomer = async () => {
+    try {
+      const customers = await getListCustomer({page: 0, items_per_page: 1000});
+      setCustomerList(customers.data);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     getAllData();
+    getAllCustomer()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+
   return (
     <Container maxWidth={settings.themeStretch ? false : 'lg'}>
       <CustomBreadcrumbs
@@ -129,6 +148,7 @@ export default function OrderListView() {
           onReset={() => {
             handleSearch({ page: 0, items_per_page: 5 });
           }}
+          customerList={customerList}
         />
         <TableContainer sx={{ position: 'relative', overflow: 'unset' }}>
           <Scrollbar>

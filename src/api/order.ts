@@ -20,6 +20,12 @@ export async function createOrder(
     const res = await axiosInstance.post(endpoints.order.create, body);
     return res.data;
   } catch (error) {
+    console.error('API Error Details:', {
+      status: error.response?.status,
+      data: error.response?.data,
+      message: error.message
+    });
+
     enqueueSnackbar(error.error, { variant: 'error' });
     return console.error(error);
   }

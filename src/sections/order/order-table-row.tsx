@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger */
 import {
   Avatar,
   Box,
@@ -31,7 +32,7 @@ type Props = {
 };
 
 function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onViewRow }: Props) {
-  const { items, shipBy, delivery_date, customer, totalAmount, note, _id } = row;
+  const { items, shipBy, delivery_date, customer, totalAmount, note, _id, priceSaleOff } = row;
 
   const confirm = useBoolean();
   const collapse = useBoolean();
@@ -41,7 +42,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
 
   const renderSecondary = (
     <TableRow>
-      <TableCell sx={{ p: 0, border: 'none' }} colSpan={8}>
+      <TableCell sx={{ p: 0, border: 'none' }} colSpan={9}>
         <Collapse
           in={collapse.value}
           timeout="auto"
@@ -80,12 +81,23 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                     mt: 0.5,
                   }}
                 />
-
-                <Box>x{item.details?.length}</Box>
-
-                <Box sx={{ width: 110, textAlign: 'right' }}>
-                  {renderMoney(String(Number(item?.price) * Number(item.details?.length)))}
+                 <Box sx={{ minWidth: 150 }}>
+                  <span> <b>Bảo hành : </b>{`${item?.warranty} Tháng` || 'Không có'}    </span>
                 </Box>
+
+                 <Box sx={{ minWidth: 150 }}>
+                  <span> <b>Giá : </b>{`${renderMoney(String(item?.price))} VNĐ` || 'Không có'} </span>
+                </Box>
+
+
+                <Box sx={{ minWidth: 150 }}>
+                  <span> <b>Số lượng : </b>{`${item?.details?.length}` || 'Không có'} </span>
+                </Box>
+
+                <Box sx={{ minWidth: 150 }}>
+                  <span> <b>Tổng tiền : </b>{`${renderMoney(String(Number(item?.price) * Number(item.details?.length)))} VNĐ` || 'Không có'} </span>
+                </Box>
+
               </Stack>
             ))}
           </Stack>
@@ -114,34 +126,47 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
   return (
     <>
       <TableRow hover selected={selected}>
-        <TableCell
+      <TableCell
           sx={{
             maxWidth: '100px',
           }}
         >
-          <ListItemText
-            primary={renderCellWithTooltip(String(_id))}
-            primaryTypographyProps={{ typography: 'body2' }}
-            onClick={onViewRow}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <ListItemText
+              primary={renderCellWithTooltip(String(_id))}
+              primaryTypographyProps={{ typography: 'body2' }}
+              onClick={onViewRow}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            />
+            <Tooltip title="Copy ID">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  navigator.clipboard.writeText(String(_id));
+                }}
+              >
+                <Iconify icon="solar:copy-bold" width={20} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </TableCell>
         <TableCell>
           <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
-        <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
+        <TableCell sx={{ display: 'flex', alignItems: 'center', }}>
           {customer?.avatarUrl && (
             <Avatar alt={customer.name} src={customer?.avatarUrl} sx={{ mr: 2 }} />
           )}
 
           <ListItemText
             primary={customer?.name}
-            secondary={customer?.email}
+            secondary={customer?.email || customer?.phone || ''}
+
             primaryTypographyProps={{ typography: 'body2' }}
             secondaryTypographyProps={{
               component: 'span',
@@ -151,9 +176,8 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
         </TableCell>
 
         <TableCell>
-          <ListItemText
-            primary={format(new Date(delivery_date), 'dd MMM yyyy')}
-            secondary={format(new Date(delivery_date), 'p')}
+        <ListItemText
+            primary={format(new Date(delivery_date), 'dd/MM/yyyy')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{
               mt: 0.5,
@@ -167,6 +191,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
+        <TableCell>{renderMoney(String(priceSaleOff))}</TableCell>
         <TableCell>
           <div
             dangerouslySetInnerHTML={{ __html: String(note) }}
@@ -212,7 +237,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
             }}
           >
             <Iconify icon="solar:pen-bold" />
-            Edit
+            Chỉnh sửa
           </MenuItem>
 
           <MenuItem
@@ -223,18 +248,18 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
             sx={{ color: 'error.main' }}
           >
             <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
+            Xóa
           </MenuItem>
         </CustomPopover>
 
         <ConfirmDialog
           open={confirm.value}
           onClose={confirm.onFalse}
-          title="Delete"
-          content="Are you sure want to delete?"
+          title="Xóa đơn hàng"
+          content="Bạn có chắc chắn muốn xóa đơn hàng này không?"
           action={
-            <Button variant="contained" color="error" onClick={onDeleteRow}>
-              Delete
+            <Button variant="contained" color="error" onClick={() => {onDeleteRow(); confirm.onFalse()}}>
+              Xóa
             </Button>
           }
         />
