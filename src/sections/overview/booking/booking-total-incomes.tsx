@@ -57,7 +57,7 @@ export default function BookingTotalIncomes({
           { offset: 0, color: colors[0] },
           { offset: 100, color: colors[1] },
         ],
-      },
+      } as any,
     },
     chart: {
       sparkline: {

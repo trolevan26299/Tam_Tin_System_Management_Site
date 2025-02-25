@@ -1,35 +1,28 @@
 // @mui
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
-import Stack from '@mui/material/Stack';
-import Avatar from '@mui/material/Avatar';
 import CardHeader from '@mui/material/CardHeader';
 import ListItemText from '@mui/material/ListItemText';
+import Stack from '@mui/material/Stack';
 // utils
-import { fCurrency, renderMoney } from 'src/utils/format-number';
+import { renderMoney } from 'src/utils/format-number';
 // types
-import { IOrderProductItem, Items } from 'src/types/order';
+import { Items } from 'src/types/order';
 // components
 import Scrollbar from 'src/components/scrollbar';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  taxes?: number;
-  shipping?: number;
-  discount?: number;
-  subTotal?: number;
   totalAmount: number;
   items: Items[];
+  discount: number;
 };
 
 export default function OrderDetailsItems({
   items,
-  shipping,
-  discount,
-  taxes,
-  subTotal,
   totalAmount,
+  discount,
 }: Props) {
   const renderTotal = (
     <Stack
@@ -37,42 +30,12 @@ export default function OrderDetailsItems({
       alignItems="flex-end"
       sx={{ my: 3, textAlign: 'right', typography: 'body2' }}
     >
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Subtotal</Box>
-        <Box sx={{ width: 160, typography: 'subtitle2' }}>{fCurrency(subTotal) || '-'}</Box>
-      </Stack>
-
-      <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Shipping</Box>
-        <Box
-          sx={{
-            width: 160,
-            ...(shipping && { color: 'error.main' }),
-          }}
-        >
-          {shipping ? `- ${fCurrency(shipping)}` : '-'}
-        </Box>
-      </Stack> */}
-
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Discount</Box>
-        <Box
-          sx={{
-            width: 160,
-            ...(discount && { color: 'error.main' }),
-          }}
-        >
-          {discount ? `- ${fCurrency(discount)}` : '-'}
-        </Box>
-      </Stack> */}
-
-      {/* <Stack direction="row">
-        <Box sx={{ color: 'text.secondary' }}>Taxes</Box>
-        <Box sx={{ width: 160 }}>{taxes ? fCurrency(taxes) : '-'}</Box>
-      </Stack> */}
-
       <Stack direction="row" sx={{ typography: 'subtitle1' }}>
-        <Box>Total</Box>
+        <Box>Giảm giá :</Box>
+        <Box sx={{ width: 160 }}>{renderMoney(String(discount)) || '-'}</Box>
+      </Stack>
+      <Stack direction="row" sx={{ typography: 'subtitle1' }}>
+        <Box>Tổng tiền :</Box>
         <Box sx={{ width: 160 }}>{renderMoney(String(totalAmount)) || '-'}</Box>
       </Stack>
     </Stack>
@@ -80,7 +43,7 @@ export default function OrderDetailsItems({
 
   return (
     <Card>
-      <CardHeader title="Thông tin" />
+      <CardHeader title="Thông tin sản phẩm" />
 
       <Stack
         sx={{
@@ -99,12 +62,6 @@ export default function OrderDetailsItems({
                 borderBottom: (theme) => `dashed 2px ${theme.palette.background.neutral}`,
               }}
             >
-              <Avatar
-                src={item.device?.coverUrl}
-                variant="rounded"
-                sx={{ width: 48, height: 48, mr: 2 }}
-              />
-
               <ListItemText
                 primary={item.device?.name}
                 secondary={item.device?.sku}

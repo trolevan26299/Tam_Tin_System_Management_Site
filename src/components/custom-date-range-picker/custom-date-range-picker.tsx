@@ -17,7 +17,7 @@ import { DateRangePickerProps } from './types';
 // ----------------------------------------------------------------------
 
 export default function CustomDateRangePicker({
-  title = 'Select date range',
+  title = 'Chọn thời gian',
   variant = 'input',
   //
   startDate,
@@ -91,27 +91,27 @@ export default function CustomDateRangePicker({
             </>
           ) : (
             <>
-              <DatePicker label="Start date" value={startDate} onChange={onChangeStartDate} />
+              <DatePicker label="Ngày bắt đầu" value={startDate} onChange={onChangeStartDate} />
 
-              <DatePicker label="End date" value={endDate} onChange={onChangeEndDate} />
+              <DatePicker label="Ngày kết thúc" value={endDate} onChange={onChangeEndDate} />
             </>
           )}
         </Stack>
 
         {error && (
           <FormHelperText error sx={{ px: 2 }}>
-            End date must be later than start date
+            Ngày kết thúc phải sau ngày bắt đầu
           </FormHelperText>
         )}
       </DialogContent>
 
       <DialogActions>
         <Button variant="outlined" color="inherit" onClick={onClose}>
-          Cancel
+          Hủy
         </Button>
 
         <Button disabled={error} variant="contained" onClick={onClose}>
-          Apply
+          Áp dụng
         </Button>
       </DialogActions>
     </Dialog>

@@ -37,7 +37,7 @@ function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
       <TableCell>
         {data_ung?.map((item) => (
           <ListItemText
-            primary={`${item?.name} - ${item?.total}`}
+            primary={`${item?.name} : ${item?.total}`}
             primaryTypographyProps={{ typography: 'body2' }}
           />
         ))}

@@ -57,7 +57,7 @@ export default function KanbanColumnAdd() {
           <TextField
             autoFocus
             fullWidth
-            placeholder="New section"
+            placeholder="Tên cột"
             value={columnName}
             onChange={handleChangeName}
             onKeyUp={handleKeyUpCreateColumn}
@@ -77,7 +77,7 @@ export default function KanbanColumnAdd() {
           startIcon={<Iconify icon="mingcute:add-line" sx={{ mr: -0.5 }} />}
           onClick={openAddColumn.onTrue}
         >
-          Add Section
+          Thêm cột
         </Button>
       )}
     </Paper>

@@ -54,10 +54,10 @@ export default function DeviceInfo({
   });
 
   const NewDevice = Yup.object().shape({
-    name: Yup.string().required('Name is required !'),
-    sub_category_id: Yup.string().required('Sub category is required !'),
-    quantity: Yup.number().required('quantity is required !'),
-    cost: Yup.number().required('Price is required !'),
+    name: Yup.string().required('Tên thiết bị không được để trống !'),
+    sub_category_id: Yup.string().required('Danh mục không được để trống !'),
+    quantity: Yup.number().required('Số lượng không được để trống !'),
+    cost: Yup.number().required('Giá không được để trống !'),
   });
 
   const methods = useForm<deviceInfo>({
@@ -73,7 +73,7 @@ export default function DeviceInfo({
 
   const handleGetWhenCreateAndUpdateSuccess = () => {
     getDeviceList();
-    enqueueSnackbar('Create success!', {
+    enqueueSnackbar('Tạo thành công !', {
       variant: 'success',
     });
     onClose();
@@ -139,7 +139,7 @@ export default function DeviceInfo({
 
               <Grid xs={12}>
                 <RHFSelect name="sub_category_id" label="Thuộc danh mục">
-                  {listSubCategory?.map((item: ISubCategory) => (
+                  {(listSubCategory || [])?.map((item: ISubCategory) => (
                     <MenuItem value={item?._id} key={item?._id}>
                       {item?.name}
                     </MenuItem>

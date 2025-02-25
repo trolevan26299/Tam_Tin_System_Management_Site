@@ -54,7 +54,7 @@ export default function AppWidget({
           { offset: 0, color: theme.palette[color].light },
           { offset: 100, color: theme.palette[color].main },
         ],
-      },
+      } as any,
     },
     plotOptions: {
       radialBar: {

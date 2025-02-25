@@ -13,6 +13,7 @@ import Label from 'src/components/label';
 import Image from 'src/components/image';
 import Iconify from 'src/components/iconify';
 import Carousel, { CarouselArrows, useCarousel } from 'src/components/carousel';
+import React from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -73,11 +74,12 @@ export default function BookingNewest({ title, subheader, list, sx, ...other }: 
         }}
       />
 
-      <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
-        {list.map((item) => (
+      {React.createElement(Carousel as any, {
+        ref: carousel.carouselRef,
+        ...carousel.carouselSettings,
+      }, list.map((item) => (
           <BookingItem key={item.id} item={item} />
-        ))}
-      </Carousel>
+        )))}
     </Box>
   );
 }

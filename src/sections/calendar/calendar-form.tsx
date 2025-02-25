@@ -172,7 +172,7 @@ export default function CalendarForm({ currentEvent, colorOptions, onClose }: Pr
 
       <DialogActions>
         {!!currentEvent?.id && (
-          <Tooltip title="Delete Event">
+          <Tooltip title="Xóa sự kiện">
             <IconButton onClick={onDelete}>
               <Iconify icon="solar:trash-bin-trash-bold" />
             </IconButton>

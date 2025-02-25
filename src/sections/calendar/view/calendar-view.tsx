@@ -1,6 +1,6 @@
 'use client';
 
-import Calendar from '@fullcalendar/react'; // => request placed at the top
+import Calendar from '@fullcalendar/react';
 import interactionPlugin from '@fullcalendar/interaction';
 import listPlugin from '@fullcalendar/list';
 import dayGridPlugin from '@fullcalendar/daygrid';

@@ -141,7 +141,7 @@ export default function KanbanColumn({ column, tasks, index }: Props) {
         onClick={openAddTask.onToggle}
         sx={{ fontSize: 14 }}
       >
-        {openAddTask.value ? 'Close' : 'Thêm công việc'}
+        {openAddTask.value ? 'Đóng' : 'Thêm công việc'}
       </Button>
     </Stack>
   );

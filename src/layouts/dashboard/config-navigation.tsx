@@ -37,6 +37,8 @@ const ICONS = {
   ecommerce: icon('ic_ecommerce'),
   analytics: icon('ic_analytics'),
   dashboard: icon('ic_dashboard'),
+  customer: icon('ic_customer'),
+  account: icon('ic_account'),
 };
 
 export function useNavData() {
@@ -44,41 +46,41 @@ export function useNavData() {
 
   const data = useMemo(
     () => [
-      {
-        subheader: 'Thống KÊ',
-        items: [
-          {
-            title: t('app'),
-            path: paths.dashboard.root,
-            icon: ICONS.dashboard,
-          },
-          {
-            title: t('ecommerce'),
-            path: paths.dashboard.general.ecommerce,
-            icon: ICONS.ecommerce,
-          },
-          {
-            title: t('analytics'),
-            path: paths.dashboard.general.analytics,
-            icon: ICONS.analytics,
-          },
-          {
-            title: t('banking'),
-            path: paths.dashboard.general.banking,
-            icon: ICONS.banking,
-          },
-          {
-            title: t('booking'),
-            path: paths.dashboard.general.booking,
-            icon: ICONS.booking,
-          },
-          {
-            title: t('file'),
-            path: paths.dashboard.general.file,
-            icon: ICONS.file,
-          },
-        ],
-      },
+      // {
+      //   subheader: 'Thống KÊ',
+      //   items: [
+      //     {
+      //       title: t('app'),
+      //       path: paths.dashboard.root,
+      //       icon: ICONS.dashboard,
+      //     },
+      //     {
+      //       title: t('ecommerce'),
+      //       path: paths.dashboard.general.ecommerce,
+      //       icon: ICONS.ecommerce,
+      //     },
+      //     {
+      //       title: t('analytics'),
+      //       path: paths.dashboard.general.analytics,
+      //       icon: ICONS.analytics,
+      //     },
+      //     {
+      //       title: t('banking'),
+      //       path: paths.dashboard.general.banking,
+      //       icon: ICONS.banking,
+      //     },
+      //     {
+      //       title: t('booking'),
+      //       path: paths.dashboard.general.booking,
+      //       icon: ICONS.booking,
+      //     },
+      //     {
+      //       title: t('file'),
+      //       path: paths.dashboard.general.file,
+      //       icon: ICONS.file,
+      //     },
+      //   ],
+      // },
 
       // MANAGEMENT
       // ----------------------------------------------------------------------
@@ -96,7 +98,7 @@ export function useNavData() {
           {
             title: 'Quản lý linh kiện',
             path: paths.dashboard.linhKien.root,
-            icon: ICONS.product,
+            icon: ICONS.menuItem,
             children: [
               { title: 'Linh kiện', path: paths.dashboard.linhKien.linhKien },
               { title: 'Giao dịch', path: paths.dashboard.linhKien.transaction },
@@ -120,7 +122,7 @@ export function useNavData() {
           {
             title: 'Khách hàng',
             path: paths.dashboard.customer.root,
-            icon: ICONS.product,
+            icon: ICONS.customer,
             children: [{ title: 'Danh sách', path: paths.dashboard.customer.root }],
           },
 
@@ -128,7 +130,7 @@ export function useNavData() {
           {
             title: 'Người dùng',
             path: paths.dashboard.user.root,
-            icon: ICONS.user,
+            icon: ICONS.account,
             children: [{ title: 'Danh sách', path: paths.dashboard.user.list }],
           },
           // STAFF
@@ -155,20 +157,21 @@ export function useNavData() {
         subheader: 'CÀI ĐẶT',
         items: [
           {
-            title: 'Category',
+            title: 'Danh mục',
             path: paths.dashboard.category.root,
-            icon: ICONS.product,
+            icon: ICONS.folder,
             children: [{ title: 'Danh sách', path: paths.dashboard.category.root }],
           },
           {
             title: 'Category sản phẩm',
             path: paths.dashboard.subCategory.root,
-            icon: ICONS.product,
+            icon: ICONS.label,
             children: [{ title: 'Danh sách', path: paths.dashboard.subCategory.root }],
           },
         ],
       },
     ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [t]
   );
 

@@ -76,7 +76,7 @@ export default function EcommerceSaleByGender({ title, subheader, total, chart, 
           { offset: 0, color: colr[0] },
           { offset: 100, color: colr[1] },
         ]),
-      },
+      } as any,
     },
     plotOptions: {
       radialBar: {

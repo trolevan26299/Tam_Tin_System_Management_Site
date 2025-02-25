@@ -83,13 +83,15 @@ export type Items = {
   device?: IDevice & { coverUrl?: string; sku?: string };
   details?: string[];
   price?: number;
+  warranty?: number;
 };
 
 export type IOrder = {
   _id?: string;
   note?: string;
   totalAmount?: number;
-
+  priceSaleOff?: number;
+  type_customer?: string;
   delivery_date: string;
   shipBy?: string;
   customer?: ICustomer;
@@ -102,7 +104,7 @@ export type IOrderCreateOrUpdate = {
   _id?: string;
   note?: string;
   totalAmount: number;
-
+  type_customer: string;
   delivery_date: string;
   customer: string;
   shipBy: string;
@@ -112,6 +114,7 @@ export type IOrderCreateOrUpdate = {
 
     quantity: number;
     price: number;
+    warranty: number;
   }[];
 
   priceSaleOff?: number;

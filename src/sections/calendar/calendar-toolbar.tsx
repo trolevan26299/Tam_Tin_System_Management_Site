@@ -27,7 +27,7 @@ const VIEW_OPTIONS = [
   { value: 'timeGridDay', label: 'Ngày', icon: 'mingcute:calendar-day-line' },
   {
     value: 'listWeek',
-    label: 'Agenda',
+    label: 'Lịch trình',
     icon: 'fluent:calendar-agenda-24-regular',
   },
 ] as const;

@@ -7,6 +7,10 @@ export type IStaff = {
   position?: string;
   exp?: number;
   phone?: string;
+  linh_kien_ung?: Array<{
+    name_linh_kien: string;
+    total: number;
+  }>;
   username_telegram?: string;
   user_id_telegram?: string;
   note?: string;

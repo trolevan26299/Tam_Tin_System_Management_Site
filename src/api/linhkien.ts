@@ -6,15 +6,7 @@ import useSWR, { mutate } from 'swr';
 const URL = endpoints.linhKien.list;
 
 export function useGetLinhKien() {
-  const {
-    data,
-    isLoading,
-    error,
-    isValidating,
-    mutate: mutateLinhKien,
-  } = useSWR(URL, fetcher, {
-    revalidateOnMount: false,
-  });
+  const { data, isLoading, error, isValidating } = useSWR(URL, fetcher);
 
   const memoizedValue = useMemo(
     () => ({
@@ -22,7 +14,6 @@ export function useGetLinhKien() {
       isLoading,
       error,
       isValidating,
-      mutate: mutateLinhKien,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [data, error, isLoading, isValidating]

@@ -100,7 +100,7 @@ export default function AppWidgetSummary({ title, percent, total, chart, sx, ...
         <Typography variant="h3">{fNumber(total)}</Typography>
       </Box>
 
-      <Chart type="bar" series={[{ data: series }]} options={chartOptions} width={60} height={36} />
+      <Chart type="bar" series={[{ data: series }]} options={chartOptions as ApexOptions} width={60} height={36} />
     </Card>
   );
 }

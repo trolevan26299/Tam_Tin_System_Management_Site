@@ -5,6 +5,8 @@ import Link from '@mui/material/Link';
 // routes
 import { RouterLink } from 'src/routes/components';
 //
+import { Settings } from 'react-slick';
+import React from 'react';
 import Image from '../../image';
 import TextMaxLine from '../../text-max-line';
 import Carousel, { CarouselDots, CarouselArrows, useCarousel } from '../../carousel';
@@ -19,9 +21,10 @@ export default function MenuCarousel({ products, numberShow, sx }: MenuCarouselP
   const carousel = useCarousel({
     slidesToShow: numberShow,
     slidesToScroll: numberShow,
+    // Thêm type assertion để giải quyết vấn đề compatibility
     ...CarouselDots({
       sx: { mt: 3 },
-    }),
+    }) as Settings,
   });
 
   return (
@@ -39,8 +42,10 @@ export default function MenuCarousel({ products, numberShow, sx }: MenuCarouselP
           sx: { top: 'calc(50% - 40px)', right: -8 },
         }}
       >
-        <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
-          {products.map((product) => (
+       {React.createElement(Carousel as any, {
+          ref: carousel.carouselRef,
+          ...carousel.carouselSettings,
+        }, products.map((product) => (
             <Box key={product.name} sx={{ px: 1, textAlign: 'center' }}>
               <Link
                 component={RouterLink}
@@ -66,8 +71,7 @@ export default function MenuCarousel({ products, numberShow, sx }: MenuCarouselP
                 </TextMaxLine>
               </Link>
             </Box>
-          ))}
-        </Carousel>
+         )))}
       </CarouselArrows>
     </Box>
   );
