@@ -232,10 +232,6 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          {customer?.avatarUrl && (
-            <Avatar alt={customer.name} src={customer?.avatarUrl} sx={{ mr: 2 }} />
-          )}
-
           <ListItemText
             primary={customer?.name}
             secondary={customer?.email || customer?.phone || ''}

@@ -73,7 +73,7 @@ export default function KanbanColumnToolBar({
       >
         <KanbanInputName
           inputRef={renameRef}
-          placeholder="Section name"
+          placeholder="Tên cột"
           value={name}
           onChange={handleChangeName}
           onKeyUp={handleKeyUpUpdateColumn}
@@ -122,7 +122,7 @@ export default function KanbanColumnToolBar({
       <ConfirmDialog
         open={confirmDialogDelete.value}
         onClose={confirmDialogDelete.onFalse}
-        title="Delete"
+        title="Xóa"
         content={
           <>
             Bạn có muốn xóa cột này ?
@@ -147,7 +147,7 @@ export default function KanbanColumnToolBar({
       <ConfirmDialog
         open={confirmDialogClear.value}
         onClose={confirmDialogClear.onFalse}
-        title=""
+        title="Xóa"
         content={<>Bạn có muốn xóa tất cả công việc trong cột này ?</>}
         action={
           <Button

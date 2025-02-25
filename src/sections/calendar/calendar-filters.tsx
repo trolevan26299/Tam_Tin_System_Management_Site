@@ -89,7 +89,7 @@ export default function CalendarFilters({
         Bộ lọc
       </Typography>
 
-      <Tooltip title="Reset">
+      <Tooltip title="Xóa bộ lọc">
         <IconButton onClick={onResetFilters}>
           <Badge color="error" variant="dot" invisible={!canReset}>
             <Iconify icon="solar:restart-bold" />

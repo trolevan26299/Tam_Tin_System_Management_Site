@@ -14,7 +14,7 @@ export type IKanbanAssignee = {
   name: string;
   role: string;
   email: string;
-  telegram: string;
+  username_telegram: string;
   status: string;
   address: string;
   avatarUrl: string;
