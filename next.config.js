@@ -12,7 +12,7 @@ module.exports = {
     return [
       {
         source: '/api/:path*',
-        destination: 'http://167.172.64.193:6969/api/:path*', // Thay thế bằng URL backend của bạn
+        destination: `${process.env.HOST_API}/api/:path*`,  // Thay thế bằng URL backend của bạn
       },
     ];
   },
