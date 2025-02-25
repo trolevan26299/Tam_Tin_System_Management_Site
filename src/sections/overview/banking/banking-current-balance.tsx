@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 // @mui
 import { Theme, useTheme, alpha, SxProps } from '@mui/material/styles';
 import Box from '@mui/material/Box';
@@ -16,6 +16,7 @@ import { useBoolean } from 'src/hooks/use-boolean';
 import Iconify from 'src/components/iconify';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Carousel, { CarouselDots, useCarousel } from 'src/components/carousel';
+import { Settings } from 'react-slick';
 
 // ----------------------------------------------------------------------
 
@@ -46,7 +47,7 @@ export default function BankingCurrentBalance({ list, sx }: Props) {
         position: 'absolute',
         color: 'primary.light',
       },
-    }),
+    }) as Settings,
   });
 
   return (
@@ -84,11 +85,12 @@ export default function BankingCurrentBalance({ list, sx }: Props) {
         ...sx,
       }}
     >
-      <Carousel {...carousel.carouselSettings}>
-        {list.map((card) => (
+      {React.createElement(Carousel as any, {
+        ref: carousel.carouselRef,
+        ...carousel.carouselSettings,
+      }, list.map((card) => (
           <CardItem key={card.id} card={card} />
-        ))}
-      </Carousel>
+        )))}
     </Box>
   );
 }

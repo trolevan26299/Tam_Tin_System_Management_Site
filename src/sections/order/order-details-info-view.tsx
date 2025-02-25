@@ -18,7 +18,7 @@ function OrderDetailsInfoView({ currentOrder }: { currentOrder?: IOrder }) {
       <Stack direction="row" sx={{ p: 3 }}>
         <Avatar
           alt={currentOrder?.customer?.name}
-          src={currentOrder?.customer?.avatarUrl}
+          src= ''
           sx={{ width: 48, height: 48, mr: 2 }}
         />
 

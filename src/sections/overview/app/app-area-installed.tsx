@@ -54,8 +54,8 @@ export default function AppAreaInstalled({ title, subheader, chart, ...other }: 
       type: 'gradient',
       gradient: {
         colorStops: colors.map((colr) => [
-          { offset: 0, color: colr[0] },
-          { offset: 100, color: colr[1] },
+          { offset: 0, color: colr[0], opacity: 1 },
+          { offset: 100, color: colr[1], opacity: 1 },
         ]),
       },
     },

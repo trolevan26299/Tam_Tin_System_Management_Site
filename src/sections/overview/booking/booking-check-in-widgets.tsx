@@ -50,7 +50,7 @@ export default function BookingCheckInWidgets({ chart, ...other }: Props) {
           { offset: 0, color: colors[0][0] },
           { offset: 100, color: colors[0][1] },
         ],
-      },
+      } as any,
     },
     chart: {
       sparkline: {
@@ -119,7 +119,7 @@ export default function BookingCheckInWidgets({ chart, ...other }: Props) {
             <Chart
               type="radialBar"
               series={[item.percent]}
-              options={index === 1 ? chartOptionsCheckout : chartOptionsCheckIn}
+              options={index === 1 ? chartOptionsCheckout as any : chartOptionsCheckIn as any}
               {...CHART_SIZE}
             />
 

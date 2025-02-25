@@ -52,7 +52,7 @@ const Image = forwardRef<HTMLSpanElement, ImageProps>(
 
     const content = (
       <Box
-        component={LazyLoadImage}
+        component={LazyLoadImage as any}
         //
         alt={alt}
         src={src}

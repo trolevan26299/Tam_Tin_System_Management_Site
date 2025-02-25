@@ -133,7 +133,7 @@ export function RHFMultiSelect({
             displayEmpty={!!placeholder}
             labelId={name}
             input={<OutlinedInput fullWidth label={label} error={!!error} />}
-            renderValue={renderValues}
+            renderValue={renderValues as any}
             {...other}
           >
             {placeholder && (

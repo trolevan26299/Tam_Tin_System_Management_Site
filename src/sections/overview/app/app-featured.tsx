@@ -9,6 +9,8 @@ import Card, { CardProps } from '@mui/material/Card';
 import Image from 'src/components/image';
 import { MotionContainer, varFade } from 'src/components/animate';
 import Carousel, { CarouselDots, CarouselArrows, useCarousel } from 'src/components/carousel';
+import { Settings } from 'react-slick';
+import React from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -34,16 +36,17 @@ export default function AppFeatured({ list, ...other }: Props) {
         position: 'absolute',
         color: 'primary.light',
       },
-    }),
+    }) as Settings,
   });
 
   return (
     <Card {...other}>
-      <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
-        {list.map((app, index) => (
-          <CarouselItem key={app.id} item={app} active={index === carousel.currentIndex} />
-        ))}
-      </Carousel>
+      {React.createElement(Carousel as any, {
+        ref: carousel.carouselRef,
+        ...carousel.carouselSettings,
+      }, list.map((app, index) => (
+        <CarouselItem key={app.id} item={app} active={index === carousel.currentIndex} />
+      )))}
 
       <CarouselArrows
         onNext={carousel.onNext}
