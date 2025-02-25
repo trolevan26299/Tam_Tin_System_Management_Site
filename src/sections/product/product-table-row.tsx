@@ -2,7 +2,6 @@
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import Tooltip from '@mui/material/Tooltip';
@@ -11,15 +10,15 @@ import Tooltip from '@mui/material/Tooltip';
 import { useBoolean } from 'src/hooks/use-boolean';
 // components
 import { ConfirmDialog } from 'src/components/custom-dialog';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
+import { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
 // types
+import { Box, Collapse, Paper, Popover, Stack } from '@mui/material';
+import { useState } from 'react';
+import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
 import { IDevice } from 'src/types/product';
 import { renderMoney } from 'src/utils/format-number';
-import { Box, Collapse, Paper, Popover, Stack } from '@mui/material';
 import { formatDate } from 'src/utils/format-time';
-import { useCopyToClipboard } from 'src/hooks/use-copy-to-clipboard';
-import { useState } from 'react';
 import { RepairHistoryPopover } from './repairHistoryPopup';
 
 // ----------------------------------------------------------------------
@@ -147,7 +146,7 @@ export default function ProductTableRow({
                     <Box sx={{ minWidth: 200 }}>
                       <Stack direction="row" spacing={1}>
                         <Box sx={{ typography: 'subtitle2' }}>Ngày mua:</Box>
-                        <Box sx={{ typography: 'body2' }}>{formatDate(item.deviceInfo.date_buy || '')}</Box>
+                        <Box sx={{ typography: 'body2' }}>{formatDate(item.deviceInfo.date_buy)}</Box>
                       </Stack>
                     </Box>
                   )}

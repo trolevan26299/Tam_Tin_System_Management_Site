@@ -165,13 +165,18 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
               currentOrder?.items?.find((currentItem) => currentItem?.device?._id === item.device)
                 ?.details || [];
 
+            // Xử lý khi số lượng mới ít hơn số lượng cũ
+          if (item.quantity < id_deviceIncludedInOrder.length) {
+            // Chỉ giữ lại số lượng device theo quantity mới
+            item.details = id_deviceIncludedInOrder.slice(0, item.quantity);
+          } else {
+            // Trường hợp tăng số lượng
             const newDetails = [
               ...id_deviceIncludedInOrder,
               ...inventoryDevices.splice(0, item.quantity - id_deviceIncludedInOrder.length),
             ];
-
             item.details = newDetails;
-          }
+          }}
         });
       });
     });
@@ -493,7 +498,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                 <Stack spacing={1.5}>
                   <Typography variant="subtitle2">Ghi chú</Typography>
                   <Grid xs={12}>
-                    <RHFEditor simple name="note" />
+                    <RHFEditor simple name="note"/>
                   </Grid>
                 </Stack>
               </Stack>

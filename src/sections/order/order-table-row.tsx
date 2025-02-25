@@ -12,9 +12,11 @@ import {
   TableCell,
   TableRow,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { sumBy } from 'lodash';
+import { useState } from 'react';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
@@ -37,6 +39,9 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
   const confirm = useBoolean();
   const collapse = useBoolean();
   const popover = usePopover();
+
+  const detailsPopover = usePopover();
+  const [selectedDetails, setSelectedDetails] = useState<string[]>([]);
 
   const itemCounts = sumBy(items, (item) => (item.details as string[]).length);
 
@@ -75,31 +80,99 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
-                  secondaryTypographyProps={{
-                    component: 'span',
-                    color: 'text.disabled',
-                    mt: 0.5,
-                  }}
                 />
-                 <Box sx={{ minWidth: 150 }}>
-                  <span> <b>Bảo hành : </b>{`${item?.warranty} Tháng` || 'Không có'}    </span>
-                </Box>
 
-                 <Box sx={{ minWidth: 150 }}>
-                  <span> <b>Giá : </b>{`${renderMoney(String(item?.price))} VNĐ` || 'Không có'} </span>
+                <Button
+                 size="small"
+                 variant='contained'
+                 color="primary"
+                 onClick={(event) => {
+                   setSelectedDetails(item?.details || []);
+                   detailsPopover.onOpen(event);
+                 }}
+                 startIcon={<Iconify icon="eva:list-fill" />}
+                 sx={{
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: 0.5,
+                   '& .MuiButton-startIcon': {
+                     margin: 0,
+                     '& > *:nth-of-type(1)': {
+                       fontSize: 20,
+                     },
+                   },
+                   typography: 'body2',
+                   mr:2
+                 }}
+                >
+                  Chi tiết ID
+                </Button>
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Bảo hành : </b>
+                    {`${item?.warranty} Tháng` || 'Không có'}{' '}
+                  </span>
                 </Box>
-
 
                 <Box sx={{ minWidth: 150 }}>
-                  <span> <b>Số lượng : </b>{`${item?.details?.length}` || 'Không có'} </span>
+                  <span>
+                    {' '}
+                    <b>Giá : </b>
+                    {`${renderMoney(String(item?.price))} VNĐ` || 'Không có'}{' '}
+                  </span>
                 </Box>
 
                 <Box sx={{ minWidth: 150 }}>
-                  <span> <b>Tổng tiền : </b>{`${renderMoney(String(Number(item?.price) * Number(item.details?.length)))} VNĐ` || 'Không có'} </span>
+                  <span>
+                    {' '}
+                    <b>Số lượng : </b>
+                    {`${item?.details?.length}` || 'Không có'}{' '}
+                  </span>
                 </Box>
 
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Tổng tiền : </b>
+                    {`${renderMoney(String(Number(item?.price) * Number(item.details?.length)))} VNĐ` ||
+                      'Không có'}{' '}
+                  </span>
+                </Box>
               </Stack>
             ))}
+            <CustomPopover
+              open={detailsPopover.open}
+              onClose={detailsPopover.onClose}
+              arrow="right-top"
+              sx={{
+                width: 300,
+                p: 2,
+              }}
+            >
+              <Box sx={{ typography: 'subtitle2', mb: 1.5 }}>Danh sách ID</Box>
+              {selectedDetails.map((detail, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    py: 0.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography variant="body2">{detail}</Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(detail);
+                    }}
+                  >
+                    <Iconify icon="solar:copy-bold" width={16} />
+                  </IconButton>
+                </Box>
+              ))}
+            </CustomPopover>
           </Stack>
         </Collapse>
       </TableCell>
@@ -126,7 +199,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
   return (
     <>
       <TableRow hover selected={selected}>
-      <TableCell
+        <TableCell
           sx={{
             maxWidth: '100px',
           }}
@@ -158,7 +231,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
         <TableCell>
           <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
-        <TableCell sx={{ display: 'flex', alignItems: 'center', }}>
+        <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
           {customer?.avatarUrl && (
             <Avatar alt={customer.name} src={customer?.avatarUrl} sx={{ mr: 2 }} />
           )}
@@ -166,7 +239,6 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           <ListItemText
             primary={customer?.name}
             secondary={customer?.email || customer?.phone || ''}
-
             primaryTypographyProps={{ typography: 'body2' }}
             secondaryTypographyProps={{
               component: 'span',
@@ -176,7 +248,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
         </TableCell>
 
         <TableCell>
-        <ListItemText
+          <ListItemText
             primary={format(new Date(delivery_date), 'dd/MM/yyyy')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{
@@ -191,7 +263,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
-        <TableCell>{renderMoney(String(priceSaleOff))}</TableCell>
+        <TableCell>{renderMoney(String(priceSaleOff || 0))}</TableCell>
         <TableCell>
           <div
             dangerouslySetInnerHTML={{ __html: String(note) }}
@@ -258,7 +330,14 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           title="Xóa đơn hàng"
           content="Bạn có chắc chắn muốn xóa đơn hàng này không?"
           action={
-            <Button variant="contained" color="error" onClick={() => {onDeleteRow(); confirm.onFalse()}}>
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                onDeleteRow();
+                confirm.onFalse();
+              }}
+            >
               Xóa
             </Button>
           }
