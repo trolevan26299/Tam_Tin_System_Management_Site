@@ -49,7 +49,6 @@ export default function AccountPopover() {
 
   const popover = usePopover();
 
-  console.log('userInfo', userInfo);
 
   const handleLogout = async () => {
     try {
