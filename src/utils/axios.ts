@@ -3,6 +3,12 @@ import axios, { AxiosRequestConfig } from 'axios';
 import { HOST_API } from 'src/config-global';
 
 // ----------------------------------------------------------------------
+if (typeof window !== 'undefined') {
+  const meta = document.createElement('meta');
+  meta.httpEquiv = 'Content-Security-Policy';
+  meta.content = 'upgrade-insecure-requests';
+  document.head.appendChild(meta);
+}
 
 const axiosInstance = axios.create({ baseURL: HOST_API });
 
