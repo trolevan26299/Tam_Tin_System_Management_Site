@@ -1,17 +1,14 @@
 /* eslint-disable @typescript-eslint/no-unused-expressions */
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 // @mui
 import Avatar from '@mui/material/Avatar';
-import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import InputAdornment from '@mui/material/InputAdornment';
 import ListItem from '@mui/material/ListItem';
 import ListItemAvatar from '@mui/material/ListItemAvatar';
 import ListItemText from '@mui/material/ListItemText';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 // _mock
 import { _contacts } from 'src/_mock';
@@ -46,10 +43,10 @@ export default function KanbanContactsDialog({
 
   const toggleAssignee = useCallback(
     (contact: any) => {
-      const isAssigned = assignee?.some((person) => person.telegram === contact.telegram);
+      const isAssigned = assignee?.some((person) => person.username_telegram === contact.username_telegram);
       let updatedAssignees;
       if (isAssigned) {
-        updatedAssignees = assignee?.filter((person) => person.telegram !== contact.telegram);
+        updatedAssignees = assignee?.filter((person) => person.username_telegram !== contact.username_telegram);
       } else {
         updatedAssignees = [...assignee, contact];
       }
@@ -61,7 +58,7 @@ export default function KanbanContactsDialog({
   return (
     <Dialog fullWidth maxWidth="xs" open={open} onClose={onClose}>
       <DialogTitle sx={{ pb: 0 }}>
-        Contacts <Typography component="span">({_contacts.length})</Typography>
+        Nhân viên <Typography component="span">({staffs?.length})</Typography>
       </DialogTitle>
 
       <DialogContent sx={{ p: 0 }}>
@@ -75,7 +72,7 @@ export default function KanbanContactsDialog({
             }}
           >
             {staffs?.map((contact) => {
-              const checked = assignee.map((person) => person.telegram).includes(contact.telegram);
+              const checked = assignee.map((person) => person.username_telegram).includes(contact?.username_telegram || '');
 
               return (
                 <ListItem
@@ -110,7 +107,7 @@ export default function KanbanContactsDialog({
                     }}
                     secondaryTypographyProps={{ typography: 'caption' }}
                     primary={contact.name}
-                    secondary={contact.telegram}
+                    secondary={contact.username_telegram}
                   />
                 </ListItem>
               );

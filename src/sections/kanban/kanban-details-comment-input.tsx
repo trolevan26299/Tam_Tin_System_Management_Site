@@ -1,19 +1,17 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // @mui
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import InputBase from '@mui/material/InputBase';
 import Paper from '@mui/material/Paper';
 import Stack from '@mui/material/Stack';
-import Button from '@mui/material/Button';
-import Avatar from '@mui/material/Avatar';
-import InputBase from '@mui/material/InputBase';
-import IconButton from '@mui/material/IconButton';
 // hooks
 import { useMockedUser } from 'src/hooks/use-mocked-user';
 // components
-import Iconify from 'src/components/iconify';
-import { IKanbanTask } from 'src/types/kanban';
-import { useCallback, useContext, useState } from 'react';
 import { useSnackbar } from 'notistack';
+import { useCallback, useContext, useState } from 'react';
 import { AuthContext } from 'src/auth/context/jwt';
+import { IKanbanTask } from 'src/types/kanban';
 
 // ----------------------------------------------------------------------
 type Props = {
@@ -73,16 +71,6 @@ export default function KanbanDetailsCommentInput({ task, onUpdateTask }: Props)
         />
 
         <Stack direction="row" alignItems="center">
-          <Stack direction="row" flexGrow={1}>
-            {/* <IconButton>
-              <Iconify icon="solar:gallery-add-bold" />
-            </IconButton>
-
-            <IconButton>
-              <Iconify icon="eva:attach-2-fill" />
-            </IconButton> */}
-          </Stack>
-
           <Button variant="contained" onClick={handleUpdateTask}>
             Bình luận
           </Button>

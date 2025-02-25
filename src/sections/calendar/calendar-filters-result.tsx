@@ -56,7 +56,7 @@ export default function CalendarFiltersResult({
 
       <Stack flexGrow={1} spacing={1} direction="row" flexWrap="wrap" alignItems="center">
         {!!filters.colors.length && (
-          <Block label="Colors:">
+          <Block label="Màu sắc:">
             {filters.colors.map((item) => (
               <Chip
                 key={item}
@@ -80,7 +80,7 @@ export default function CalendarFiltersResult({
         )}
 
         {filters.startDate && filters.endDate && (
-          <Block label="Date:">
+          <Block label="Thời gian:">
             <Chip size="small" label={shortLabel} onDelete={handleRemoveDate} />
           </Block>
         )}

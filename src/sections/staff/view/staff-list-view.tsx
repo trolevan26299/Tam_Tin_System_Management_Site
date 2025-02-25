@@ -29,8 +29,9 @@ const TABLE_HEAD = [
   { id: 'position', label: 'Vị trí' },
   { id: 'exp', label: 'Kinh nghiệm' },
   { id: 'phone', label: 'Phone' },
-  { id: 'username_telegram', label: 'Username Telegram' },
-  { id: 'user_id_telegram', label: 'UserId Telegram' },
+  { id: 'username_telegram', label: 'Username Tele' },
+  { id: 'user_id_telegram', label: 'UserId Tele' },
+  { id: 'linh_kien', label: 'Linh kiện ứng' },
   { id: 'note', label: 'Note' },
   { id: 'action', label: 'Hành động', width: 120 },
 ];

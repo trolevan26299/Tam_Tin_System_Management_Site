@@ -3,14 +3,13 @@
 import { Container, Stack } from '@mui/material';
 import Grid from '@mui/material/Unstable_Grid2';
 import { useEffect, useState } from 'react';
-import { ORDER_STATUS_OPTIONS } from 'src/_mock';
 import { getOrderById } from 'src/api/order';
 import { useSettingsContext } from 'src/components/settings';
 import { paths } from 'src/routes/paths';
 import { IOrder, Items } from 'src/types/order';
+import OrderDetailsInfoView from '../order-details-info-view';
 import OrderDetailsItems from '../order-details-item';
 import OrderDetailsToolbar from '../order-details-toolbar';
-import OrderDetailsInfoView from '../order-details-info-view';
 import OrderCreateView from './order-create-update-view';
 
 function OrderDetailsView({ id }: { id: string }) {
@@ -42,11 +41,6 @@ function OrderDetailsView({ id }: { id: string }) {
             backLink={paths.dashboard.order.root}
             orderNumber={selectedItem?._id as string}
             createdAt={selectedItem?.regDt as any}
-            statusOptions={ORDER_STATUS_OPTIONS}
-            onChangeStatus={(newValue) => {
-              //
-            }}
-            status="complete"
             onEdit={() => {
               setIsEditForm(true);
             }}
@@ -58,6 +52,7 @@ function OrderDetailsView({ id }: { id: string }) {
                 <OrderDetailsItems
                   items={selectedItem?.items as Items[]}
                   totalAmount={Number(selectedItem?.totalAmount)}
+                  discount={Number(selectedItem?.priceSaleOff)}
                 />
               </Stack>
             </Grid>

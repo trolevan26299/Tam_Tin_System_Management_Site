@@ -79,7 +79,7 @@ export default function KanbanTaskAdd({ status, onAddTask, onCloseAddTask }: Pro
           autoFocus
           multiline
           fullWidth
-          placeholder="Task name"
+          placeholder="Tên công việc"
           value={name}
           onChange={handleChangeName}
           onKeyUp={handleKeyUpAddTask}

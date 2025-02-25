@@ -8,6 +8,8 @@ import Card, { CardProps } from '@mui/material/Card';
 // components
 import Image from 'src/components/image';
 import Carousel, { CarouselDots, useCarousel } from 'src/components/carousel';
+import React from 'react';
+import { Settings } from 'react-slick';
 
 // ----------------------------------------------------------------------
 
@@ -32,16 +34,17 @@ export default function EcommerceNewProducts({ list, ...other }: Props) {
         position: 'absolute',
         color: 'primary.light',
       },
-    }),
+    }) as Settings,
   });
 
   return (
     <Card {...other}>
-      <Carousel {...carousel.carouselSettings}>
-        {list.map((item) => (
+      {React.createElement(Carousel as any, {
+        ref: carousel.carouselRef,
+        ...carousel.carouselSettings,
+      }, list.map((item) => (
           <CarouselItem key={item.id} item={item} />
-        ))}
-      </Carousel>
+        )))}
     </Card>
   );
 }

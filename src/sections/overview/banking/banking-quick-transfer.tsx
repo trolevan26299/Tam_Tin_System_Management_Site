@@ -148,7 +148,7 @@ export default function BankingQuickTransfer({ title, subheader, list, sx, ...ot
         }}
       >
         <Box
-          component={Carousel}
+          component={Carousel as any}
           ref={carousel.carouselRef}
           {...carousel.carouselSettings}
           sx={{

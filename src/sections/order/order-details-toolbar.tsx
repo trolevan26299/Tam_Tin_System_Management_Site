@@ -1,47 +1,34 @@
 // @mui
-import Stack from '@mui/material/Stack';
 import Button from '@mui/material/Button';
-import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 // routes
 import { RouterLink } from 'src/routes/components';
 // utils
 import { fDateTime } from 'src/utils/format-time';
 // components
-import Label from 'src/components/label';
 import Iconify from 'src/components/iconify';
-import CustomPopover, { usePopover } from 'src/components/custom-popover';
 
 // ----------------------------------------------------------------------
 
 type Props = {
-  status: string;
   backLink: string;
   orderNumber: string;
   createdAt: Date;
-  onChangeStatus: (newValue: string) => void;
-  statusOptions: {
-    value: string;
-    label: string;
-  }[];
   onEdit?: VoidFunction;
 };
 
 export default function OrderDetailsToolbar({
-  status,
   backLink,
   createdAt,
   orderNumber,
-  statusOptions,
-  onChangeStatus,
   onEdit,
 }: Props) {
-  const popover = usePopover();
+
 
   return (
-    <>
-      <Stack
+    <Stack
         spacing={3}
         direction={{ xs: 'column', md: 'row' }}
         sx={{
@@ -56,21 +43,10 @@ export default function OrderDetailsToolbar({
           <Stack spacing={0.5}>
             <Stack spacing={1} direction="row" alignItems="center">
               <Typography variant="h4"> Order {orderNumber} </Typography>
-              <Label
-                variant="soft"
-                color={
-                  (status === 'completed' && 'success') ||
-                  (status === 'pending' && 'warning') ||
-                  (status === 'cancelled' && 'error') ||
-                  'default'
-                }
-              >
-                {status}
-              </Label>
             </Stack>
 
             <Typography variant="body2" sx={{ color: 'text.disabled' }}>
-              {fDateTime(createdAt)}
+              {fDateTime(createdAt, 'dd/MM/yyyy HH:mm')}
             </Typography>
           </Stack>
         </Stack>
@@ -88,30 +64,9 @@ export default function OrderDetailsToolbar({
             startIcon={<Iconify icon="solar:pen-bold" />}
             onClick={() => onEdit?.()}
           >
-            Edit
+            Chỉnh sửa
           </Button>
         </Stack>
       </Stack>
-
-      <CustomPopover
-        open={popover.open}
-        onClose={popover.onClose}
-        arrow="top-right"
-        sx={{ width: 140 }}
-      >
-        {statusOptions.map((option) => (
-          <MenuItem
-            key={option.value}
-            selected={option.value === status}
-            onClick={() => {
-              popover.onClose();
-              onChangeStatus(option.value);
-            }}
-          >
-            {option.label}
-          </MenuItem>
-        ))}
-      </CustomPopover>
-    </>
   );
 }

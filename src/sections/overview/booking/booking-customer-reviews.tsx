@@ -13,6 +13,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { fDateTime } from 'src/utils/format-time';
 // components
 import Carousel, { CarouselArrows, useCarousel } from 'src/components/carousel';
+import React from 'react';
 
 // ----------------------------------------------------------------------
 
@@ -47,11 +48,12 @@ export default function BookingCustomerReviews({ title, subheader, list, ...othe
         action={<CarouselArrows onNext={carousel.onNext} onPrev={carousel.onPrev} />}
       />
 
-      <Carousel ref={carousel.carouselRef} {...carousel.carouselSettings}>
-        {list.map((item) => (
+      {React.createElement(Carousel as any, {
+        ref: carousel.carouselRef,
+        ...carousel.carouselSettings,
+      }, list.map((item) => (
           <ReviewItem key={item.id} item={item} />
-        ))}
-      </Carousel>
+        )))}
 
       <Divider sx={{ borderStyle: 'dashed' }} />
 

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-danger */
 import {
   Avatar,
   Box,
@@ -11,9 +12,11 @@ import {
   TableCell,
   TableRow,
   Tooltip,
+  Typography,
 } from '@mui/material';
 import { format } from 'date-fns';
 import { sumBy } from 'lodash';
+import { useState } from 'react';
 import { ConfirmDialog } from 'src/components/custom-dialog';
 import CustomPopover, { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
@@ -31,17 +34,20 @@ type Props = {
 };
 
 function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onViewRow }: Props) {
-  const { items, shipBy, delivery_date, customer, totalAmount, note, _id } = row;
+  const { items, shipBy, delivery_date, customer, totalAmount, note, _id, priceSaleOff } = row;
 
   const confirm = useBoolean();
   const collapse = useBoolean();
   const popover = usePopover();
 
+  const detailsPopover = usePopover();
+  const [selectedDetails, setSelectedDetails] = useState<string[]>([]);
+
   const itemCounts = sumBy(items, (item) => (item.details as string[]).length);
 
   const renderSecondary = (
     <TableRow>
-      <TableCell sx={{ p: 0, border: 'none' }} colSpan={8}>
+      <TableCell sx={{ p: 0, border: 'none' }} colSpan={9}>
         <Collapse
           in={collapse.value}
           timeout="auto"
@@ -74,20 +80,99 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
                   primaryTypographyProps={{
                     typography: 'body2',
                   }}
-                  secondaryTypographyProps={{
-                    component: 'span',
-                    color: 'text.disabled',
-                    mt: 0.5,
-                  }}
                 />
 
-                <Box>x{item.details?.length}</Box>
+                <Button
+                 size="small"
+                 variant='contained'
+                 color="primary"
+                 onClick={(event) => {
+                   setSelectedDetails(item?.details || []);
+                   detailsPopover.onOpen(event);
+                 }}
+                 startIcon={<Iconify icon="eva:list-fill" />}
+                 sx={{
+                   display: 'flex',
+                   alignItems: 'center',
+                   gap: 0.5,
+                   '& .MuiButton-startIcon': {
+                     margin: 0,
+                     '& > *:nth-of-type(1)': {
+                       fontSize: 20,
+                     },
+                   },
+                   typography: 'body2',
+                   mr:2
+                 }}
+                >
+                  Chi tiết ID
+                </Button>
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Bảo hành : </b>
+                    {`${item?.warranty} Tháng` || 'Không có'}{' '}
+                  </span>
+                </Box>
 
-                <Box sx={{ width: 110, textAlign: 'right' }}>
-                  {renderMoney(String(Number(item?.price) * Number(item.details?.length)))}
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Giá : </b>
+                    {`${renderMoney(String(item?.price))} VNĐ` || 'Không có'}{' '}
+                  </span>
+                </Box>
+
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Số lượng : </b>
+                    {`${item?.details?.length}` || 'Không có'}{' '}
+                  </span>
+                </Box>
+
+                <Box sx={{ minWidth: 150 }}>
+                  <span>
+                    {' '}
+                    <b>Tổng tiền : </b>
+                    {`${renderMoney(String(Number(item?.price) * Number(item.details?.length)))} VNĐ` ||
+                      'Không có'}{' '}
+                  </span>
                 </Box>
               </Stack>
             ))}
+            <CustomPopover
+              open={detailsPopover.open}
+              onClose={detailsPopover.onClose}
+              arrow="right-top"
+              sx={{
+                width: 300,
+                p: 2,
+              }}
+            >
+              <Box sx={{ typography: 'subtitle2', mb: 1.5 }}>Danh sách ID</Box>
+              {selectedDetails.map((detail, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    py: 0.5,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                  }}
+                >
+                  <Typography variant="body2">{detail}</Typography>
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      navigator.clipboard.writeText(detail);
+                    }}
+                  >
+                    <Iconify icon="solar:copy-bold" width={16} />
+                  </IconButton>
+                </Box>
+              ))}
+            </CustomPopover>
           </Stack>
         </Collapse>
       </TableCell>
@@ -119,29 +204,37 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
             maxWidth: '100px',
           }}
         >
-          <ListItemText
-            primary={renderCellWithTooltip(String(_id))}
-            primaryTypographyProps={{ typography: 'body2' }}
-            onClick={onViewRow}
-            sx={{
-              cursor: 'pointer',
-              '&:hover': {
-                textDecoration: 'underline',
-              },
-            }}
-          />
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <ListItemText
+              primary={renderCellWithTooltip(String(_id))}
+              primaryTypographyProps={{ typography: 'body2' }}
+              onClick={onViewRow}
+              sx={{
+                cursor: 'pointer',
+                '&:hover': {
+                  textDecoration: 'underline',
+                },
+              }}
+            />
+            <Tooltip title="Copy ID">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  navigator.clipboard.writeText(String(_id));
+                }}
+              >
+                <Iconify icon="solar:copy-bold" width={20} />
+              </IconButton>
+            </Tooltip>
+          </Stack>
         </TableCell>
         <TableCell>
           <ListItemText primary={shipBy} primaryTypographyProps={{ typography: 'body2' }} />
         </TableCell>
         <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
-          {customer?.avatarUrl && (
-            <Avatar alt={customer.name} src={customer?.avatarUrl} sx={{ mr: 2 }} />
-          )}
-
           <ListItemText
             primary={customer?.name}
-            secondary={customer?.email}
+            secondary={customer?.email || customer?.phone || ''}
             primaryTypographyProps={{ typography: 'body2' }}
             secondaryTypographyProps={{
               component: 'span',
@@ -152,8 +245,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
 
         <TableCell>
           <ListItemText
-            primary={format(new Date(delivery_date), 'dd MMM yyyy')}
-            secondary={format(new Date(delivery_date), 'p')}
+            primary={format(new Date(delivery_date), 'dd/MM/yyyy')}
             primaryTypographyProps={{ typography: 'body2', noWrap: true }}
             secondaryTypographyProps={{
               mt: 0.5,
@@ -167,6 +259,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
+        <TableCell>{renderMoney(String(priceSaleOff || 0))}</TableCell>
         <TableCell>
           <div
             dangerouslySetInnerHTML={{ __html: String(note) }}
@@ -212,7 +305,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
             }}
           >
             <Iconify icon="solar:pen-bold" />
-            Edit
+            Chỉnh sửa
           </MenuItem>
 
           <MenuItem
@@ -223,18 +316,25 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
             sx={{ color: 'error.main' }}
           >
             <Iconify icon="solar:trash-bin-trash-bold" />
-            Delete
+            Xóa
           </MenuItem>
         </CustomPopover>
 
         <ConfirmDialog
           open={confirm.value}
           onClose={confirm.onFalse}
-          title="Delete"
-          content="Are you sure want to delete?"
+          title="Xóa đơn hàng"
+          content="Bạn có chắc chắn muốn xóa đơn hàng này không?"
           action={
-            <Button variant="contained" color="error" onClick={onDeleteRow}>
-              Delete
+            <Button
+              variant="contained"
+              color="error"
+              onClick={() => {
+                onDeleteRow();
+                confirm.onFalse();
+              }}
+            >
+              Xóa
             </Button>
           }
         />
