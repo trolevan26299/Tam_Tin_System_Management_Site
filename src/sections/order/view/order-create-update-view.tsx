@@ -1,8 +1,10 @@
+/* eslint-disable no-unsafe-optional-chaining */
+
 'use client';
 
 import { yupResolver } from '@hookform/resolvers/yup';
 import { LoadingButton } from '@mui/lab';
-import { Button, Card, Container, Stack, Typography } from '@mui/material';
+import { Autocomplete, Button, Card, Chip, Container, Stack, TextField, Typography } from '@mui/material';
 import Grid from '@mui/system/Unstable_Grid/Grid';
 import { DatePicker } from '@mui/x-date-pickers';
 import { debounce } from 'lodash';
@@ -35,7 +37,6 @@ import { useRouter } from 'src/routes/hooks';
 interface IItems {
   device: string;
   details: string[];
-  quantity: number;
   price: number;
   warranty: number;
 }
@@ -50,7 +51,6 @@ const initializeDefaultValues = (): DefaultValues<IOrderCreateOrUpdate> => ({
     {
       device: '',
       details: [],
-      quantity: undefined,
       price: undefined,
       warranty: undefined,
     },
@@ -70,7 +70,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
 
   const NewOrderSchema = Yup.object().shape({
     delivery_date: Yup.string().required('Vui lòng chọn ngày giao'),
-    totalAmount: Yup.number().required().min(1, 'Tổng tiền là bắt buộc'),
+    totalAmount: Yup.number().required("Vui lòng chọn sản phẩm").min(1, 'Tổng tiền phải lớn hơn 0'),
     shipBy: Yup.string().required('Vui lòng chọn người giao'),
     customer: Yup.string().required('Vui lòng chọn khách hàng'),
     items: Yup.array()
@@ -78,40 +78,6 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
         Yup.object().shape({
           device: Yup.string().required('Vui lòng chọn sản phẩm'),
           details: Yup.array(),
-          quantity: Yup.number()
-            .min(1, 'Quantity is required')
-            .required('Quantity is required')
-            // eslint-disable-next-line func-names
-            .test('quantity-check', function (value, context) {
-              const { device } = context.parent;
-              const { index } = context.options as any;
-
-              const deviceById = deviceOptions[index]?.find((x) => x._id === device);
-              const checkInventoryInDevice = deviceById?.detail?.filter(
-                (x) => x.status === 'inventory'
-              ) as IDetailDevice[];
-
-              if (currentOrder) {
-                const id_deviceIncludedInOrder = currentOrder?.items?.[index]?.details || [];
-                const remainingNeeded = value - id_deviceIncludedInOrder.length;
-
-                if (remainingNeeded > checkInventoryInDevice?.length) {
-                  // eslint-disable-next-line react/no-this-in-sfc
-                  return this.createError({
-                    path: `${context.path}`,
-                    message: `Sản phẩm ${deviceById?.name} còn ${checkInventoryInDevice?.length} trong kho. Số lượng đã đặt là ${id_deviceIncludedInOrder.length}. Vui lòng nhập số lượng <= ${checkInventoryInDevice?.length}.`,
-                  });
-                }
-              } else if (value > checkInventoryInDevice?.length) {
-                // eslint-disable-next-line react/no-this-in-sfc
-                return this.createError({
-                  path: `${context.path}`,
-                  message: `Sản phẩm ${deviceById?.name} còn ${checkInventoryInDevice?.length} trong kho. Vui lòng nhập số lượng <= ${checkInventoryInDevice?.length}.`,
-                });
-              }
-              return true;
-            }),
-
           price: Yup.number().required('Giá bán là bắt buộc').min(1, 'Giá bán phải lớn hơn 0'),
           warranty: Yup.number().required('Bảo hành là bắt buộc').min(1, 'Bảo hành phải lớn hơn 0'),
         })
@@ -146,41 +112,13 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
   });
 
   const handleGetWhenCreateAndUpdateSuccess = (value: boolean) => {
-    enqueueSnackbar(value ? 'Update success!' : 'Create success!', {
+    enqueueSnackbar(value ? 'Cập nhật thành công!' : 'Tạo mới thành công!', {
       variant: 'success',
     });
     router.push(paths.dashboard.order.root);
   };
 
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
-    data.items.forEach((item) => {
-      Object.values(deviceOptions).forEach((optionsArray) => {
-        optionsArray.forEach((option) => {
-          if (option._id === item.device) {
-            const inventoryDevices = (option.detail as IDetailDevice[])
-              .filter((d) => d.status === 'inventory')
-              .map((d) => d.id_device);
-
-            const id_deviceIncludedInOrder =
-              currentOrder?.items?.find((currentItem) => currentItem?.device?._id === item.device)
-                ?.details || [];
-
-            // Xử lý khi số lượng mới ít hơn số lượng cũ
-          if (item.quantity < id_deviceIncludedInOrder.length) {
-            // Chỉ giữ lại số lượng device theo quantity mới
-            item.details = id_deviceIncludedInOrder.slice(0, item.quantity);
-          } else {
-            // Trường hợp tăng số lượng
-            const newDetails = [
-              ...id_deviceIncludedInOrder,
-              ...inventoryDevices.splice(0, item.quantity - id_deviceIncludedInOrder.length),
-            ];
-            item.details = newDetails;
-          }}
-        });
-      });
-    });
-
     const newData: IOrderCreateOrUpdate = {
       ...data,
       type_customer: data?.type_customer,
@@ -225,14 +163,12 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     items: {
       device: string;
       details?: string[];
-
-      quantity: number;
       price: number;
     }[]
   ) =>
     items.reduce((acc, item) => {
-      if (item.price && item.quantity) {
-        return acc + item.price * item.quantity;
+      if (item.price && item.details?.length) {
+        return acc + item.price * item.details?.length;
       }
       return acc;
     }, 0);
@@ -302,7 +238,12 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
 
   return (
     <Container maxWidth={settings.themeStretch ? false : 'xl'}>
-      <CustomBreadcrumbs
+
+
+      <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid xs={12} md={10}>
+          <CustomBreadcrumbs
         heading={currentOrder ? 'Chỉnh sửa' : 'Tạo mới'}
         links={[
           {
@@ -318,10 +259,6 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
           mb: { xs: 3, md: 5 },
         }}
       />
-
-      <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-        <Grid container spacing={3} justifyContent="center">
-          <Grid xs={12} md={8}>
             <Card>
               <Stack spacing={3} sx={{ p: 3 }}>
                 <Typography variant="subtitle2">Thông tin</Typography>
@@ -379,118 +316,158 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
                 <Grid xs={12}>
                   <Stack spacing={1.5}>
                     <Typography variant="subtitle2">Thiết bị</Typography>
-                    <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-                      Chức năng và thuộc tính
-                    </Typography>
+
 
                     {fields?.map((item, index) => (
-                      <Fragment key={item?.id}>
-                        <Grid container spacing={2}>
-                          <Grid xs={3}>
-                            <RHFAutocomplete
-                              key={item?.id}
-                              name={`items.${index}.device`}
-                              label="Sản phẩm"
-                              options={
-                                deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
-                              }
-                              onInputChange={(
-                                _e: React.SyntheticEvent,
-                                value: string,
-                                reason: string
-                              ) => {
-                                if (reason === 'input') {
-                                  handleSearchDevice(index, value);
-                                }
-                              }}
-                              getOptionLabel={(option) =>
-                                (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
-                                  ?.name || '') as any
-                              }
-                            />
-                          </Grid>
+                     <Fragment key={item?.id}>
+                     <Grid container spacing={1} xs={12}>
+                       <Grid xs={2}>
+                         <RHFAutocomplete
+                           key={item?.id}
+                           name={`items.${index}.device`}
+                           label="Sản phẩm"
+                           options={
+                             deviceOptions?.[index]?.map((itemDevice) => itemDevice?._id) || []
+                           }
+                           onInputChange={(
+                             _e: React.SyntheticEvent,
+                             value: string,
+                             reason: string
+                           ) => {
+                             if (reason === 'input') {
+                               handleSearchDevice(index, value);
+                             }
+                           }}
+                           getOptionLabel={(option) =>
+                             (deviceOptions?.[index]?.find((x: IDevice) => x._id === option)
+                               ?.name || '') as any
+                           }
+                           onChange={(e, value) => {
+                             setValue(`items.${index}.device`, value as string);
+                             setValue(`items.${index}.details`, []);
+                           }}
+                         />
+                       </Grid>
 
-                          <Grid xs={3}>
-                            <RHFTextFieldFormatVnd
-                              name={`items.${index}.price`}
-                              label="Giá tiền"
-                              onChange={(e) => {
-                                const value = Number(e.target.value) || 0;
-                                setValue(`items.${index}.price`, value);
-                              }}
-                              disabled={!watch(`items.${index}.device`)}
-                            />
-                          </Grid>
+                       <Grid xs={2}>
+                         <RHFTextFieldFormatVnd
+                           name={`items.${index}.price`}
+                           label="Giá tiền"
+                           onChange={(e) => {
+                             const value = Number(e.target.value) || 0;
+                             setValue(`items.${index}.price`, value);
+                           }}
+                           disabled={!watch(`items.${index}.device`)}
+                         />
+                       </Grid>
 
-                          <Grid xs={2}>
-                            <RHFTextField
-                              name={`items.${index}.quantity`}
-                              label="Số lượng"
-                              type="number"
-                              disabled={!watch(`items.${index}.price`)}
-                              onKeyDown={(evt) =>
-                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                              }
-                            />
-                          </Grid>
-                          <Grid xs={2}>
-                            <RHFTextField
-                              name={`items.${index}.warranty`}
-                              label="Bảo hành"
-                              type="number"
-                              disabled={!watch(`items.${index}.device`)}
-                              onKeyDown={(evt) =>
-                                ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
-                              }
-                            />
-                          </Grid>
+                       <Grid xs={4}>
+                         <Controller
+                           name={`items.${index}.details`}
+                           control={control}
+                           render={({ field, fieldState: { error } }) => {
+                             const selectedDevice = deviceOptions?.[index]?.find(
+                               (x) => x._id === watch(`items.${index}.device`)
+                             );
 
-                          <Grid xs={1}>
-                            <Button
-                              variant="outlined"
-                              onClick={() => {
-                                remove(index);
-                                const clonedDeviceOptions = { ...deviceOptions };
-                                delete clonedDeviceOptions[index];
-                                const newData = Object.values(clonedDeviceOptions).reduce(
-                                  (acc: any, value, indexData) => {
-                                    acc[indexData] = value;
-                                    return acc;
-                                  },
-                                  {}
-                                );
-                                setDeviceOptions(newData);
-                              }}
-                              color="error"
-                              sx={{ height: '55px' }}
-                              disabled={fields?.length === 1}
-                            >
-                              <Iconify icon="eva:trash-2-outline" />
-                            </Button>
-                          </Grid>
+                             const inventoryItems = selectedDevice?.detail
+                               ?.filter((x) => x.status === 'inventory')
+                               .map((x) => x.id_device) || [];
 
-                          {index === 0 && (
-                            <Grid xs={1}>
-                              <Button
-                                variant="outlined"
-                                color="inherit"
-                                onClick={() =>
-                                  append({
-                                    device: '',
-                                    details: [],
-                                    quantity: 0,
-                                    price: 0,
-                                    warranty: 0,
-                                  })
-                                }
-                                sx={{ height: '55px' }}
-                              >
-                                <Iconify icon="mingcute:add-line" />
-                              </Button>
-                            </Grid>
-                          )}
-                        </Grid>
-                      </Fragment>
+                             return (
+                               <Autocomplete
+                                 multiple
+                                 value={field.value || []}
+                                 onChange={(e, newValue) => {
+                                   field.onChange(newValue);
+                                 }}
+limitTags={1}
+                                 options={inventoryItems}
+                                 renderInput={(params) => (
+                                   <TextField
+                                     {...params}
+                                     label="ID Sản phẩm"
+                                     error={!!error}
+                                     helperText={error?.message}
+                                     fullWidth
+                                   />
+                                 )}
+
+                                 disabled={!watch(`items.${index}.device`)}
+                                 renderTags={(selected, getTagProps) =>
+                                   selected.map((option, i) => (
+                                     <Chip
+                                       {...getTagProps({ index: i })}
+                                       key={option}
+                                       label={option}
+                                       size="small"
+
+                                     />
+                                   ))
+                                 }
+                               />
+                             );
+                           }}
+                         />
+                       </Grid>
+
+                       <Grid xs={2}>
+                         <RHFTextField
+                           name={`items.${index}.warranty`}
+                           label="Bảo hành"
+                           type="number"
+                           disabled={!watch(`items.${index}.device`)}
+                           onKeyDown={(evt) =>
+                             ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
+                           }
+                         />
+                       </Grid>
+
+                       <Grid xs={1}>
+                         <Button
+                           variant="contained"
+                           onClick={() => {
+                             remove(index);
+                             const clonedDeviceOptions = { ...deviceOptions };
+                             delete clonedDeviceOptions[index];
+                             const newData = Object.values(clonedDeviceOptions).reduce(
+                               (acc: any, value, indexData) => {
+                                 acc[indexData] = value;
+                                 return acc;
+                               },
+                               {}
+                             );
+                             setDeviceOptions(newData);
+                           }}
+                           color="error"
+                           sx={{ height: '55px' ,width:'100%'}}
+                           disabled={fields?.length === 1}
+                         >
+                           <Iconify icon="eva:trash-2-outline" />
+                         </Button>
+                       </Grid>
+
+                       {index === 0 && (
+                         <Grid xs={1}>
+                           <Button
+                             variant="contained"
+                             color="primary"
+                             onClick={() =>
+                               append({
+                                 device: '',
+                                 details: [],
+                                 price: 0,
+                                 warranty: 0,
+                               })
+                             }
+                             sx={{ height: '55px' ,width:'100%'}}
+                           >
+                             <Iconify icon="mingcute:add-line" />
+                           </Button>
+                         </Grid>
+                       )}
+                     </Grid>
+                   </Fragment>
                     ))}
                   </Stack>
                 </Grid>
@@ -505,7 +482,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
             </Card>
           </Grid>
 
-          <Grid xs={12} md={8}>
+          <Grid xs={12} md={10}>
             <Card>
               <Stack spacing={3} sx={{ p: 3 }}>
                 <Typography variant="subtitle2">Giá tiền</Typography>
@@ -546,7 +523,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
 
           <Grid
             xs={12}
-            md={8}
+            md={10}
             sx={{ display: 'flex', alignItems: 'center', justifyContent: 'right', gap: '5px' }}
           >
             <LoadingButton

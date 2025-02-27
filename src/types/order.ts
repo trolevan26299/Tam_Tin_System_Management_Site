@@ -111,8 +111,6 @@ export type IOrderCreateOrUpdate = {
   items: {
     device: string;
     details?: string[];
-
-    quantity: number;
     price: number;
     warranty: number;
   }[];

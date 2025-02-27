@@ -255,7 +255,7 @@ function OrderTableRow({ row, selected, onSelectRow, onDeleteRow, onEditRow, onV
           />
         </TableCell>
 
-        <TableCell align="center">{itemCounts}</TableCell>
+        <TableCell>{itemCounts}</TableCell>
 
         <TableCell>{renderMoney(String(totalAmount))}</TableCell>
 
