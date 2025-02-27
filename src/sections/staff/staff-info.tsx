@@ -15,7 +15,7 @@ import { useSnackbar } from 'notistack';
 import { useEffect } from 'react';
 import { DefaultValues, useForm } from 'react-hook-form';
 import { createStaff, updateStaffById } from 'src/api/staff';
-import { RHFTextField } from 'src/components/hook-form';
+import { RHFSwitch, RHFTextField } from 'src/components/hook-form';
 import FormProvider from 'src/components/hook-form/form-provider';
 import { IStaff } from 'src/types/staff';
 import * as Yup from 'yup';
@@ -23,6 +23,7 @@ import * as Yup from 'yup';
 const initializeDefaultValues = (): DefaultValues<IStaff> => ({
   name: '',
   address: '',
+  active: true,
   age: undefined,
   salary: undefined,
   position: '',
@@ -50,6 +51,7 @@ function StaffInfo({
   const NewStaff = Yup.object().shape({
     name: Yup.string().required('Name is required'),
     address: Yup.string(),
+    active: Yup.boolean(),
     age: Yup.number(),
     salary: Yup.number(),
     position: Yup.string(),
@@ -131,12 +133,14 @@ function StaffInfo({
             sx={{
               p: 2,
               borderBottom: `solid 1px ${theme.palette.divider}`,
-              height: '600px',
+              height: '620px',
               overflow: 'auto',
             }}
           >
-            <Grid container spacing={3}>
-
+            <Grid container spacing={2}>
+            <Grid xs={12} display="flex" className="" justifyContent="flex-start">
+                <RHFSwitch name="active" label="Hoạt động" />
+              </Grid>
               <Grid xs={12}>
                 <RHFTextField name="name" label="Tên nhân viên" />
               </Grid>

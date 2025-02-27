@@ -50,7 +50,6 @@ export default function OrderListView() {
   });
   const [customerList, setCustomerList] = useState<ICustomer[]>([]);
 
-  console.log('customerList', customerList);
   const denseHeight = table.dense ? 52 : 72;
 
   const handleViewRow = useCallback(

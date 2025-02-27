@@ -5,6 +5,7 @@ export type IStaff = {
   age?: number;
   salary?: number;
   position?: string;
+  active?: boolean;
   exp?: number;
   phone?: string;
   linh_kien_ung?: Array<{

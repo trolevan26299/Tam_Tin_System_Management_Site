@@ -126,13 +126,7 @@ export function useNavData() {
             children: [{ title: 'Danh sách', path: paths.dashboard.customer.root }],
           },
 
-          // USER
-          {
-            title: 'Người dùng',
-            path: paths.dashboard.user.root,
-            icon: ICONS.account,
-            children: [{ title: 'Danh sách', path: paths.dashboard.user.list }],
-          },
+
           // STAFF
           {
             title: 'Nhân viên',
@@ -151,6 +145,13 @@ export function useNavData() {
             path: paths.dashboard.calendar,
             icon: ICONS.calendar,
           },
+            // USER
+            {
+              title: 'Người dùng',
+              path: paths.dashboard.user.list,
+              icon: ICONS.account,
+
+            },
         ],
       },
       {
