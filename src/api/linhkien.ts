@@ -21,7 +21,25 @@ export function useGetLinhKien() {
 
   return memoizedValue;
 }
+export async function getListLinhKien(params: IQueryLinhKien) {
+  try {
+    const response = await axiosInstance.get(URL, { params });
+    return response.data;
+  } catch (error) {
+    console.error('Failed to fetch linh kien list:', error);
+    throw error;
+  }
+}
 
+export async function getLinhKienById(id: string) {
+  try {
+    const response = await axiosInstance.get(`${endpoints.linhKien.default}/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to fetch linh kien with id ${id}:`, error);
+    throw error;
+  }
+}
 export async function createLinhKien(
   data: ILinhKienInfo,
   enqueueSnackbar: (message: string, options?: object) => void

@@ -96,25 +96,22 @@ export function useNavData() {
           },
           // LINH KIEN
           {
-            title: 'Quản lý linh kiện',
+            title: 'Quản lý vật tư',
             path: paths.dashboard.linhKien.root,
             icon: ICONS.menuItem,
             children: [
-              { title: 'Linh kiện', path: paths.dashboard.linhKien.linhKien },
+              { title: 'Vật tư', path: paths.dashboard.linhKien.linhKien },
               { title: 'Giao dịch', path: paths.dashboard.linhKien.transaction },
             ],
           },
           // ORDER
           {
             title: 'Đơn Hàng',
-            path: paths.dashboard.order.root,
+            path: paths.dashboard.order.device,
             icon: ICONS.order,
             children: [
-              { title: 'Danh sách', path: paths.dashboard.order.root },
-              {
-                title: 'Tạo mới',
-                path: paths.dashboard.order.new,
-              },
+              { title: 'Thiết bị', path: paths.dashboard.order.device },
+              { title: 'Vật tư', path: paths.dashboard.order.linhKien },
             ],
           },
 

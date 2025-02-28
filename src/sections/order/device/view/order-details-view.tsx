@@ -7,7 +7,7 @@ import { getOrderById } from 'src/api/order';
 import { useSettingsContext } from 'src/components/settings';
 import { paths } from 'src/routes/paths';
 import { IOrder, Items } from 'src/types/order';
-import OrderDetailsInfoView from '../order-details-info-view';
+import OrderDetailsInfoView from './order-details-info-view';
 import OrderDetailsItems from '../order-details-item';
 import OrderDetailsToolbar from '../order-details-toolbar';
 import OrderCreateView from './order-create-update-view';
@@ -38,7 +38,7 @@ function OrderDetailsView({ id }: { id: string }) {
       {!isEditForm ? (
         <Container maxWidth={settings.themeStretch ? false : 'lg'}>
           <OrderDetailsToolbar
-            backLink={paths.dashboard.order.root}
+            backLink={paths.dashboard.order.device}
             orderNumber={selectedItem?._id as string}
             createdAt={selectedItem?.regDt as any}
             onEdit={() => {

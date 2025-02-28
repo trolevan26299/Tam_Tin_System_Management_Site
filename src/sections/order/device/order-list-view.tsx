@@ -22,8 +22,8 @@ import { paths } from 'src/routes/paths';
 import { IDataOrder, IOrder, IQueryOrder } from 'src/types/order';
 import { ICustomer } from 'src/types/customer';
 import { getListCustomer } from 'src/api/customer';
-import OrderTableRow from '../order-table-row';
-import OrderTableToolbar from '../order-table-toolbar';
+import OrderTableRow from './view/order-table-row';
+import OrderTableToolbar from './order-table-toolbar';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID Order', width: 100 },
@@ -124,7 +124,7 @@ export default function OrderListView() {
           { name: 'Dashboard', href: paths.dashboard.root },
           {
             name: 'Order',
-            href: paths.dashboard.order.root,
+            href: paths.dashboard.order.device,
           },
           { name: 'List' },
         ]}

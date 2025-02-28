@@ -1,5 +1,5 @@
 // sections
-import { OrderListView } from 'src/sections/order/view';
+import { OrderListView } from 'src/sections/order/device/view';
 
 // ----------------------------------------------------------------------
 

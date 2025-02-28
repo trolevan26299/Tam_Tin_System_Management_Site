@@ -1,5 +1,5 @@
 // _mock
-import { OrderDetailsView } from 'src/sections/order/view';
+import { OrderDetailsView } from 'src/sections/order/device/view';
 
 // ----------------------------------------------------------------------
 

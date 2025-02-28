@@ -1,5 +1,5 @@
 // sections
-import { OrderCreateUpdateView } from 'src/sections/order/view';
+import { OrderCreateUpdateView } from 'src/sections/order/device/view';
 
 // ----------------------------------------------------------------------
 

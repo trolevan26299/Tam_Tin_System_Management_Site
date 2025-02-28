@@ -138,7 +138,8 @@ export const paths = {
       },
     },
     order: {
-      root: `${ROOTS.DASHBOARD}/order`,
+      device: `${ROOTS.DASHBOARD}/order`,
+      linhKien: `${ROOTS.DASHBOARD}/order/linh-kien`,
       new: `${ROOTS.DASHBOARD}/order/new`,
       list: `${ROOTS.DASHBOARD}/order/list`,
       details: (id: string) => `${ROOTS.DASHBOARD}/order/${id}`,

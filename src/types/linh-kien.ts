@@ -27,6 +27,7 @@ export type ILinhKien = {
 };
 
 export type ILinhKienInfo = {
+  _id?: string;
   name_linh_kien: string;
   total: number;
 };

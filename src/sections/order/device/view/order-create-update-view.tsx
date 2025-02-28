@@ -115,7 +115,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
     enqueueSnackbar(value ? 'Cập nhật thành công!' : 'Tạo mới thành công!', {
       variant: 'success',
     });
-    router.push(paths.dashboard.order.root);
+    router.push(paths.dashboard.order.device);
   };
 
   const onSubmit = async (data: IOrderCreateOrUpdate) => {
@@ -252,7 +252,7 @@ export default function OrderCreateView({ currentOrder }: { currentOrder?: IOrde
           },
           {
             name: 'Order',
-            href: paths.dashboard.order.root,
+            href: paths.dashboard.order.device,
           },
         ]}
         sx={{
@@ -535,7 +535,7 @@ limitTags={1}
             >
               Lưu
             </LoadingButton>
-            <Button component={RouterLink} href={paths.dashboard.order.root} variant="contained">
+            <Button component={RouterLink} href={paths.dashboard.order.device} variant="contained">
               Hủy
             </Button>
           </Grid>
