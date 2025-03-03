@@ -226,7 +226,6 @@ export default function OrderLinhKienForm({
     customerLoaded,
     handleGetAllLinhKien,
     handleGetAllCustomer,
-    defaultValues,
   ]);
 
   useEffect(() => {
