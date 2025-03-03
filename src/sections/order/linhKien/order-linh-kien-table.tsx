@@ -16,13 +16,13 @@ import OrderLinhKienTableRow from './order-linh-kien-table-row';
 
 const TABLE_HEAD = [
   { id: 'id', label: 'ID', align: 'left' },
-  { id: 'linh_kien', label: 'Linh Kiện', align: 'left' },
-  { id: 'so_luong', label: 'Số Lượng', align: 'center' },
   { id: 'khach_hang', label: 'Khách Hàng', align: 'left' },
-  { id: 'tong_tien', label: 'Tổng Tiền', align: 'left' },
-  { id: 'ngay_tao', label: 'Ngày Tạo', align: 'left' },
+  { id: 'chi_tiet', label: 'Chi Tiết Đơn Hàng', align: 'left' },
+  { id: 'tong_tien', label: 'Tổng Tiền', align: 'right' },
+  { id: 'loi_nhuan', label: 'Lợi Nhuận', align: 'right' },
+  { id: 'ngay_tao', label: 'Ngày Tạo', align: 'center' },
   { id: 'ghi_chu', label: 'Ghi Chú', align: 'left' },
-  { id: '', label: '', align: 'right' },
+  { id: 'actions', label: '', align: 'right' },
 ];
 
 type Props = {

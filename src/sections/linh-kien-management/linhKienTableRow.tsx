@@ -6,6 +6,7 @@ import { usePopover } from 'src/components/custom-popover';
 import Iconify from 'src/components/iconify';
 import { useBoolean } from 'src/hooks/use-boolean';
 import { ILinhKien } from 'src/types/linh-kien';
+import { renderMoney } from 'src/utils/format-number';
 
 type Props = {
   row: ILinhKien;
@@ -14,9 +15,9 @@ type Props = {
 };
 
 function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
-  const { name_linh_kien, total, create_date, data_ung, user_create } = row;
+  const { name_linh_kien, total, create_date, data_ung, user_create, price } = row;
   const [passCode, setPassCode] = useState<number | undefined>();
-
+   
   const confirm = useBoolean();
   const popover = usePopover();
 
@@ -31,7 +32,7 @@ function LinhKienTableRow({ row, selected, onDeleteRow }: Props) {
       <TableCell>
         <ListItemText primary={create_date} primaryTypographyProps={{ typography: 'body2' }} />
       </TableCell>
-
+      <TableCell>{renderMoney(String(price))}</TableCell>
       <TableCell>{user_create?.username}</TableCell>
 
       <TableCell>

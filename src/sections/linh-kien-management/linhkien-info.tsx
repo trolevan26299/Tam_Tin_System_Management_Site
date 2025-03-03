@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import FormProvider, { RHFTextField } from 'src/components/hook-form';
+import FormProvider, { RHFTextField, RHFTextFieldFormatVnd } from 'src/components/hook-form';
 import { DefaultValues, useForm } from 'react-hook-form';
 import { ILinhKienInfo } from 'src/types/linh-kien';
 import * as Yup from 'yup';
@@ -14,6 +14,7 @@ import { useSnackbar } from 'notistack';
 const initializeDefaultValues = (): DefaultValues<ILinhKienInfo> => ({
   name_linh_kien: '',
   total: 0,
+  price: 0,
 });
 
 function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -21,8 +22,9 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
   const { enqueueSnackbar } = useSnackbar();
 
   const NewLinhKien = Yup.object().shape({
-    name_linh_kien: Yup.string().required('Name is required'),
-    total: Yup.number().required().min(1, 'Total amount is required'),
+    name_linh_kien: Yup.string().required('Tên linh kiện là bắt buộc'),
+    total: Yup.number().required().min(1, 'Tổng là bắt buộc').min(1, 'Tổng phải lớn hơn 0'),
+    price: Yup.number().required().min(1, 'Giá thành là bắt buộc').min(1, 'Giá thành phải lớn hơn 0'),
   });
 
   const methods = useForm<ILinhKienInfo>({
@@ -31,6 +33,7 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
   });
 
   const {
+    setValue,
     handleSubmit,
     reset,
     formState: { isSubmitting },
@@ -76,6 +79,16 @@ function LinhKienInfo({ open, onClose }: { open: boolean; onClose: () => void })
                   onKeyDown={(evt) =>
                     ['e', 'E', '+', '-'].includes(evt.key) && evt.preventDefault()
                   }
+                />
+              </Grid>
+              <Grid xs={12}>
+                <RHFTextFieldFormatVnd
+                  name="price"
+                  label="Giá thành / Sản phẩm"
+                  onChange={(e) => {
+                    const value = Number(e.target.value) || 0;
+                    setValue('price', value);
+                  }}
                 />
               </Grid>
             </Grid>

@@ -30,14 +30,14 @@ export default function OrderLinhKienDetails({ order }: Props) {
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Tên linh kiện
           </Typography>
-          <Typography variant="subtitle2">{order.id_linh_kien.name_linh_kien}</Typography>
+          <Typography variant="subtitle2">{order.chi_tiet_linh_kien.map(item => item.id_linh_kien.name_linh_kien)}</Typography>
         </Stack>
 
         <Stack direction="row" justifyContent="space-between">
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             Số lượng
           </Typography>
-          <Typography variant="subtitle2">{order.so_luong}</Typography>
+          <Typography variant="subtitle2">{order.chi_tiet_linh_kien.map(item => item.so_luong)}</Typography>
         </Stack>
 
         <Stack direction="row" justifyContent="space-between">

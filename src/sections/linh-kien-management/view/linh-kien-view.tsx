@@ -36,6 +36,7 @@ const TABLE_HEAD = [
   { id: 'name_linh_kien', label: 'Tên' },
   { id: 'total', label: 'Tổng' },
   { id: 'create_date', label: 'Ngày tạo' },
+  { id: 'price', label: 'Giá thành / Sản phẩm' },
   { id: 'user_create', label: 'Nhân viên tạo' },
   { id: 'data_ung', label: 'Nhân viên ứng' },
   { id: 'action', label: 'Hành động' },

@@ -21,6 +21,7 @@ export type ILinhKien = {
   _id?: string;
   name_linh_kien?: string;
   total?: number;
+  price?: number;
   create_date?: string;
   data_ung?: IDataUng[];
   user_create?: IUserCreate;
@@ -30,6 +31,7 @@ export type ILinhKienInfo = {
   _id?: string;
   name_linh_kien: string;
   total: number;
+  price: number;
 };
 
 export type IDataLinhKien = {

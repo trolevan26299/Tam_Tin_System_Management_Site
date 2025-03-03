@@ -1,3 +1,9 @@
+interface IOrderLinhKienDetail {
+  id_linh_kien: string;
+  so_luong: number;
+  price?: number;
+}
+
 export interface ILinhKienInfo {
   _id: string;
   name_linh_kien: string;
@@ -15,13 +21,17 @@ export interface ICustomerInfo {
 
 export interface IOrderLinhKien {
   _id: string;
-  id_linh_kien: ILinhKienInfo;
-  so_luong: number;
+  chi_tiet_linh_kien: {
+    id_linh_kien: ILinhKienInfo;
+    so_luong: number;
+    price?: number;
+  }[];
   id_khach_hang: ICustomerInfo;
   ghi_chu?: string;
   tong_tien: number;
   ngay_tao: string;
   ngay_cap_nhat?: string;
+  loi_nhuan?: number;
 }
 
 export interface IOrderLinhKienListResponse {
@@ -34,19 +44,19 @@ export interface IOrderLinhKienListResponse {
 }
 
 export interface ICreateOrderLinhKienDto {
-  id_linh_kien: string;
-  so_luong: number;
+  chi_tiet_linh_kien: IOrderLinhKienDetail[];
   id_khach_hang: string;
   ghi_chu?: string;
   tong_tien: number;
+  loi_nhuan?: number;
 }
 
 export interface IUpdateOrderLinhKienDto {
-  id_linh_kien?: string;
-  so_luong?: number;
+  chi_tiet_linh_kien?: IOrderLinhKienDetail[];
   id_khach_hang?: string;
   ghi_chu?: string;
   tong_tien?: number;
+  loi_nhuan?: number;
 }
 
 export interface IQueryOrderLinhKienDto {
