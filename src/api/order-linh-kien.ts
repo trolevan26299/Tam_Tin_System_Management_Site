@@ -1,10 +1,14 @@
-import { ICreateOrderLinhKienDto, IOrderLinhKien, IOrderLinhKienListResponse, IQueryOrderLinhKienDto, IUpdateOrderLinhKienDto } from 'src/types/order-linh-kien';
+import {
+  ICreateOrderLinhKienDto,
+  IOrderLinhKien,
+  IOrderLinhKienListResponse,
+  IQueryOrderLinhKienDto,
+  IUpdateOrderLinhKienDto,
+} from 'src/types/order-linh-kien';
 import { SnackbarKey, OptionsObject, SnackbarMessage } from 'notistack';
 import axiosInstance from 'src/utils/axios';
 
-export const getListOrderLinhKien = async (
-  params: IQueryOrderLinhKienDto
-): Promise<IOrderLinhKienListResponse> => {
+export const getListOrderLinhKien = async (params: IQueryOrderLinhKienDto) => {
   const response = await axiosInstance.get('/order-linh-kien', { params });
   return response.data;
 };
@@ -15,26 +19,18 @@ export const getOrderLinhKienById = async (id: string): Promise<IOrderLinhKien> 
 };
 
 export const createOrderLinhKien = async (
-  data: ICreateOrderLinhKienDto,
+  data: ICreateOrderLinhKienDto
 ): Promise<IOrderLinhKien | null> => {
-  try {
-    const response = await axiosInstance.post('/order-linh-kien', data);
-    return response.data;
-  } catch (error: any) {
-    throw error; 
-  }
+  const response = await axiosInstance.post('/order-linh-kien', data);
+  return response.data;
 };
 
 export const updateOrderLinhKien = async (
   id: string,
-  data: IUpdateOrderLinhKienDto,
+  data: IUpdateOrderLinhKienDto
 ): Promise<IOrderLinhKien | null> => {
-  try {
-    const response = await axiosInstance.patch(`/order-linh-kien/${id}`, data);
-    return response.data;
-  } catch (error: any) {
-    throw error; 
-  }
+  const response = await axiosInstance.patch(`/order-linh-kien/${id}`, data);
+  return response.data;
 };
 
 export const deleteOrderLinhKien = async (

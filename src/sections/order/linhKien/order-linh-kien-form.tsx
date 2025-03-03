@@ -75,6 +75,7 @@ export default function OrderLinhKienForm({
     ghi_chu: Yup.string(),
   });
 
+  /* eslint-disable react-hooks/exhaustive-deps */
   const defaultValues = {
     chi_tiet_linh_kien: [{ id_linh_kien: '', so_luong: 1 }],
     id_khach_hang: '',
@@ -190,7 +191,7 @@ export default function OrderLinhKienForm({
       console.error('Failed to fetch linh kien:', error);
     }
   }, []);
-
+// eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (open === true) {
       if (!customerLoaded) {
@@ -199,7 +200,6 @@ export default function OrderLinhKienForm({
       handleGetAllLinhKien();
 
       if (isEdit && currentOrder) {
-        // Cập nhật lại state và form khi edit
         const chiTietRows = currentOrder.chi_tiet_linh_kien.map((item) => ({
           id_linh_kien: item.id_linh_kien._id,
           so_luong: item.so_luong,
@@ -218,7 +218,7 @@ export default function OrderLinhKienForm({
         reset(defaultValues);
       }
     }
-  }, [
+  }, [ // eslint-disable-next-line react-hooks/exhaustive-deps
     isEdit,
     currentOrder,
     reset,
@@ -226,6 +226,7 @@ export default function OrderLinhKienForm({
     customerLoaded,
     handleGetAllLinhKien,
     handleGetAllCustomer,
+    defaultValues,
   ]);
 
   useEffect(() => {
@@ -242,7 +243,7 @@ export default function OrderLinhKienForm({
       const loiNhuan = tongTien - tongGiaGoc;
       setValue('loi_nhuan', loiNhuan > 0 ? loiNhuan : 0);
     }
-  }, [watch('tong_tien'), linhKienRows, linhKiens, setValue]);
+  }, [watch('tong_tien'), linhKienRows, linhKiens, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <Dialog fullWidth maxWidth="md" open={open} onClose={onClose}>
@@ -303,7 +304,7 @@ export default function OrderLinhKienForm({
                             type="number"
                             value={row.so_luong === 0 ? '' : row.so_luong} // Thay đổi ở đây
                             onChange={(e) => {
-                              const value = e.target.value;
+                              const { value } = e.target;
                               const newRows = [...linhKienRows];
 
                               if (value === '') {
