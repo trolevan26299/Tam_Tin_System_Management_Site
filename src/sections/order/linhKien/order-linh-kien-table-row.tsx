@@ -56,14 +56,20 @@ export default function OrderLinhKienTableRow({
       </TableCell>
 
       <TableCell>
-        <Stack spacing={0.5}>
-          <Typography variant="body2" noWrap>
-            {row.id_khach_hang.name}
+        {row.id_khach_hang ? (
+          <Stack spacing={0.5}>
+            <Typography variant="body2" noWrap>
+              {row.id_khach_hang.name}
           </Typography>
           <Typography variant="caption" sx={{ color: 'text.secondary' }} noWrap>
-            {row.id_khach_hang.phone}
+              {row.id_khach_hang.phone}
+            </Typography>
+          </Stack>
+        ) : (
+          <Typography variant="body2" noWrap>
+            {row.name_customer}
           </Typography>
-        </Stack>
+        )}
       </TableCell>
 
       <TableCell sx={{ minWidth: 300 }}>{renderChiTiet()}</TableCell>

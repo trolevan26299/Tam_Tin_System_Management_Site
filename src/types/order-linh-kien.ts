@@ -21,6 +21,7 @@ export interface ICustomerInfo {
 
 export interface IOrderLinhKien {
   _id: string;
+  name_customer: string;
   chi_tiet_linh_kien: {
     id_linh_kien: ILinhKienInfo;
     so_luong: number;
