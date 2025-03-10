@@ -34,16 +34,32 @@ export default function OrderLinhKienTableRow({
   const confirm = useBoolean();
   const popover = usePopover();
 
-  const renderChiTiet = () => (
-    <Stack spacing={1}>
-      {row.chi_tiet_linh_kien.map((item, index) => (
-       <Box key={index}>
-        <Typography variant="body2">{item.id_linh_kien.name_linh_kien} (x{item.so_luong})</Typography>
-      
-       </Box>
-      ))}
-    </Stack>
-  );
+  const renderChiTiet = () => {
+    // Tạo object để gom nhóm theo id linh kiện
+    const groupedItems = row.chi_tiet_linh_kien.reduce((acc, item) => {
+      const id = item.id_linh_kien._id;
+      if (!acc[id]) {
+        acc[id] = {
+          name: item.id_linh_kien.name_linh_kien,
+          total: 0
+        };
+      }
+      acc[id].total += item.so_luong;
+      return acc;
+    }, {} as Record<string, { name: string; total: number }>);
+  
+    return (
+      <Stack spacing={1}>
+        {Object.values(groupedItems).map((item, index) => (
+          <Box key={index}>
+            <Typography variant="body2">
+              {item.name} (x{item.total})
+            </Typography>
+          </Box>
+        ))}
+      </Stack>
+    );
+  };
 
   return (
     <TableRow hover>
